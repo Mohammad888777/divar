@@ -1,0 +1,558 @@
+{% extends 'main/base.html' %}
+
+
+{% block content %}
+{% load static %}
+{% load humanize %}
+{% load mathfilters %}
+{% load base_tags %}
+
+<!-- <section class="section-pagetop bg">
+    <div class="container">
+        <h2 class="title-page">Our Store</h2>
+    </div> 
+</section>
+ -->
+
+
+
+
+
+{% if coms %}
+
+<section class="section-content padding-y">
+    <div class="container">
+    
+        <div class="row">
+
+
+            <aside class="col-md-3">
+                
+                <div class="card">
+                    <article class="filter-group">
+                        <header class="card-header">
+                            <a href="#" data-toggle="collapse" data-target="#collapse_1" aria-expanded="true" class="">
+                                <h6 class="title">دسته ها</h6>
+                                
+                            </a>
+                        </header>
+                        <div class="filter-content collapse show" id="collapse_1" style="">
+                            <div class="card-body">
+                                
+                                <ul class="list-menu">
+                                    {% for cat in all_cats %}
+                                        <li><a id="ParentCats" class="eachCat-{{cat.id}}" href="{% url 'eachCategory' cat.id %}" class="eachCat">{{cat.title}}  </a></li>
+                                    {% endfor %}
+                                </ul>
+                
+                            </div> <!-- card-body.// -->
+                        </div>
+                    </article> 
+                    <article class="filter-group">
+                        <header class="card-header">
+                            <a href="#" data-toggle="collapse" data-target="#collapse_4" aria-expanded="true" class="">
+                                <i class="icon-control fa fa-chevron-down"></i>
+                                <h6 class="title">Sizes </h6>
+                            </a>
+                        </header>
+                        <div class="filter-content collapse show" id="collapse_4" style="">
+                            <div class="card-body">
+                            <label class="checkbox-btn">
+                                <input type="checkbox">
+                                <span class="btn btn-light"> XS </span>
+                            </label>
+                
+                            <label class="checkbox-btn">
+                                <input type="checkbox">
+                                <span class="btn btn-light"> SM </span>
+                            </label>
+                
+                            <label class="checkbox-btn">
+                                <input type="checkbox">
+                                <span class="btn btn-light"> LG </span>
+                            </label>
+                
+                            <label class="checkbox-btn">
+                                <input type="checkbox">
+                                <span class="btn btn-light"> XXL </span>
+                            </label>
+                        </div><!-- card-body.// -->
+                        </div>
+                    </article> 
+                    
+                    <article class="filter-group">
+                        <header class="card-header">
+                            <a href="#" data-toggle="collapse" data-target="#collapse_3" aria-expanded="true" class="">
+                                <i class="icon-control fa fa-chevron-down"></i>
+                                <h6 class="title">Price range </h6>
+                            </a>
+                        </header>
+                        <div class="filter-content collapse show" id="collapse_3" style="">
+                            <div class="card-body">
+                                
+                                <div class="form-row">
+                                <div class="form-group col-md-6">
+                                <label>Min</label>
+                                <!-- <input class="form-control" placeholder="$0" type="number"> -->
+                                    <select class="mr-2 form-control">
+                                        <option value="0">$0</option>
+                                        <option value="50">$50</option>
+                                        <option value="100">$100</option>
+                                        <option value="150">$150</option>
+                                        <option value="200">$200</option>
+                                        <option value="500">$500</option>
+                                        <option value="1000">$1000</option>
+                                    </select>
+                                </div>
+                                <div class="form-group text-right col-md-6">
+                                <label>Max</label>
+                                    <select class="mr-2 form-control">
+                                        <option value="50">$50</option>
+                                        <option value="100">$100</option>
+                                        <option value="150">$150</option>
+                                        <option value="200">$200</option>
+                                        <option value="500">$500</option>
+                                        <option value="1000">$1000</option>
+                                        <option value="2000">$2000+</option>
+                                    </select>
+                                </div>
+                                </div> <!-- form-row.// -->
+                                <button class="btn btn-block btn-primary">Apply</button>
+                            </div><!-- card-body.// -->
+                        </div>
+                    </article> 
+                    
+                </div> 
+        
+            </aside> 
+
+
+            <main class="col-md-9">
+        
+                <!-- <header class="border-bottom mb-4 pb-3">
+                        <div class="form-inline">
+                            <span class="mr-md-auto">32 Items found </span>
+                            
+                        </div>
+                </header> -->
+        
+                <div class="row">
+                    {% for c in coms %}
+
+                        <div class="col-md-4">
+                            <figure class="card card-product-grid" >
+                                <div class="img-wrap"> 
+                                    {% if c.commericalimage_set.all %}
+                                            <img src="{{c.commericalimage_set.first.image.url}}">
+                                    {% endif %}
+                                    
+                                </div> <!-- img-wrap.// -->
+                                <figcaption class="info-wrap" >
+                                    <div class="fix-height" style="height:100px">
+                                        <a href="./product-detail.html" class="title">
+                                            {{c.title|slice:"20"}}
+                                        </a>
+                                        <div class="price-wrap mt-2">
+
+                                            {% if c.parent.parent.parent %}
+
+                                                        {% if c.parent.parent.parent.title == "املاک" %}
+
+                                                                {% if  c.parent.parent.title == "فروش مسکونی" %}
+                                                                    <span class="price">{{c.price|intcomma}}</span>    تومان
+                                                                    <br>
+                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span>    
+
+                                                                {% elif  c.parent.parent.title == "اجاره مسکونی" %}
+
+                                                                    ودیعه <span class="price">{{c.vadieh|intcomma}}</span>    تومان
+                                                                        <br>
+                                                                        اجاره <span class="price">{{c.rent|intcomma}}</span>    تومان
+                                                                        <br>
+                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                        <br>
+
+                                                                {% endif %}
+
+                                                                <!-- وسایل نقلیه -->
+
+                                                        {% elif c.parent.parent.parent.title == "وسایل نقلیه" %}
+
+                                                                {% if c.parent.parent %}
+
+                                                                    <!-- خودرو -->
+
+                                                                    {% if c.parent.parent.title == "خودرو" %}
+
+                                                                        {% if c.parent.title == "سواری و وانت" %}
+                                                                                <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
+                                                                                <br>
+                                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
+
+                                                                        {% elif c.parent.title == "کلاسیک" %}
+                                                                                <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
+                                                                                <br>
+                                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                        {% elif c.parent.title == "اجاره" %}
+                                                                                <span class="price">{{c.day_rent_paid|intcomma}}</span> تومان
+                                                                                <br>
+                                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>   
+                                                                        {% elif c.parent.title == "سنگین" %}
+                                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                <br>
+                                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+
+                                                                        {% endif %}
+
+                                                                    {% endif %}
+                                                                
+                                                                {% endif %}
+                                                        
+                                                        {% elif c.parent.parent.parent.title == "کالای دیجیتال" %}
+                                                                
+                                                                {% if c.parent.parent %}
+                                                                        {% if c.parent.parent.title == "موبایل و تبلت" %}
+                                                                                {% if c.parent.title == "گوشی موبایل" %}
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                {% elif c.parent.title == "تبلت" %}
+
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                {% elif c.parent.title == "لوازم جانبی موبایل و تبلت" %}
+
+                                                                            
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+
+                                                                                {% elif c.parent.title == "سیم کارت" %}
+
+                                                                                
+                                                                                {% endif %}
+                                                                        {% elif c.parent.parent.title == "رایانه" %}
+                                                                                {% if c.parent.title == "رایانه همراه" %}
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                {% elif c.parent.title == "رایانه رومیزی" %}
+
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                {% elif c.parent.title == "قطعات و لوازم جانبی" %}
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                {% elif c.parent.title == "مودم و شبکه" %}
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                
+                                                                                {% endif %}
+
+                                                                        {% endif %}
+                                                                {% endif %}
+
+                                                        {% endif %}
+
+
+                                            {% elif not c.parent.parent.parent %}
+                                                    {% if c.parent.parent %}
+                                                                    {% if c.parent.parent.title == "وسایل نقلیه" %}
+                                                                                {% if c.parent.title == "موتور سیکلت" %}
+
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                
+                                                                                {% elif c.parent.title == "قطعات یدکی" %}
+
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
+
+                                                                                {% elif c.parent.title == "قایق و سایر" %}
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                {% endif %}
+                                                                        
+
+                                                                    {% endif %}
+                                                    {% endif %}
+                                                                            
+                                            {% endif %}
+                                            
+                                        </div> 
+                                    </div>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <a href="#" class="btn btn-block btn-success">Added to cart </a>
+                                </figcaption>
+                            </figure>
+                        </div> 
+                    {% endfor %}
+                  
+                </div> 
+        
+        
+                <nav class="mt-4" aria-label="Page navigation sample">
+                    <ul class="pagination">
+                        <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                    </ul>
+                </nav>
+        
+            </main> 
+        
+        </div>
+    
+    </div> 
+</section>
+
+{% else %}
+
+<section class="section-pagetop bg" style="height:100%!important">
+    <div class="container text-center">
+        <h2 class="title-page"> آگهی یافت نشد</h2>
+    </div> 
+</section>
+
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock content %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %}
+<script type="text/javascript">
+  
+	var qs = '{{all_city}}'
+	console.log(qs,typeof qs,)
+	var data=JSON.parse(qs.replace(/&quot;/g,'"'))
+	const input=document.getElementById("cityInput")
+	console.log(data)
+  
+  
+	
+  
+  
+  
+	let filtred=[]
+	input.addEventListener("keyup",(e)=>{
+  
+	  
+		var ggg=$(".rrrrrrrrr")
+		ggg.html("<p></p>")
+	
+   
+	  filtred=data.filter(item=>item["name"].includes(e.target.value))
+  
+  
+  
+  
+	  if(filtred.length>0){
+  
+		  
+  
+  
+			filtred.forEach(item=>{
+  
+			  var subs=item.minis.map(ee=>{
+  
+						   
+								  
+								return `
+										<div class="panel panel-default">
+										  <div class="panel-heading">
+											<h4 class="panel-title">
+											  <a data-toggle="collapse" href="#scan1_api${ee.id}" data-parent="#scan1_inner_accordion">${ee.name}</a>
+                        <input type="checkbox" name="items" id="" value="${ee.id}">
+											</h4>
+										  </div>
+										  
+										</div>
+		
+										`       
+			  })
+  
+			  ggg.append(`
+  
+				  <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+              <a data-toggle="collapse" href="#collapse${item['cityId']}" data-parent="#accordion">${item["name"]}</a>
+              </h4>
+            </div>
+            <div id="collapse${item['cityId']}" class="panel-collapse collapse">
+              <ul class="list-group">
+              <li class="list-group-item">
+                <div class="panel-group" id="scan1_inner_accordion">
+                  <label for="">انتخاب همه</label>
+                  <input type="checkbox" name="bigCity" id="" value="${item["cityId"]}" >
+
+                  
+                  ${subs}
+                  
+          
+                </div>
+              </li>
+              </ul>
+              
+            </div>
+				  </div>
+			`)
+  
+		  })
+			}
+  
+	})
+  
+
+
+    let v7=$(".eachCat-")
+    console.log(v7,"EEEEEAAACCHHH")
+    console.log(v7,"EEEEEAAACCHHH")
+    console.log(v7,"EEEEEAAACCHHH")
+
+
+    $("#ParentCats").click(function(){
+
+        let eachCatId=$(this).attr("class").substring(8)
+
+
+        const url =`http://127.0.0.1:8000/eachCategory/${eachCatId}/`
+
+        console.log("FFFFFFUUUUNNNNN")
+
+        const g=$(".city_choosen")
+
+        var dd=$(".city_choosen")
+        var vv=dd.children("p")
+    
+        let mini_cities=[]
+        let province=[]
+    
+        vv.each(function(index,el){
+    
+        console.log($(el).attr("class"))
+        if($(el).attr("class").includes("mini")){
+            mini_cities.push($(el).attr("class").substring(8))
+            
+        }else{
+            province.push($(el).attr("class").substring(3))
+        }
+    
+        })
+
+        var mini_cities_ids=mini_cities.map(item=>Number(item))
+        var provinces_ids=province.map(item=>Number(item))
+
+        console.log("HELOOOOOOOOOOOOOOO")
+        console.log("HELOOOOOOOOOOOOOOO")
+        
+        console.log(mini_cities_ids)
+        console.log(provinces_ids)
+        console.log("HELOOOOOOOOOOOOOOO")
+        console.log("HELOOOOOOOOOOOOOOO")
+
+        let form=new FormData()
+        form.append('csrfmiddlewaretoken', $('input[name=csrfmiddlewaretoken]').val()) 
+        form.append("bigCity",provinces_ids)
+        form.append("items",mini_cities_ids)
+        console.log(form,"FFFOOROROOROROMMM")
+    
+     
+
+
+    })
+  
+</script>
+
+<span class="price">
+
+
+    {% with now=now_to_irani.minute  com_time=c.iranTimeCreated.minute %}
+
+        
+    
+
+
+        {% if  now|sub:com_time < 5 %}
+            لحظاتی پیش
+        {% endif %}
+        
+    {% endwith %}
+
+
+    {{c.iranTimeCreated.year}}
+</span>    
+{% endcomment %}

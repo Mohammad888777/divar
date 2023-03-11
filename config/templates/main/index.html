@@ -1,0 +1,63 @@
+{% extends 'main/base.html' %}
+{% block content %}
+{% load static %}
+{% load mathfilters %}
+
+<section class="section-intro padding-y-sm">
+	<div class="container">
+
+		<div class="intro-banner-wrap">
+			<!-- <img src="{% static 'images/banners/1.jpg' %}" class="img-fluid rounded"> -->
+		</div>
+
+	</div> <!-- container //  -->
+</section>
+
+<section class="section-name padding-y-sm">
+	<div class="container">
+
+			<header class="section-heading">
+				
+			</header>
+
+		
+			<div class="row">
+				{% for city in cities %}
+					<div class="col-md-3">
+						<div class="card card-product-grid text-center">
+							
+							<figcaption class="info-wrap">
+								<a href="{% url 'city' city.name %}">
+									<div class="price mt-1">
+										{{city.name}}
+
+									</div> 
+								</a>
+							</figcaption>
+						</div>
+					</div> <!-- col.// -->
+
+					
+					
+
+				{% endfor %}
+				
+			</div> 
+
+
+	</div>
+	
+</section>
+
+
+
+{% with answer=42 new=8 %}
+						<h1> {{ answer|mul:new }}</h1>
+						{% if answer|mul:new > 10 %}
+							<h1>heeloo</h1>
+						{% endif %}
+{% endwith %}
+
+
+
+{% endblock content %}
