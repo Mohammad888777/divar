@@ -44,48 +44,379 @@
                             <a href="#" data-toggle="collapse" data-target="#collapse_4" aria-expanded="true" class="">
                     
                                 <br>
-                                {% if cat.title == "املاک" %}
-                                    <!-- Button trigger modal -->
-                                            <button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#exampleModal">
-                                                محل
-                                            </button>
-                                           <form action="" method="get" id="chooseLocation">
-                                                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                                    <div class="modal-dialog" role="document">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                        <h5 class="modal-title" id="exampleModalLabel"> تعیین محل</h5>
-                                                        
-                                                        </div>
-                                                        <div class="modal-body">
-                                                    <p>حداقل یک محله انتخاب کنید.</p>
+                                {% if catMain.title == "املاک" %}
+                                <button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#exampleModal">
+                                    محل
+                                </button>
+                                    
+                                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    
+                                        <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel"> تعیین محل</h5>
+                                            
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>حداقل یک محله انتخاب کنید.</p>
+                                                <br>
+                                                <div class="aa">
+                                                    <form action="" method="get" id="chooseLocation">
+                                                        {% for c in cits %}
+                                                            {% for loc in c.location_set.all %}
+                                                                <a href="#" style="color:black;text-decoration:none">{{loc.name}}</a>
+                                                                <input  type="checkbox" name="ids" id="" value="{{loc.id}}">
+                                                                <br>
+                                                            {% endfor %}
+                                                        {% endfor %}
                                                         <br>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                        <button type="button" class="btn btn-primary">Save changes</button>
-                                                        </div>
-                                                    </div>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                            <script type="text/javascript" >
-                                                $("#chooseLocation").submit(function(e){
-                                                    e.preventDefault();
-                                                    const form=new FormData(this)
-
-                                                    let locationIds=[]
-
-                                                    for(let i of form){
+                                                        <br>
+                                                        <br>
+                                                        <button type="submit" class="btn btn-primary">Save changes</button>
+                                                    </form>
+                                                    <br>
+                                                    <br>
                                                 
-                                                        locationIds.push(i[1])
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <br>
+                                    <div class="form-row">
+
+                                        <div class="form-group col-md-6">
+                                        <label>Min</label>
+                                        <!-- <input class="form-control" placeholder="$0" type="number"> -->
+                                            <select class="mr-2 form-control" id="choose_min_price" name="least_price">
+                                                <!-- <option selected="selected" value="0"></option> -->
+
+                                                {% if least_price == 5 %}
+                                                    <option value="5" selected="selected">5 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="5" >5 میلیون</option>
+
+                                                {% endif %}
+                                                {% if least_price == 10 %}
+                                                    <option value="10" selected="selected">10 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="10" >10 میلیون</option>
+
+                                                {% endif %}
+                                                {% if least_price == 20 %}
+                                                    <option value="20" selected="selected">20 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="20" >20 میلیون</option>
+
+                                                {% endif %}
+                                                {% if least_price == 50 %}
+                                                    <option value="50" selected="selected">50 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="50" >50 میلیون</option>
+
+                                                {% endif %}
+                                                {% if least_price == 100 %}
+                                                    <option value="100" selected="selected">100 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="100" >100 میلیون</option>
+
+                                                {% endif %}
+                                                {% if least_price == 200 %}
+                                                    <option value="200" selected="selected">200 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="200" >200 میلیون</option>
+
+                                                {% endif %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group text-right col-md-6">
+                                        <label>Max</label>
+                                            <select class="mr-2 form-control" id="choose_max_price" name="max_price">
+                                                <!-- <option selected="selected" value="400000000"></option> -->
+                                                {% if max_price == 5 %}
+                                                    <option value="5" selected="selected">5 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="5" >5 میلیون</option>
+
+                                                {% endif %}
+                                                {% if max_price == 10 %}
+                                                    <option value="10" selected="selected">10 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="10" >10 میلیون</option>
+
+                                                {% endif %}
+                                                {% if max_price == 20 %}
+                                                    <option value="20" selected="selected">20 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="20" >20 میلیون</option>
+
+                                                {% endif %}
+                                                {% if max_price == 50 %}
+                                                    <option value="50" selected="selected">50 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="50">50 میلیون</option>
+
+                                                {% endif %}
+                                                {% if max_price == 100 %}
+                                                    <option value="100" selected="selected">100 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="100" >100 میلیون</option>
+
+                                                {% endif %}
+                                                {% if max_price == 200 %}
+                                                    <option value="200" selected="selected">200 میلیون</option>
+
+                                                {% else %}
+                                                    <option value="200" >200 میلیون</option>
+
+                                                {% endif %}
+                                                
+                                            </select>
+                                        </div>
+                                    </div> 
+
+                                    <br>
+                                    <br>
+                                    <br>
+                                    
+                                        <a href="#" style="color:black;text-decoration:none">فقط عکس دار</a>
+                                            <input  type="checkbox"  id="justImg" {% if justImg %} checked="checked"{% endif %}>
+                                        <br>
+                                        <a href="#" style="color:black;text-decoration:none">فقط فوری ها</a>
+                                            <input  type="checkbox"  id="justIm" {% if instatnceComs == "فوری" %} checked="checked" {% endif %} >
+
+                                        <br>
+                                        
+                                    
+                                
+                                        <script type="text/javascript" >
+
+                                            $("#justImg").change(function(){
+
+                                                    let r7=$("#chooseLocation")
+                                                    let min_price_value=$("#choose_min_price").val()
+                                                    let max_price_value=$("#choose_max_price").val()
+                                                    let ch= r7.children("input").filter("input[type=checkbox]:checked")
+                                                    let ids=[]
+                                                    ch.each(function(index,el){
+                                                        ids.push($(el).attr("value"))
+                                                    })
+                                                
+                                                var instanceStatus=$("input[type=checkbox][id=justIm]")
+
+                                              
+                                                
+                                                if ( $(this).is(":checked")){
+
+                                                    if(instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری`
+
+                                                    }else{
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی`
+
                                                     }
                                                     
-                                                    let locsIdsToInt=locationIds.map(item=>Number(item))
-                                                    window.location.href=`?ids=${locsIdsToInt.join(',')}`
                                                     
+
+
+                                                }else{
+                                                    
+                                                    if(instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+
+                                                    }else{
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی`
+
+                                                    }
+                                                    
+                                                }
+                                                
+
+                                                
+
+                                            })
+
+
+
+                                            $("#justIm").change(function(){
+
+
+                                                let r7=$("#chooseLocation")
+                                                let min_price_value=$("#choose_min_price").val()
+                                                let max_price_value=$("#choose_max_price").val()
+                                                let ch= r7.children("input").filter("input[type=checkbox]:checked")
+                                                let ids=[]
+                                                ch.each(function(index,el){
+                                                    ids.push($(el).attr("value"))
                                                 })
-                                            </script>
+
+                                            var imgStatus=$("input[type=checkbox][id=justImg]")
+
+                                          
+                                            
+                                            if ( $(this).is(":checked")){
+
+                                                
+
+                                                if(imgStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری`
+
+                                                    
+                                                }else{
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+
+                                                }
+                                                
+                                                
+                                                
+
+
+
+
+                                            }else{
+                                                
+                                                if(imgStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی`
+
+                                                    
+                                                }else{
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی`
+
+                                                }
+
+                                            }
+                                            
+
+                                            
+
+                                        })
+
+
+                                            
+
+
+                                            $("#chooseLocation").submit(function(e){
+
+                                                e.preventDefault();
+                                                const form=new FormData(this)
+                                                let min_price_value=$("#choose_min_price").val()
+                                                let max_price_value=$("#choose_max_price").val()
+
+                                                let locationIds=[]
+
+                                                for(let i of form){
+                                            
+                                                    locationIds.push(i[1])
+                                                }
+                                                let locsIdsToInt=locationIds.map(item=>Number(item))
+
+                                                var imgStatus=$("input[type=checkbox][id=justImg]")
+                                                var instanceStatus=$("input[type=checkbox][id=justIm]")
+
+                                                if(imgStatus.is(":checked") && instanceStatus.is(":checked")){
+
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locsIdsToInt.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری`
+
+
+                                                }else if(!imgStatus.is(":checked") && instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locsIdsToInt.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+
+                                                }else if(imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locsIdsToInt.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی`
+                                                }else if(!imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locsIdsToInt.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی`
+                                                }
+
+
+
+
+
+                                                
+                                                
+                                                
+                                            });
+
+
+                                            
+
+
+                                            
+                                            $("#choose_max_price").change(function(){
+                                                
+                                                let r7=$("#chooseLocation")
+                                                let min_price_value=$("#choose_min_price").val()
+                                                let max_price_value=$("#choose_max_price").val()
+                                                let ch= r7.children("input").filter("input[type=checkbox]:checked")
+                                                let ids=[]
+                                                ch.each(function(index,el){
+                                                    ids.push($(el).attr("value"))
+                                                })
+
+                                                var imgStatus=$("input[type=checkbox][id=justImg]")
+                                                var instanceStatus=$("input[type=checkbox][id=justIm]")
+
+                                                if(imgStatus.is(":checked") && instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری`                                                        
+                                                }else if(!imgStatus.is(":checked") && instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+                                                }else if(imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی`
+
+                                                }else if(!imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+                                                    
+                                                }
+                                                
+                                                
+                                            });
+
+
+
+                                            $("#choose_min_price").change(function(){
+                                                
+                                                let r7=$("#chooseLocation")
+                                                let min_price_value=$("#choose_min_price").val()
+                                                let max_price_value=$("#choose_max_price").val()
+                                                let ch= r7.children("input").filter("input[type=checkbox]:checked")
+                                                let ids=[]
+                                                ch.each(function(index,el){
+                                                    ids.push($(el).attr("value"))
+                                                })
+                                                
+                                                var imgStatus=$("input[type=checkbox][id=justImg]")
+                                                var instanceStatus=$("input[type=checkbox][id=justIm]")
+
+                                                if(imgStatus.is(":checked") && instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری`                                                        
+                                                }else if(!imgStatus.is(":checked") && instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+                                                }else if(imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی`
+
+                                                }else if(!imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+                                                    
+                                                }
+                                            
+                                            });
+
+
+ 
+
+                                        </script>
                                 {% endif %}
                             </a>
                         </header>
@@ -99,39 +430,7 @@
                                 <h6 class="title">Price range </h6>
                             </a>
                         </header>
-                        <div class="filter-content collapse show" id="collapse_3" style="">
-                            <div class="card-body">
-                                
-                                <div class="form-row">
-                                <div class="form-group col-md-6">
-                                <label>Min</label>
-                                <!-- <input class="form-control" placeholder="$0" type="number"> -->
-                                    <select class="mr-2 form-control">
-                                        <option value="0">$0</option>
-                                        <option value="50">$50</option>
-                                        <option value="100">$100</option>
-                                        <option value="150">$150</option>
-                                        <option value="200">$200</option>
-                                        <option value="500">$500</option>
-                                        <option value="1000">$1000</option>
-                                    </select>
-                                </div>
-                                <div class="form-group text-right col-md-6">
-                                <label>Max</label>
-                                    <select class="mr-2 form-control">
-                                        <option value="50">$50</option>
-                                        <option value="100">$100</option>
-                                        <option value="150">$150</option>
-                                        <option value="200">$200</option>
-                                        <option value="500">$500</option>
-                                        <option value="1000">$1000</option>
-                                        <option value="2000">$2000+</option>
-                                    </select>
-                                </div>
-                                </div> <!-- form-row.// -->
-                                <button class="btn btn-block btn-primary">Apply</button>
-                            </div><!-- card-body.// -->
-                        </div>
+                        
                     </article> 
                     
                 </div> 

@@ -14,6 +14,12 @@ ALLOWED_HOSTS = []
 
 
 INSTALLED_APPS = [
+    'daphne',
+    'accounts',
+    'chat',
+    'core',
+    'jalali_date',
+    'mathfilters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -21,11 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'accounts',
-    'chat',
-    'core',
-    'jalali_date',
-    'mathfilters',
+    
 
 ]
 
@@ -62,6 +64,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
 
 
 DATABASES = {
@@ -133,5 +136,17 @@ JALALI_DATE_DEFAULTS = {
                 'admin/jquery.ui.datepicker.jalali/themes/base/jquery-ui.min.css',
             ]
         }
+    },
+}
+
+ASGI_APPLICATION = "config.asgi.application"
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6655)],
+        },
     },
 }

@@ -1,0 +1,481 @@
+{% extends 'main/base.html' %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+{% load mathfilters %}
+{% load base_tags %}
+
+
+<section class="section-content padding-y bg">
+	<div class="container">
+
+            <div class="card">
+                <div class="row no-gutters">
+
+                    <main class="col-md-6 border-left">
+                        <article class="content-body">
+                            <h4>{{c.title}}</h4>
+                            <span class="price">{{c.iranTimeCreated|findTime}}</span>   در  
+                            <span style="padding:2px">{{c.city.name}}</span>
+                            ,<span style="padding:2px">{{c.location.name}}</span>
+                            <br>
+                            <br>
+                            <br>
+                           
+                            <span>
+                                <button class="btn btn-danger">اطلاعات تماس</button>
+                            </span>
+
+                            <span style="margin-right:30px;">
+                                <button style="font-weight:bold;font-size:20px"  class="btn btn-outline-dark">چت</button>
+                            </span>
+                          
+                            <div style="float:left">
+                                <i class="fa fa-save" style="padding:10px;font-size:20px" ></i>
+                                <i class="fa fa-share-alt" style="padding:10px;font-size:20px" ></i>
+                            </div>
+                            <br>
+                            <br>
+                            
+                            
+                            
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                            
+                        <div class="row">
+                            {% if c.parent.parent.parent %}
+
+                                    {% if c.parent.parent.parent.title == "املاک" %}
+
+                                            {% if  c.parent.parent.title == "فروش مسکونی" %}
+
+                                                <div class="aparteman frosh">
+                                                    <div class="col-md-4 text-center">
+                                                        <p>متراژ</p>
+                                                        <b>{{c.meter}}</b>
+                                                    </div>
+                                                    <div class="col-md-4 text-center">
+                                                        <p>ساخت</p>
+                                                        <b>{{c.year_of_construction}}</b>
+                                                    </div>
+                                                    <div class="col-md-4 text-center">
+                                                        <p>اتاق</p>
+                                                        <b>{{c.rooms}}</b>
+                                                    </div>
+                                                    <br>
+                                                
+                                                
+                                                    <ul class="list-group" style="margin-top:30px">
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                            قیمت کل
+                                                        <p style="float:left ;margin-right:180px" class="">{{c.price}}</p>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                             قیمت هر متر
+                                                        <p style="float:left ;margin-right:180px" >{{c.price_each_meter}}</p>
+                                                        </li>
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            آگهی‌دهنده
+                                                        <p style="float:left ;margin-right:180px" >{{c.publisher}}</p>
+                                                        </li>
+
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            طبقه
+                                                        <p style="float:left ;margin-right:180px" >{{c.floor}}</p>
+                                                        </li>
+                                                    </ul>
+                                                    <br><br>
+                                                    <hr>
+                                                    <h4 style="margin-top:20px">ویژگی‌ها و امکانات</h4>
+                                                    <br>
+                                                    <br>
+                                                    <div style="margin-top:80px">
+                                                        {% for f in c.features.all %}
+                                                            <span    style="padding: 15px;font-weight:bold;font-size:20px;">{{f.name}}</span>
+                                                        {% endfor %}
+
+                                                    </div>
+                                                    <br>
+                                                    <br>
+                                                    <br>
+                                                    <hr>
+                                                    <div style="margin-top:40px">
+                                                        <p>
+                                                            {{c.detail}}
+                                                        </p>
+                                                    </div>
+
+                                                    <div style="margin-top:40px;float:right">
+                                                        <hr>
+                                                        <br>
+                                                        <br>
+                                                        <br>
+                                                        {% for tag in c.tags.all %}
+                                                            <span style="font-weight:bold;font-size:20px;">
+                                                                <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                            </span>
+                                                        {% endfor %}
+                                                    </div>
+                                                    
+                                                </div>
+                                                
+                                            {% elif  c.parent.parent.title == "اجاره مسکونی" %}
+
+                                                {% if c.parent.title == "آپارتمان اجاره" %}
+                                                        <div class="col-md-4 text-center">
+                                                            <p>متراژ</p>
+                                                            <b>{{c.meter}}</b>
+                                                        </div>
+                                                        <div class="col-md-4 text-center">
+                                                            <p>ساخت</p>
+                                                            <b>{{c.year_of_construction}}</b>
+                                                        </div>
+                                                        <div class="col-md-4 text-center">
+                                                            <p>اتاق</p>
+                                                            <b>{{c.rooms}}</b>
+                                                        </div>
+                                                        <br>
+                                                    
+                                                    
+                                                        <ul class="list-group" style="margin-top:30px">
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                ودیعه
+                                                            <p style="float:left ;margin-right:180px" class="">{{c.vadieh}}</p>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                اجارهٔ ماهانه
+                                                            <p style="float:left ;margin-right:180px" >{{c.rent}}</p>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                آگهی‌دهنده
+                                                            <p style="float:left ;margin-right:180px" >{{c.publisher}}</p>
+                                                            </li>
+
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                طبقه
+                                                            <p style="float:left ;margin-right:180px" >{{c.floor}}</p>
+                                                            </li>
+                                                        </ul>
+                                                        <br><br>
+                                                        <hr>
+                                                        <h4 style="margin-top:20px">ویژگی‌ها و امکانات</h4>
+                                                        <br>
+                                                        <br>
+                                                        <div style="margin-top:80px">
+                                                            {% for f in c.features.all %}
+                                                            <span style="padding: 15px;font-weight:bold;font-size:20px;">{{f.name}}</span>
+                                                        {% endfor %}
+
+                                                        </div>
+                                                        <br>
+                                                        <br>
+                                                        <br>
+                                                        <hr>
+                                                        <div style="margin-top:40px">
+                                                            <p>
+                                                                {{c.detail}}
+                                                            </p>
+                                                        </div>
+
+                                                        <div style="margin-top:40px;float:right">
+                                                            <hr>
+                                                            <br>
+                                                            <br>
+                                                            <br>
+                                                            {% for tag in c.tags.all %}
+                                                                <span style="font-weight:bold;font-size:20px;">
+                                                                    <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                </span>
+                                                            {% endfor %}
+                                                        </div>
+
+                                                {% elif c.parent.title == "خانه و ویلا اجاره" %}
+
+                                                                <div class="col-md-4 text-center">
+                                                                    <p>متراژ</p>
+                                                                    <b>{{c.meter}}</b>
+                                                                </div>
+                                                                <div class="col-md-4 text-center">
+                                                                    <p>ساخت</p>
+                                                                    <b>{{c.year_of_construction}}</b>
+                                                                </div>
+                                                                <div class="col-md-4 text-center">
+                                                                    <p>اتاق</p>
+                                                                    <b>{{c.rooms}}</b>
+                                                                </div>
+                                                                <br>
+                                                            
+                                                            
+                                                                <ul class="list-group" style="margin-top:30px">
+                                                                    <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                        ودیعه
+                                                                    <p style="float:left ;margin-right:180px" class="">{{c.vadieh}}</p>
+                                                                    </li>
+                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                        اجارهٔ ماهانه
+                                                                    <p style="float:left ;margin-right:180px" >{{c.rent}}</p>
+                                                                    </li>
+                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                        آگهی‌دهنده
+                                                                    <p style="float:left ;margin-right:180px" >{{c.publisher}}</p>
+                                                                    </li>
+
+                                                                    
+                                                                </ul>
+                                                                <br><br>
+                                                                <hr>
+                                                                <h4 style="margin-top:20px">ویژگی‌ها و امکانات</h4>
+                                                                <br>
+                                                                <br>
+                                                                <div style="margin-top:80px">
+                                                                    {% for f in c.features.all %}
+                                                                    <span style="padding: 15px;font-weight:bold;font-size:20px;">{{f.name}}</span>
+                                                                {% endfor %}
+
+                                                                </div>
+                                                                <br>
+                                                                <br>
+                                                                <br>
+                                                                <hr>
+                                                                <div style="margin-top:40px">
+                                                                    <p>
+                                                                        {{c.detail}}
+                                                                    </p>
+                                                                </div>
+
+                                                                <div style="margin-top:40px;float:right">
+                                                                    <hr>
+                                                                    <br>
+                                                                    <br>
+                                                                    <br>
+                                                                    {% for tag in c.tags.all %}
+                                                                        <span style="font-weight:bold;font-size:20px;">
+                                                                            <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                        </span>
+                                                                    {% endfor %}
+                                                                </div>
+                                                {% endif %}
+
+                                            {% endif %}
+
+                                            <!-- وسایل نقلیه -->
+
+                                    {% elif c.parent.parent.parent.title == "وسایل نقلیه" %}
+
+                                            {% if c.parent.parent %}
+
+                                                <!-- خودرو -->
+
+                                                {% if c.parent.parent.title == "خودرو" %}
+
+                                                    {% if c.parent.title == "سواری و وانت" %}
+                                                            <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
+                                                            <br>
+                                                            <span class="price">{{c.price|intcomma}}</span> تومان
+                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span>
+
+                                                    {% elif c.parent.title == "کلاسیک" %}
+                                                            <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
+                                                            <br>
+                                                            <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                    {% elif c.parent.title == "اجاره" %}
+                                                            <span class="price">{{c.day_rent_paid|intcomma}}</span> تومان
+                                                            <br>
+                                                            <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span>   
+                                                    {% elif c.parent.title == "سنگین" %}
+                                                            <span class="price">{{c.price|intcomma}}</span> تومان
+                                                            <br>
+                                                            <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+
+                                                    {% endif %}
+
+                                                {% endif %}
+                                            
+                                            {% endif %}
+                                    
+                                    {% elif c.parent.parent.parent.title == "کالای دیجیتال" %}
+                                            
+                                            {% if c.parent.parent %}
+                                                    {% if c.parent.parent.title == "موبایل و تبلت" %}
+                                                            {% if c.parent.title == "گوشی موبایل" %}
+                                                                <span class="price">{{c.phone_status}}</span> 
+                                                                <br>
+                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                <br>
+                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                            {% elif c.parent.title == "تبلت" %}
+
+                                                                <span class="price">{{c.phone_status}}</span> 
+                                                                <br>
+                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                <br>
+                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                            {% elif c.parent.title == "لوازم جانبی موبایل و تبلت" %}
+
+                                                        
+                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                <br>
+                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+
+                                                            {% elif c.parent.title == "سیم کارت" %}
+
+                                                            
+                                                            {% endif %}
+                                                    {% elif c.parent.parent.title == "رایانه" %}
+                                                            {% if c.parent.title == "رایانه همراه" %}
+                                                                <span class="price">{{c.phone_status}}</span> 
+                                                                <br>
+                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                <br>
+                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                            {% elif c.parent.title == "رایانه رومیزی" %}
+
+                                                                <span class="price">{{c.phone_status}}</span> 
+                                                                <br>
+                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                <br>
+                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                            {% elif c.parent.title == "قطعات و لوازم جانبی" %}
+                                                                <span class="price">{{c.phone_status}}</span> 
+                                                                <br>
+                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                <br>
+                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                            {% elif c.parent.title == "مودم و شبکه" %}
+                                                                <span class="price">{{c.phone_status}}</span> 
+                                                                <br>
+                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                <br>
+                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                            
+                                                            {% endif %}
+
+                                                    {% endif %}
+                                            {% endif %}
+
+                                    {% endif %}
+
+
+                            {% elif not c.parent.parent.parent %}
+                                    {% if c.parent.parent %}
+                                                    {% if c.parent.parent.title == "وسایل نقلیه" %}
+                                                                {% if c.parent.title == "موتور سیکلت" %}
+
+                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                        <br>
+                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                
+                                                                {% elif c.parent.title == "قطعات یدکی" %}
+
+                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                        <br>
+                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
+
+                                                                {% elif c.parent.title == "قایق و سایر" %}
+                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                        <br>
+                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                {% endif %}
+                                                        
+
+                                                    {% endif %}
+                                    {% endif %}
+                                                        
+                            {% endif %}
+                        </div>                    
+
+                            
+                        </article> <!-- product-info-aside .// -->
+                    </main> 
+
+
+
+                    <aside class="col-md-6">
+                        <article class="gallery-wrap"> 
+                            <div class="img-big-wrap">
+                                <a href="#"><img src="{% static 'images/banners/1.jpg' %}"></a>
+                            </div> <!-- img-big-wrap.// -->
+                            
+                        </article> <!-- gallery-wrap .end// -->
+                    </aside>
+                    
+
+
+
+
+                </div> 
+            </div> 
+
+	        <br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <div class="row">
+                <div class="col-md-9">
+
+                    <header class="section-heading">
+                        <h3>Customer Reviews </h3>  
+                        
+                    </header>
+
+                    <article class="box mb-3">
+                        <div class="icontext w-100">
+                            <img src="./images/avatars/avatar1.jpg" class="img-xs icon rounded-circle">
+                            <div class="text">
+                                <span class="date text-muted float-md-right">24.04.2020 </span>  
+                                <h6 class="mb-1">Mike John </h6>
+                                
+                            </div>
+                        </div> <!-- icontext.// -->
+                        <div class="mt-3">
+                            <p>
+                                Dummy comment Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                                tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                                quis nostrud exercitation ullamco laboris nisi ut aliquip
+                            </p>	
+                        </div>
+                    </article>
+
+                
+
+                </div> <!-- col.// -->
+            </div> 
+
+
+	</div> 
+</section>
+
+
+
+
+
+
+
+
+{% endblock content %}

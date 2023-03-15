@@ -139,7 +139,7 @@
                 <div class="row">
                     {% for c in coms %}
 
-                        <div class="col-md-4">
+                        <div class="col-md-4 getComs">
                             <figure class="card card-product-grid" >
                                 <div class="img-wrap"> 
                                     {% if c.commericalimage_set.all %}
@@ -332,6 +332,8 @@
                         <li class="page-item"><a class="page-link" href="#">Next</a></li>
                     </ul>
                 </nav>
+
+                <button class="loadMore">نتیج بیشتر</button>
         
             </main> 
         
@@ -354,7 +356,222 @@
 
 
 
+<script type="text/javascript" >
+    $(document).ready(function(){
+        $(".loadMore").click(function(){
 
+            var current_result=$("getComs").length;
+            $.ajax({
+                url:"{% url 'loadMore' %}",
+                type:"post",
+                data:{
+                    "offset":current_result,
+                    'csrfmiddlewaretoken':"{{csrf_token}}",
+
+                },
+                dataType:"json",
+                beforeSend:function(){
+                    $('.loadMore').addClass("disabled").text("در حال پردازش")
+                },
+                success:function(e){
+                    //console.log(e)   
+                    $('.loadMore').removeClass("disabled").text("نتایج بیشتر")
+                    
+                    let parsed=JSON.parse(e.data)
+                    console.log(parsed)
+                    
+                    $.each(parsed,function(index,el){
+                        let newDiv=`
+                        <div class="col-md-4 getComs">
+                            <figure class="card card-product-grid" >
+                                <div class="img-wrap"> 
+                                    {% if c.commericalimage_set.all %}
+                                            <img src="{{c.commericalimage_set.first.image.url}}">
+                                    {% endif %}
+                                    
+                                </div> <!-- img-wrap.// -->
+                                <figcaption class="info-wrap" >
+                                    <div class="fix-height" style="height:100px">
+                                        <a href="./product-detail.html" class="title">
+                                            {{c.title|slice:"20"}}
+                                        </a>
+                                        <div class="price-wrap mt-2">
+
+                                            {% if c.parent.parent.parent %}
+
+                                                        {% if c.parent.parent.parent.title == "املاک" %}
+
+                                                                {% if  c.parent.parent.title == "فروش مسکونی" %}
+                                                                    <span class="price">{{c.price|intcomma}}</span>    تومان
+                                                                    <br>
+                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span>    
+
+                                                                {% elif  c.parent.parent.title == "اجاره مسکونی" %}
+
+                                                                    ودیعه <span class="price">{{c.vadieh|intcomma}}</span>    تومان
+                                                                        <br>
+                                                                        اجاره <span class="price">{{c.rent|intcomma}}</span>    تومان
+                                                                        <br>
+                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                        <br>
+
+                                                                {% endif %}
+
+                                                                <!-- وسایل نقلیه -->
+
+                                                        {% elif c.parent.parent.parent.title == "وسایل نقلیه" %}
+
+                                                                {% if c.parent.parent %}
+
+                                                                    <!-- خودرو -->
+
+                                                                    {% if c.parent.parent.title == "خودرو" %}
+
+                                                                        {% if c.parent.title == "سواری و وانت" %}
+                                                                                <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
+                                                                                <br>
+                                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
+
+                                                                        {% elif c.parent.title == "کلاسیک" %}
+                                                                                <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
+                                                                                <br>
+                                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                        {% elif c.parent.title == "اجاره" %}
+                                                                                <span class="price">{{c.day_rent_paid|intcomma}}</span> تومان
+                                                                                <br>
+                                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>   
+                                                                        {% elif c.parent.title == "سنگین" %}
+                                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                <br>
+                                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+
+                                                                        {% endif %}
+
+                                                                    {% endif %}
+                                                                
+                                                                {% endif %}
+                                                        
+                                                        {% elif c.parent.parent.parent.title == "کالای دیجیتال" %}
+                                                                
+                                                                {% if c.parent.parent %}
+                                                                        {% if c.parent.parent.title == "موبایل و تبلت" %}
+                                                                                {% if c.parent.title == "گوشی موبایل" %}
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                {% elif c.parent.title == "تبلت" %}
+
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                {% elif c.parent.title == "لوازم جانبی موبایل و تبلت" %}
+
+                                                                            
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+
+                                                                                {% elif c.parent.title == "سیم کارت" %}
+
+                                                                                
+                                                                                {% endif %}
+                                                                        {% elif c.parent.parent.title == "رایانه" %}
+                                                                                {% if c.parent.title == "رایانه همراه" %}
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                {% elif c.parent.title == "رایانه رومیزی" %}
+
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                {% elif c.parent.title == "قطعات و لوازم جانبی" %}
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                {% elif c.parent.title == "مودم و شبکه" %}
+                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                                    <br>
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                
+                                                                                {% endif %}
+
+                                                                        {% endif %}
+                                                                {% endif %}
+
+                                                        {% endif %}
+
+
+                                            {% elif not c.parent.parent.parent %}
+                                                    {% if c.parent.parent %}
+                                                                    {% if c.parent.parent.title == "وسایل نقلیه" %}
+                                                                                {% if c.parent.title == "موتور سیکلت" %}
+
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                
+                                                                                {% elif c.parent.title == "قطعات یدکی" %}
+
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
+
+                                                                                {% elif c.parent.title == "قایق و سایر" %}
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                {% endif %}
+                                                                        
+
+                                                                    {% endif %}
+                                                    {% endif %}
+                                                                            
+                                            {% endif %}
+                                            
+                                        </div> 
+                                    </div>
+                                    <br>
+                                    <br>
+                                    <br>
+                                    <a href="#" class="btn btn-block btn-success">Added to cart </a>
+                                </figcaption>
+                            </figure>
+                        </div>
+                        `
+                    })
+                   
+                    
+                }
+            })
+
+        })
+
+    })
+</script>
 
 
 

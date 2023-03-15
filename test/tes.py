@@ -136,3 +136,17 @@ import persian
 print(persian.convert_ar_characters("علي") )
 a="شیراز"
 
+import os
+
+a=[{"id":1,"name":"d"},{"id":1,"name":"fff"},{"id":4,"name":"d"}]
+a.sort(key=lambda x:x["id"])
+f=[]
+for i in a:
+    if i["id"] not in f:
+        f.append(i["id"])
+print(f)
+
+a="True"
+print(bool(a))
+b="False"
+print(bool(b))

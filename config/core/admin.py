@@ -8,7 +8,7 @@ from .models import (
 
 class CommericalAdmin(admin.ModelAdmin):
 
-    list_display=["title","parent","city","iranTimeCreated"]
+    list_display=["title","parent","city","iranTimeCreated","price"]
 
 admin.site.register(Commerical,CommericalAdmin)
 

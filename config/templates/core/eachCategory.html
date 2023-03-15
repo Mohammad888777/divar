@@ -133,7 +133,7 @@
                                                         <input  type="checkbox"  id="justImg" >
                                                     <br>
                                                     <a href="#" style="color:black;text-decoration:none">فقط فوری ها</a>
-                                                        <input  type="checkbox"  id="justIm" checked="checked" >
+                                                        <input  type="checkbox"  id="justIm"  >
 
                                                     <br>
                                                     
@@ -141,45 +141,112 @@
                                             
                                             <script type="text/javascript" >
 
-                                                $("#justImg").click(function(){
+                                                $("#justImg").change(function(){
+
+                                                        let r7=$("#chooseLocation")
+                                                        let min_price_value=$("#choose_min_price").val()
+                                                        let max_price_value=$("#choose_max_price").val()
+                                                        let ch= r7.children("input").filter("input[type=checkbox]:checked")
+                                                        let ids=[]
+                                                        ch.each(function(index,el){
+                                                            ids.push($(el).attr("value"))
+                                                        })
+                                                    
+                                                    var instanceStatus=$("input[type=checkbox][id=justIm]")
+
                                                   
-                                                    //$(this).attr("checked","checked")
-                                                    //if(ff){
+                                                    
+                                                    if ( $(this).is(":checked")){
 
-                                                       // console.log("click first")
+                                                        if(instanceStatus.is(":checked")){
+                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری`
 
+                                                        }else{
+                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی`
 
-                                                     //   let r7=$("#chooseLocation")
-                                                     //   let min_price_value=$("#choose_min_price").val()
-                                                     //   let max_price_value=$("#choose_max_price").val()
-                                                     //   let ch= r7.children("input").filter("input[type=checkbox]:checked")
-                                                     //   let ids=[]
-                                                    //    ch.each(function(index,el){
-                                                     //       ids.push($(el).attr("value"))
-                                                     //   })
+                                                        }
                                                         
                                                         
-                                                 //       window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}`
 
+
+                                                    }else{
+                                                        console.log("GHHHERRTER")
+                                                        if(instanceStatus.is(":checked")){
+                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+
+                                                        }else{
+                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی`
+
+                                                        }
                                                         
-                                                  //  } 
-                                                    console.log("FFUUUn")
-
-                                                    if($("input[type=checkbox][id=justImg]:checked")){
-                                                        console.log("yes")
-                                                    }
-                                                    else{
-                                                        console.log("moasdkljhasd")
                                                     }
                                                     
 
                                                     
 
                                                 })
+
+
+
+                                                $("#justIm").change(function(){
+
+
+                                                    let r7=$("#chooseLocation")
+                                                    let min_price_value=$("#choose_min_price").val()
+                                                    let max_price_value=$("#choose_max_price").val()
+                                                    let ch= r7.children("input").filter("input[type=checkbox]:checked")
+                                                    let ids=[]
+                                                    ch.each(function(index,el){
+                                                        ids.push($(el).attr("value"))
+                                                    })
+
+                                                var imgStatus=$("input[type=checkbox][id=justImg]")
+
+                                              
+                                                
+                                                if ( $(this).is(":checked")){
+
+                                                    
+
+                                                    if(imgStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری`
+
+                                                        
+                                                    }else{
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+
+                                                    }
+                                                    
+                                                    
+                                                    
+
+
+
+
+                                                }else{
+                                                    
+                                                    if(imgStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی`
+
+                                                        
+                                                    }else{
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی`
+
+                                                    }
+
+                                                }
+                                                
+
+                                                
+
+                                            })
+
+
                                                 
 
 
                                                 $("#chooseLocation").submit(function(e){
+
                                                     e.preventDefault();
                                                     const form=new FormData(this)
                                                     let min_price_value=$("#choose_min_price").val()
@@ -191,9 +258,31 @@
                                                 
                                                         locationIds.push(i[1])
                                                     }
-                                                    
                                                     let locsIdsToInt=locationIds.map(item=>Number(item))
-                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locsIdsToInt.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}`
+
+                                                    var imgStatus=$("input[type=checkbox][id=justImg]")
+                                                    var instanceStatus=$("input[type=checkbox][id=justIm]")
+
+                                                    if(imgStatus.is(":checked") && instanceStatus.is(":checked")){
+
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locsIdsToInt.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری`
+
+
+                                                    }else if(!imgStatus.is(":checked") && instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locsIdsToInt.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+
+                                                    }else if(imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locsIdsToInt.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی`
+                                                    }else if(!imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locsIdsToInt.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی`
+                                                    }
+
+
+
+
+
+                                                    
+                                                    
                                                     
                                                 });
 
@@ -212,9 +301,23 @@
                                                     ch.each(function(index,el){
                                                         ids.push($(el).attr("value"))
                                                     })
+
+                                                    var imgStatus=$("input[type=checkbox][id=justImg]")
+                                                    var instanceStatus=$("input[type=checkbox][id=justIm]")
+
+                                                    if(imgStatus.is(":checked") && instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری`                                                        
+                                                    }else if(!imgStatus.is(":checked") && instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+                                                    }else if(imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی`
+
+                                                    }else if(!imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+                                                        
+                                                    }
                                                     
                                                     
-                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}`
                                                 });
 
 
@@ -230,7 +333,21 @@
                                                         ids.push($(el).attr("value"))
                                                     })
                                                     
-                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}`
+                                                    var imgStatus=$("input[type=checkbox][id=justImg]")
+                                                    var instanceStatus=$("input[type=checkbox][id=justIm]")
+
+                                                    if(imgStatus.is(":checked") && instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری`                                                        
+                                                    }else if(!imgStatus.is(":checked") && instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+                                                    }else if(imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی`
+
+                                                    }else if(!imgStatus.is(":checked") && !instanceStatus.is(":checked")){
+                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری`
+                                                        
+                                                    }
+                                                
                                                 });
 
 
@@ -262,186 +379,188 @@
         
                 <div class="row">
                     {% for c in coms_to_show %}
+                        <a href="{% url 'CommericalDetail' c.id %}">
+                            <div class="col-md-4">
+                                <figure class="card card-product-grid" >
+                                    <div class="img-wrap"> 
+                                        {% if c.commericalimage_set.all %}
+                                                <img src="{{c.commericalimage_set.first.image.url}}">
+                                        {% endif %}
+                                        
+                                    </div> <!-- img-wrap.// -->
+                                    <figcaption class="info-wrap" >
+                                        <div class="fix-height" style="height:100px">
+                                            <a href="./product-detail.html" class="title">
+                                                {{c.title|slice:"20"}}
+                                            </a>
+                                            <div class="price-wrap mt-2">
 
-                        <div class="col-md-4">
-                            <figure class="card card-product-grid" >
-                                <div class="img-wrap"> 
-                                    {% if c.commericalimage_set.all %}
-                                            <img src="{{c.commericalimage_set.first.image.url}}">
-                                    {% endif %}
-                                    
-                                </div> <!-- img-wrap.// -->
-                                <figcaption class="info-wrap" >
-                                    <div class="fix-height" style="height:100px">
-                                        <a href="./product-detail.html" class="title">
-                                            {{c.title|slice:"20"}}
-                                        </a>
-                                        <div class="price-wrap mt-2">
+                                                {% if c.parent.parent.parent %}
 
-                                            {% if c.parent.parent.parent %}
+                                                            {% if c.parent.parent.parent.title == "املاک" %}
 
-                                                        {% if c.parent.parent.parent.title == "املاک" %}
-
-                                                                {% if  c.parent.parent.title == "فروش مسکونی" %}
-                                                                    <span class="price">{{c.price|intcomma}}</span>    تومان
-                                                                    <br>
-                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span>    
-
-                                                                {% elif  c.parent.parent.title == "اجاره مسکونی" %}
-
-                                                                    ودیعه <span class="price">{{c.vadieh|intcomma}}</span>    تومان
+                                                                    {% if  c.parent.parent.title == "فروش مسکونی" %}
+                                                                        <span class="price">{{c.price|intcomma}}</span>    تومان
                                                                         <br>
-                                                                        اجاره <span class="price">{{c.rent|intcomma}}</span>    تومان
-                                                                        <br>
-                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
-                                                                        <br>
+                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>    
 
-                                                                {% endif %}
+                                                                    {% elif  c.parent.parent.title == "اجاره مسکونی" %}
 
-                                                                <!-- وسایل نقلیه -->
-
-                                                        {% elif c.parent.parent.parent.title == "وسایل نقلیه" %}
-
-                                                                {% if c.parent.parent %}
-
-                                                                    <!-- خودرو -->
-
-                                                                    {% if c.parent.parent.title == "خودرو" %}
-
-                                                                        {% if c.parent.title == "سواری و وانت" %}
-                                                                                <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
-                                                                                <br>
-                                                                                <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
-
-                                                                        {% elif c.parent.title == "کلاسیک" %}
-                                                                                <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
-                                                                                <br>
-                                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
-                                                                        {% elif c.parent.title == "اجاره" %}
-                                                                                <span class="price">{{c.day_rent_paid|intcomma}}</span> تومان
-                                                                                <br>
-                                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>   
-                                                                        {% elif c.parent.title == "سنگین" %}
-                                                                                <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                <br>
-                                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-
-                                                                        {% endif %}
+                                                                        ودیعه <span class="price">{{c.vadieh|intcomma}}</span>    تومان
+                                                                            <br>
+                                                                            اجاره <span class="price">{{c.rent|intcomma}}</span>    تومان
+                                                                            <br>
+                                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                            <br>
 
                                                                     {% endif %}
-                                                                
-                                                                {% endif %}
-                                                        
-                                                        {% elif c.parent.parent.parent.title == "کالای دیجیتال" %}
-                                                                
-                                                                {% if c.parent.parent %}
-                                                                        {% if c.parent.parent.title == "موبایل و تبلت" %}
-                                                                                {% if c.parent.title == "گوشی موبایل" %}
-                                                                                    <span class="price">{{c.phone_status}}</span> 
-                                                                                    <br>
-                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                    <br>
-                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                                                {% elif c.parent.title == "تبلت" %}
 
-                                                                                    <span class="price">{{c.phone_status}}</span> 
-                                                                                    <br>
-                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                    <br>
-                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                                                {% elif c.parent.title == "لوازم جانبی موبایل و تبلت" %}
+                                                                    <!-- وسایل نقلیه -->
 
-                                                                            
-                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                    <br>
-                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                            {% elif c.parent.parent.parent.title == "وسایل نقلیه" %}
 
-                                                                                {% elif c.parent.title == "سیم کارت" %}
+                                                                    {% if c.parent.parent %}
 
-                                                                                
-                                                                                {% endif %}
-                                                                        {% elif c.parent.parent.title == "رایانه" %}
-                                                                                {% if c.parent.title == "رایانه همراه" %}
-                                                                                    <span class="price">{{c.phone_status}}</span> 
-                                                                                    <br>
-                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                    <br>
-                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                                                {% elif c.parent.title == "رایانه رومیزی" %}
+                                                                        <!-- خودرو -->
 
-                                                                                    <span class="price">{{c.phone_status}}</span> 
+                                                                        {% if c.parent.parent.title == "خودرو" %}
+
+                                                                            {% if c.parent.title == "سواری و وانت" %}
+                                                                                    <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
                                                                                     <br>
                                                                                     <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                    <br>
-                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                                                {% elif c.parent.title == "قطعات و لوازم جانبی" %}
-                                                                                    <span class="price">{{c.phone_status}}</span> 
-                                                                                    <br>
-                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                    <br>
-                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                                                {% elif c.parent.title == "مودم و شبکه" %}
-                                                                                    <span class="price">{{c.phone_status}}</span> 
-                                                                                    <br>
-                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span>
+
+                                                                            {% elif c.parent.title == "کلاسیک" %}
+                                                                                    <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
                                                                                     <br>
                                                                                     <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
                                                                                     <span class="price">{{c.iranTimeCreated|findTime}}</span>
-                                                                                
-                                                                                {% endif %}
+                                                                            {% elif c.parent.title == "اجاره" %}
+                                                                                    <span class="price">{{c.day_rent_paid|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span>   
+                                                                            {% elif c.parent.title == "سنگین" %}
+                                                                                    <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                    <br>
+                                                                                    <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+
+                                                                            {% endif %}
 
                                                                         {% endif %}
-                                                                {% endif %}
-
-                                                        {% endif %}
-
-
-                                            {% elif not c.parent.parent.parent %}
-                                                    {% if c.parent.parent %}
-                                                                    {% if c.parent.parent.title == "وسایل نقلیه" %}
-                                                                                {% if c.parent.title == "موتور سیکلت" %}
-
-                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                        <br>
-                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                                                
-                                                                                {% elif c.parent.title == "قطعات یدکی" %}
-
-                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                        <br>
-                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
-
-                                                                                {% elif c.parent.title == "قایق و سایر" %}
-                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                        <br>
-                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
-                                                                                {% endif %}
-                                                                        
-
+                                                                    
                                                                     {% endif %}
-                                                    {% endif %}
+                                                            
+                                                            {% elif c.parent.parent.parent.title == "کالای دیجیتال" %}
+                                                                    
+                                                                    {% if c.parent.parent %}
+                                                                            {% if c.parent.parent.title == "موبایل و تبلت" %}
+                                                                                    {% if c.parent.title == "گوشی موبایل" %}
+                                                                                        <span class="price">{{c.phone_status}}</span> 
+                                                                                        <br>
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                    {% elif c.parent.title == "تبلت" %}
+
+                                                                                        <span class="price">{{c.phone_status}}</span> 
+                                                                                        <br>
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                    {% elif c.parent.title == "لوازم جانبی موبایل و تبلت" %}
+
+                                                                                
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+
+                                                                                    {% elif c.parent.title == "سیم کارت" %}
+
+                                                                                    
+                                                                                    {% endif %}
+                                                                            {% elif c.parent.parent.title == "رایانه" %}
+                                                                                    {% if c.parent.title == "رایانه همراه" %}
+                                                                                        <span class="price">{{c.phone_status}}</span> 
+                                                                                        <br>
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                    {% elif c.parent.title == "رایانه رومیزی" %}
+
+                                                                                        <span class="price">{{c.phone_status}}</span> 
+                                                                                        <br>
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                    {% elif c.parent.title == "قطعات و لوازم جانبی" %}
+                                                                                        <span class="price">{{c.phone_status}}</span> 
+                                                                                        <br>
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                    {% elif c.parent.title == "مودم و شبکه" %}
+                                                                                        <span class="price">{{c.phone_status}}</span> 
+                                                                                        <br>
+                                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                        <br>
+                                                                                        <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                    
+                                                                                    {% endif %}
+
+                                                                            {% endif %}
+                                                                    {% endif %}
+
+                                                            {% endif %}
+
+
+                                                {% elif not c.parent.parent.parent %}
+                                                        {% if c.parent.parent %}
+                                                                        {% if c.parent.parent.title == "وسایل نقلیه" %}
+                                                                                    {% if c.parent.title == "موتور سیکلت" %}
+
+                                                                                            <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                            <br>
+                                                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                    
+                                                                                    {% elif c.parent.title == "قطعات یدکی" %}
+
+                                                                                            <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                            <br>
+                                                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span>
+
+                                                                                    {% elif c.parent.title == "قایق و سایر" %}
+                                                                                            <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                                            <br>
+                                                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                    {% endif %}
                                                                             
-                                            {% endif %}
-                                            
-                                        </div> 
-                                    </div>
-                                    <br>
-                                    <br>
-                                    <br>
-                                    <a href="#" class="btn btn-block btn-success">Added to cart </a>
-                                </figcaption>
-                            </figure>
-                        </div> 
+
+                                                                        {% endif %}
+                                                        {% endif %}
+                                                                                
+                                                {% endif %}
+                                                
+                                            </div> 
+                                        </div>
+                                        <br>
+                                        <br>
+                                        <br>
+                                        <a href="#" class="btn btn-block btn-success">Added to cart </a>
+                                    </figcaption>
+                                </figure>
+                            </div> 
+                        </a>
+
                     {% endfor %}
                   
                 </div> 

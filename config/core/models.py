@@ -104,7 +104,7 @@ class Commerical(models.Model):
     price=models.IntegerField(null=True,blank=True)
     price_each_meter=models.IntegerField(null=True,blank=True)
     vadieh=models.IntegerField(null=True,blank=True)
-    rent=models.CharField(max_length=100,null=True,blank=True,choices=RENT_STATUS)
+    rent=models.IntegerField(null=True,blank=True)
     
     publisher=models.CharField(max_length=200,null=True,blank=True,choices=PUBLISHER_CHOICES,default="شخصی")
     floor=models.IntegerField(null=True,blank=True)
@@ -135,7 +135,7 @@ class Commerical(models.Model):
     os_typpe=models.CharField(max_length=100,null=True,blank=True)
     game_pad_number=models.IntegerField(null=True,blank=True)
 
-    com_status=models.CharField(max_length=200,null=True,blank=True,choices=COMMERICAL_STATUS)
+    com_status=models.CharField(max_length=200,null=True,blank=True,choices=COMMERICAL_STATUS,default='عادی')
 
     created=models.DateTimeField(default=timezone.now)
     updated=models.DateTimeField(auto_now=True)
@@ -207,8 +207,8 @@ class Thread(models.Model):
     sender=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True,related_name="sender")
     receiver=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True,related_name="receiver")
 
-    def __str__(self) -> str:
-        return self.sender_user.username
+    # def __str__(self) -> str:
+    #     return self.sender.username
     
 
 
@@ -219,9 +219,12 @@ class Message(models.Model):
     sender_user=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True,related_name="sender_user")
     receiver_user=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True,related_name="receiver_user")
     text=models.TextField(null=True)
-
+    created=models.DateTimeField(default=timezone.now)
+    
     def __str__(self) -> str:
         return self.text[:5]
     
-
+    @property
+    def iranTimeCreated(self):
+        return datetime2jalali(self.created)
 
