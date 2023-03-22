@@ -182,7 +182,6 @@
 <script type="text/javascript" >
   function sendCityName(){
 
-    const url ="{% url 'assignCity' %}"
     let nameOfCity="{{city.id}}"
     console.log(nameOfCity,"")
 
@@ -208,7 +207,7 @@
     })
   }
 
-  sendCityName()
+  //sendCityName()
 </script>
 
 {% endblock content %}

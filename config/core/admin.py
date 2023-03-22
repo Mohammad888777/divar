@@ -8,7 +8,16 @@ from .models import (
 
 class CommericalAdmin(admin.ModelAdmin):
 
-    list_display=["title","parent","city","iranTimeCreated","price"]
+    list_display=[
+
+        "title","parent","city","iranTimeCreated",
+        "price",'com_status','location',
+        'publisher','ready_to_exchange','phone_status',
+        'publisherForCar',
+        'bg_red_for_cars','yellow_red_for_phones'
+    ]
+    search_fields=["title"]
+    
 
 admin.site.register(Commerical,CommericalAdmin)
 

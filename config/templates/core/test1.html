@@ -1,0 +1,46 @@
+{% extends 'main/base.html' %}
+
+
+{% block content %}
+{% load static %}
+{% load humanize %}
+{% load mathfilters %}
+{% load base_tags %}
+
+
+    <script type="text/javascript" >
+        $(document).ready(function(){
+            $(".al").click(function(){
+                const url="{% url 'first' %}"
+                console.log("{{csrf_token}}")
+
+                const f=new FormData()
+
+                //const a=$(`.comment-body-${postId}`).val()
+
+                f.append('csrfmiddlewaretoken', $('input[name=csrfmiddlewaretoken]').val())
+    
+                $.ajax({
+                    type:"post",
+                    url:url,
+                    data:{
+                        'csrfmiddlewaretoken':"{{csrf_token}}",
+
+                    },
+                    
+                    success:function(data){
+                        console.log(data.name)
+                    },
+
+                })
+            })
+        })
+    </script>
+
+    <h1>HEllO WORD</h1>
+    <br>
+    <h1>name is {{name}}</h1>
+
+    <button class="al">click</button>
+
+{% endblock content %}

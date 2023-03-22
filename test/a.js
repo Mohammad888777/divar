@@ -302,3 +302,8 @@ var secDiff = hourDiff / 1000; //in s
 // // console.log(humanReadable); //{hours: 0, minutes: 30}
 console.log(secDiff/3600)
 
+let rrr=["mohammad","a","b","c"]
+let title="a"
+if(rrr.includes(title)){
+  console.log("ye")
+}

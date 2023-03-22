@@ -12,20 +12,33 @@ from datetime import datetime
 from jalali_date import datetime2jalali
 from django.utils import timezone
 
-from .utilty import (findTimeDiffrence,title_not_to_be,
-                     three_level_parent,
-                     two_level_parent,
-                     two_and_three_parent,
-                     filteramlak_groupA,
-                     filteramlak_groupB
 
+from .utilty import    (findTimeDiffrence,title_not_to_be,
+three_level_parent,
+two_level_parent,
+two_and_three_parent,
+apartemanForosh,
+immadate_location_image,
+price_Title,
+moavezeh,GroupHasYearOfConstruction,
+GroupHasPrice,GroupHasMeter,GroupHasExchangePossibale,
+GroupHasCommericalSituation_like_new_or_old,Group_Employments,
+typeOneForSecondLevelFilter_Amlak_Frosh,amlakEjareh,vasayelNaghliehMotor_va_Car,
+vasayelNaghlieh_Both_and_supplies,digitals,kitchen,personal,digitalOrKitchenOrPersonalOrEntertaimentOrSupllies,
+services,foroshJustForSanadEdari,ejarehAll,cars,tablet_and_mobile,
+themSelf,male_or_female
                      )
+
 from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.core import serializers
 
+from .utils2 import (
+    groupHas_Parking_And_Anbari_And_Floor,groupHas_sanadEdari,
+    cloths_accessory
 
+)
 
 
 def lcoationIdsssss():
@@ -43,16 +56,64 @@ class CityView(View):
 
         all_citites=City.objects.all()
         
-        if self.request.session.get("city_name2",None):
-            del self.request.session["city_name2"]
+        # if self.request.session.get("city_name2",None):
+        #     del self.request.session["city_name2"]
+        ls=self.request.GET.getlist("items")
+        big=self.request.GET.getlist("bigCity")
+        self.request.session["bb"]=big
+        self.request.session["min"]=ls
+        print("BEFFOORREEE")
+        print("BEFFOORREEE")
+        print("BEFFOORREEE")
+        print(self.request.GET)
+        print("AFTTTERRRR")
+        print("AFTTTERRRR")
+        bigInJson=[int(i) for i in big]
+
+        ci=City.objects.filter(id__in=bigInJson)
+
         
-        
+    
+
+        filtred_coms=None
+        if big and ls:
+
+            filtred_coms=Commerical.objects.filter(
+            Q(city__in=bigInJson) | Q(smallCity__in=ls)
+            ).filter(
+                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+            ).distinct()
+            print("OONNNEEe")
+        else:
+            filtred_coms=Commerical.objects.filter(
+                Q(city__in=bigInJson) 
+                ).filter(
+                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                ).distinct()
+            print("TWOOWOOWOWOOWOW")
+         
+        all_cats=Commerical.objects.filter(
+            parent=None
+        )
+
+        print(filtred_coms,"FFFIILLFLFLFLLFLFL")
+
+        cits=City.objects.filter(
+            id__in=[int(i) for i in big]
+        )
+
 
         contex={
-            'cities':all_citites
-        }
 
-        return render(request,"main/index.html",contex)
+            'cities':ci,
+            'coms':filtred_coms,
+            'all_cats':all_cats,
+            'cits':cits
+            
+        }
+      
+        
+        return render(request,"core/after_search_city.html",contex)
 
     def post(self,request,*args,**kwargs):
 
@@ -90,15 +151,6 @@ class CityView(View):
             parent=None
         )
 
-        print(filtred_coms,"FFFIILLFLFLFLLFLFL")
-
-        
-
-        
-
-  
-        
-
         contex={
 
             'cities':ci,
@@ -110,6 +162,182 @@ class CityView(View):
         
         return render(request,"core/after_search_city.html",contex)
     
+
+
+def allComsFilter(request):
+
+    province=request.session.get("bb")
+    smallCities=request.session.get("min")
+
+    defaultLocalIds=[]
+
+    cities=City.objects.filter(
+        id__in=[int(i) for i in province]
+    )
+    for c in cities:
+        for loc in c.location_set.all():
+            defaultLocalIds.append(loc.id)
+    all_cats=Commerical.objects.filter(
+            parent=None
+        )
+
+    locationIds=request.GET.get("ids")
+    justImg=request.GET.get("justImg",False)
+    instatnceComs=request.GET.get("instatnceComs","عادی")
+
+
+    
+
+    least_price=request.GET.get("least_price",0)
+    max_price=request.GET.get("max_price",400000000)
+
+    locas_to_go=list(map(
+
+            lambda x:int(x),locationIds.split(",")
+            if len(locationIds)>=1 else defaultLocalIds
+        ))
+  
+
+    coms_to_show=None
+
+    if province and smallCities:
+            print("A")
+            if bool(justImg):
+
+
+                coms_to_show=Commerical.objects.annotate(
+                    img_length=Length("commericalimage")
+                ).filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                            
+
+                    ).filter(
+                        # Q(parent__parent__parent__title="املاک") &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q(price__range=(int(least_price),int(max_price))) |
+                        Q(vadieh__range=(int(least_price),int(max_price)))
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                        img_length__gte=1
+                    ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+            else:
+                print("ELELLELELLSSSSSEEe")
+                coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                        Q(smallCity__in=[int(i) for i in smallCities])         
+                    ).filter(
+                        # Q(parent__parent__parent__title="املاک") &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q(price__range=(least_price,max_price))|
+                        Q(vadieh__range=(int(least_price),int(max_price)))
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+
+
+    elif province and not smallCities:
+
+            print("B")
+
+            if bool(justImg):
+                coms_to_show=Commerical.objects.annotate(
+                    img_length=Length("commericalimage")
+                ).filter(
+                    Q(city__in=[int(i) for i in province]) &
+                    # Q(parent__parent__parent__title="املاک") &
+                    Q(location__in=locas_to_go)
+                ).filter(
+                    Q(price__range=(least_price,max_price))|
+                    Q(vadieh__range=(int(least_price),int(max_price)))
+                ).filter(
+                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                ).filter(
+                        img_length__gte=1
+                ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+            else:
+                coms_to_show=Commerical.objects.filter(
+                    Q(city__in=[int(i) for i in province]) &
+                    Q(parent__parent__parent__title="املاک") &
+                    Q(location__in=locas_to_go)
+                ).filter(
+                    Q(price__range=(least_price,max_price))|
+                    Q(vadieh__range=(int(least_price),int(max_price)))
+                ).filter(
+                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+
+
+    elif not province and smallCities:
+            print("C")
+
+            if bool(justImg):
+                coms_to_show=Commerical.objects.annotate(
+                    img_length=Length("commericalimage")
+                ).filter(
+                    Q(smallCity__in=[int(i) for i in smallCities])&
+                    # Q(parent__parent__parent__title="املاک") &
+                    Q(location__in=locas_to_go)
+                ).filter(
+                    Q(price__range=(least_price,max_price))|
+                    Q(vadieh__range=(int(least_price),int(max_price)))
+                ).filter(
+                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                ).filter(
+                        img_length__gte=1
+                ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+            else:
+                coms_to_show=Commerical.objects.filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        # Q(parent__parent__parent__title="املاک") &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q(price__range=(least_price,max_price))|
+                        Q(vadieh__range=(int(least_price),int(max_price)))
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+
+    cits=City.objects.filter(
+        id__in=[int(i) for i in province]
+    )
+    for i in cits:
+        for l in i.location_set.all():
+            if l.id in locas_to_go :
+                print("yese","********************************")
+            else:
+                print("NONONONOONONON")
+    
+
+ 
+    contex={
+       
+        'coms':coms_to_show,
+        'cits':cits,
+        'justImg':bool(justImg),
+        'instatnceComs':instatnceComs,
+        'least_price':int(least_price),
+        'max_price':int(max_price),
+        'all_cats':all_cats,
+        'locas_to_go':locas_to_go
+        
+    }
+    return render(request,"core/allComsFilter.html",contex)
 
 
 
@@ -128,15 +356,9 @@ def eachCategory(request,categoryId):
     coms_to_show=None
     
     if cat.title in three_level_parent:
-        print("MOOOOOOOOOOOOOOOOOWWW")
-        print("MOOOOOOOOOOOOOOOOOWWW")
-        print("MOOOOOOOOOOOOOOOOOWWW")
 
         if province and smallCities:
-            print("SEOCCCCCCCCCCCCC")
-            print("SEOCCCCCCCCCCCCC")
-            print("SEOCCCCCCCCCCCCC")
-            print("SEOCCCCCCCCCCCCC")
+
 
             coms_to_show=Commerical.objects.filter(
                 Q(city__in=[int(i) for i in province]) |
@@ -245,21 +467,20 @@ def eachCategory(request,categoryId):
 
 
 
-
-
-
-
-
     cits=City.objects.filter(
         id__in=[int(i) for i in province]
     )
 
 
     contex={
+
         'cat_childs':cat_childs,
         'coms_to_show':coms_to_show,
         'cat':cat,
-        'cits':cits
+        'cits':cits,
+        'immadate_location_image':immadate_location_image,
+        'price_Title':price_Title,
+        'moavezeh':moavezeh
     }
 
     return render(request,"core/eachCategory.html",contex)
@@ -277,15 +498,9 @@ def eachCategorySecondlevel(request,categoryId):
     province=request.session.get("bb")
     smallCities=request.session.get("min")
     coms_to_show=None
-    if cat.parent.title in three_level_parent:
-        print("FIRSTTT _TOOOCHHEDD")
-        
-        if province and smallCities:
-            print("noooooooooooooooooooooooooooooooo")
-            print("noooooooooooooooooooooooooooooooo")
-            print("noooooooooooooooooooooooooooooooo")
-            print("noooooooooooooooooooooooooooooooo")
 
+    if cat.parent.title in three_level_parent:
+        if province and smallCities:
             coms_to_show=Commerical.objects.filter(
                 Q(city__in=[int(i) for i in province]) | 
                 Q(smallCity__in=[int(i) for i in smallCities]) 
@@ -447,8 +662,6 @@ def eachCategorySecondlevel(request,categoryId):
 
     
 
-
-    print(coms_to_show,"COOMMMM")
     cits=City.objects.filter(
         id__in=[int(i) for i in province]
     )
@@ -457,7 +670,13 @@ def eachCategorySecondlevel(request,categoryId):
         'cat_childs':cat_childs,
         'catMain':cat,
         'cits':cits,
-        'coms_to_show':coms_to_show
+        'coms_to_show':coms_to_show,
+        'GroupHasPrice':GroupHasPrice,
+        'GroupHasMeter':GroupHasMeter,
+        'GroupHasYearOfConstruction':GroupHasYearOfConstruction,
+        'GroupHasExchangePossibale':GroupHasExchangePossibale,
+        'GroupHasCommericalSituation_like_new_or_old':GroupHasCommericalSituation_like_new_or_old,
+        'Group_Employments':Group_Employments
     }
 
 
@@ -521,12 +740,25 @@ def eachCategoryThirdLevel(request,categoryId):
                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
             ).distinct()
 
+    cits=City.objects.filter(
+        id__in=[int(i) for i in province]
+    )
     
 
     contex={
+        'cits':cits,
         'cat_childs':cat_childs,
         'catMain':cat,
-        'coms_to_show':coms_to_show
+        'coms_to_show':coms_to_show,
+        'GroupHasPrice':GroupHasPrice,
+        'GroupHasMeter':GroupHasMeter,
+        'GroupHasYearOfConstruction':GroupHasYearOfConstruction,
+        'GroupHasExchangePossibale':GroupHasExchangePossibale,
+        'GroupHasCommericalSituation_like_new_or_old':GroupHasCommericalSituation_like_new_or_old,
+        'Group_Employments':Group_Employments,
+        'groupHas_Parking_And_Anbari_And_Floor':groupHas_Parking_And_Anbari_And_Floor,
+        'groupHas_sanadEdari':groupHas_sanadEdari,
+        'cloths_accessory':cloths_accessory
     }
 
 
@@ -579,8 +811,11 @@ def testPost(request):
 def handleAmlakFilter(request):
 
 
+
     province=request.session.get("bb")
     smallCities=request.session.get("min")
+
+
     defaultLocalIds=[]
 
     cities=City.objects.filter(
@@ -594,19 +829,26 @@ def handleAmlakFilter(request):
     locationIds=request.GET.get("ids")
     justImg=request.GET.get("justImg",False)
     instatnceComs=request.GET.get("instatnceComs","عادی")
-    print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
-    print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
-    print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
-    print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
-    print(justImg,type(justImg),"TTYYP")
-    print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
-    print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
-    print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
+
+ 
 
     
 
     least_price=request.GET.get("least_price",0)
     max_price=request.GET.get("max_price",400000000)
+    title=request.GET.get("catTitle")
+    publisher=request.GET.get("publisher","همه")
+    exchange=request.GET.get("exchange",False)
+    publisherForCar=request.GET.get("publisherForCar","همه")
+    phoneStatus=request.GET.get("phoneStatus","همه")
+    choose_min_price_for_work=request.GET.get("choose_min_price_for_work",0)
+    choose_max_price_for_work=request.GET.get("choose_max_price_for_work",20)
+    farWork=request.GET.get("farWork",False)
+    soldier=request.GET.get("soldier",False)
+
+
+    
+    publisher=publisher if len(publisher)>0 else "همه"
 
     locas_to_go=list(map(
 
@@ -616,138 +858,1299 @@ def handleAmlakFilter(request):
 
     coms_to_show=None
 
-    if province and smallCities:
-            print("A")
-            if bool(justImg):
 
 
-                coms_to_show=Commerical.objects.annotate(
-                    img_length=Length("commericalimage")
-                ).filter(
-                    Q(city__in=[int(i) for i in province]) | 
-                        Q(smallCity__in=[int(i) for i in smallCities]) 
-                            
+    match title:
+        case "املاک":
+            if province and smallCities:
+                print("A")
+                if bool(justImg):
 
+
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                
+
+                        ).filter(
+                            Q(parent__parent__parent__title="املاک") &
+                            Q(location__in=locas_to_go)&
+                            Q(publisher=publisher)
+
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            img_length__gte=1
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    print("ELELLELELLSSSSSEEe")
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                        Q(smallCity__in=[int(i) for i in smallCities])         
                     ).filter(
                         Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)
-                    ).filter(
-                        Q(price__range=(least_price,max_price))
+                        Q(location__in=locas_to_go)&
+                        Q(publisher=publisher)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                        img_length__gte=1
-                    ).filter(
                         com_status=instatnceComs
                     ).distinct()
-            else:
-                coms_to_show=Commerical.objects.filter(
-                    Q(city__in=[int(i) for i in province]) | 
-                        Q(smallCity__in=[int(i) for i in smallCities]) 
-                            
 
+
+            elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
                     ).filter(
+                        Q(city__in=[int(i) for i in province]) &
                         Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)
-                    ).filter(
-                        Q(price__range=(least_price,max_price))
+                        Q(location__in=locas_to_go)&
+                        Q(publisher=publisher)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                        com_status=instatnceComs
-                    ).distinct()
-
-
-    elif province and not smallCities:
-
-            print("B")
-
-            if bool(justImg):
-                coms_to_show=Commerical.objects.annotate(
-                    img_length=Length("commericalimage")
-                ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    coms_to_show=Commerical.objects.filter(
                     Q(city__in=[int(i) for i in province]) &
-                    Q(parent__parent__parent__title="املاک") &
-                    Q(location__in=locas_to_go)
-                ).filter(
-                    Q(price__range=(least_price,max_price))
-                ).filter(
-                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                ).filter(
-                        img_length__gte=1
-                ).filter(
-                        com_status=instatnceComs
-                    ).distinct()
-            else:
-                coms_to_show=Commerical.objects.filter(
-                    Q(city__in=[int(i) for i in province]) &
-                    Q(parent__parent__parent__title="املاک") &
-                    Q(location__in=locas_to_go)
-                ).filter(
-                    Q(price__range=(least_price,max_price))
-                ).filter(
-                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                ).filter(
-                        com_status=instatnceComs
-                    ).distinct()
+                        Q(parent__parent__parent__title="املاک") &
+                        Q(location__in=locas_to_go)&
+                        Q(publisher=publisher)
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
 
 
-    elif not province and smallCities:
-            print("C")
+            elif not province and smallCities:
+                print("C")
 
-            if bool(justImg):
-                coms_to_show=Commerical.objects.annotate(
-                    img_length=Length("commericalimage")
-                ).filter(
-                    Q(smallCity__in=[int(i) for i in smallCities])&
-                    Q(parent__parent__parent__title="املاک") &
-                    Q(location__in=locas_to_go)
-                ).filter(
-                    Q(price__range=(least_price,max_price))
-                ).filter(
-                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                ).filter(
-                        img_length__gte=1
-                ).filter(
-                        com_status=instatnceComs
-                    ).distinct()
-            else:
-                coms_to_show=Commerical.objects.filter(
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
                         Q(smallCity__in=[int(i) for i in smallCities])&
                         Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)
-                    ).filter(
-                        Q(price__range=(least_price,max_price))
+                        Q(location__in=locas_to_go)&
+                        Q(publisher=publisher)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                        com_status=instatnceComs
-                    ).distinct()
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    coms_to_show=Commerical.objects.filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__parent__parent__title="املاک") &
+                        Q(location__in=locas_to_go)&
+                        Q(publisher=publisher)
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+        case "وسایل نقلیه":
+
+            if province and smallCities:
+                print("A")
+                if bool(justImg):
+                    if exchange:
 
 
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)
+                                ).filter(
+                                     Q(parent__parent__parent__title="وسایل نقلیه")|
+                                     Q(parent__parent__title="وسایل نقلیه")
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
 
-    print(coms_to_show,"CCPPOSOCOASCASFAFSAFASFASDASD")
-    cat=get_object_or_404(Commerical,title="املاک")
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(publisherForCar=publisherForCar)
+                                ).filter(
+                                    Q(parent__parent__parent__title="وسایل نقلیه")|
+                                    Q(parent__parent__title="وسایل نقلیه")
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                else:
+                    print("ELELLELELLSSSSSEEe")
+                    if exchange:
+                        coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities])         
+                            ).filter(
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(publisherForCar=publisherForCar)&
+                            Q(ready_to_exchange=True)
+                            ).filter(
+                                Q(parent__parent__parent__title="وسایل نقلیه")|
+                                Q(parent__parent__title="وسایل نقلیه")
+                            ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                    else:
+
+                        coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities])         
+                            ).filter(
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                Q(parent__parent__parent__title="وسایل نقلیه")|
+                                Q(parent__parent__title="وسایل نقلیه")
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+
+            elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    if exchange:
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(publisherForCar=publisherForCar)&
+                            Q(ready_to_exchange=True)
+                        ).filter(
+                            Q(parent__parent__parent__title="وسایل نقلیه")|
+                            Q(parent__parent__title="وسایل نقلیه")
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(publisherForCar=publisherForCar)
+                          
+                        ).filter(
+                            Q(parent__parent__parent__title="وسایل نقلیه")|
+                            Q(parent__parent__title="وسایل نقلیه")
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                else:
+                    if exchange:
+
+                        coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                            
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(publisherForCar=publisherForCar)&
+                                Q(ready_to_exchange=True)
+                            ).filter(
+                                Q(parent__parent__parent__title="وسایل نقلیه")|
+                                Q(parent__parent__title="وسایل نقلیه")
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &   
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                Q(parent__parent__parent__title="وسایل نقلیه")|
+                                Q(parent__parent__title="وسایل نقلیه")
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+            elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    if exchange:
+
+
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(publisherForCar=publisherForCar)&
+                                Q(ready_to_exchange=True)
+                            ).filter(
+                                Q(parent__parent__parent__title="وسایل نقلیه")|
+                                Q(parent__parent__title="وسایل نقلیه")
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                Q(parent__parent__parent__title="وسایل نقلیه")|
+                                Q(parent__parent__title="وسایل نقلیه")
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                else:
+                    if exchange:
+
+                        coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(publisherForCar=publisherForCar)&
+                                Q(ready_to_exchange=True)
+                            ).filter(
+                                Q(parent__parent__parent__title="وسایل نقلیه")|
+                                Q(parent__parent__title="وسایل نقلیه")
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                Q(parent__parent__parent__title="وسایل نقلیه")|
+                                Q(parent__parent__title="وسایل نقلیه")
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+
+        case "کالای دیجیتال":
+            if province and smallCities:
+                print("A")
+                if bool(justImg):
+ 
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(phone_status=phoneStatus)
+                                    
+                                ).filter(
+                                     Q(parent__parent__parent__title="کالای دیجیتال")|
+                                     Q(parent__parent__title="کالای دیجیتال")
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                else:
+                    print("ELELLELELLSSSSSEEe")
+                    coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities])         
+                        ).filter(
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(phone_status=phoneStatus)
+                        ).filter(
+                             Q(parent__parent__parent__title="کالای دیجیتال")|
+                             Q(parent__parent__title="کالای دیجیتال")
+                        ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+
+            elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                   
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(phone_status=phoneStatus)
+                        ).filter(
+                             Q(parent__parent__parent__title="کالای دیجیتال")|
+                             Q(parent__parent__title="کالای دیجیتال")
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+     
+                else:
+
+                    coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(phone_status=phoneStatus)
+                        ).filter(
+                             Q(parent__parent__parent__title="کالای دیجیتال")|
+                             Q(parent__parent__title="کالای دیجیتال")
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                    
+
+
+            elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    
+
+
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(phone_status=phoneStatus)
+
+                            ).filter(
+                                 Q(parent__parent__parent__title="کالای دیجیتال")|
+                                 Q(parent__parent__title="کالای دیجیتال")
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+  
+                else:
+                    coms_to_show=Commerical.objects.filter(
+                            Q(smallCity__in=[int(i) for i in smallCities])&
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(phone_status=phoneStatus)
+                        ).filter(
+                             Q(parent__parent__parent__title="کالای دیجیتال")|
+                             Q(parent__parent__title="کالای دیجیتال")
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+
+        case "تجهیزات و صنعتی" | "سرگرمی و فراغت" | "خانه و آشپزخانه" :
+            if province and smallCities:
+                print("A")
+                if bool(justImg):
+ 
+                        if exchange:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(ready_to_exchange=True)
+                                    
+                                ).filter(
+                                    Q(parent__parent__parent__title=title)|
+                                    Q(parent__parent__title=title)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                    
+                                ).filter(
+                                    Q(parent__parent__parent__title=title)|
+                                    Q(parent__parent__title=title)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                else:
+                    print("ELELLELELLSSSSSEEe")
+                    if exchange:
+
+                        coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities])         
+                            ).filter(
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(ready_to_exchange=True)
+                            ).filter(
+                                Q(parent__parent__parent__title=title)|
+                                Q(parent__parent__title=title)
+                            ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities])         
+                            ).filter(
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(parent__parent__parent__title=title)|
+                                Q(parent__parent__title=title)
+                            ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+
+            elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    if exchange:
+
+                   
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(ready_to_exchange=True)
+                        ).filter(
+                            Q(parent__parent__parent__title=title)|
+                            Q(parent__parent__title=title)
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))  
+                        ).filter(
+                            Q(parent__parent__parent__title=title)|
+                            Q(parent__parent__title=title)
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+     
+                else:
+                    if exchange:
+
+                        coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) &
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(ready_to_exchange=True)
+                            ).filter(
+                                Q(parent__parent__parent__title=title)|
+                                Q(parent__parent__title=title)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) & 
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(parent__parent__parent__title=title)|
+                                Q(parent__parent__title=title)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+            elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    if exchange:
+
+                    
+
+
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(ready_to_exchange=True)
+
+                            ).filter(
+                                Q(parent__parent__parent__title=title)|
+                                Q(parent__parent__title=title)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(parent__parent__parent__title=title)|
+                                Q(parent__parent__title=title)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+  
+                else:
+                    if exchange:
+
+                        coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(ready_to_exchange=True)
+                            ).filter(
+                                Q(parent__parent__parent__title=title)|
+                                Q(parent__parent__title=title)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(parent__parent__parent__title=title)|
+                                Q(parent__parent__title=title)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+        case "اجتماعی":
+            if province and smallCities:
+                print("A")
+                if bool(justImg):
+ 
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__parent__parent__title="اجتماعی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                else:
+                    print("ELELLELELLSSSSSEEe")
+                    coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities])         
+                        ).filter(
+                            Q(parent__parent__parent__title="اجتماعی") &
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+
+            elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                   
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(parent__parent__parent__title="اجتماعی") &
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))
+
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+     
+                else:
+
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) &
+                            Q(parent__parent__parent__title="اجتماعی") &
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))
+
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                    
+
+
+            elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    
+
+
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__parent__parent__title="اجتماعی") &
+                                Q(location__in=locas_to_go)&
+                                Q(price__range=(int(least_price),int(max_price)))
+
+
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+  
+                else:
+                    coms_to_show=Commerical.objects.filter(
+                            Q(smallCity__in=[int(i) for i in smallCities])&
+                            Q(parent__parent__parent__title="اجتماعی") &
+                            Q(location__in=locas_to_go)&
+                            Q(price__range=(int(least_price),int(max_price)))
+
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+
+        case "استخدام و کاریابی":
+
+            if province and smallCities:
+                print("A")
+                if bool(justImg):
+ 
+                        if farWork:
+                            if soldier:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__parent__title="استخدام و کاریابی") &
+                                        Q(location__in=locas_to_go)&
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                        Q(soldier=True)&
+                                        Q(farWork=True)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__parent__title="استخدام و کاریابی") &
+                                        Q(location__in=locas_to_go)&
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                        Q(farWork=True)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+                        else:
+                            if soldier:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__parent__title="استخدام و کاریابی") &
+                                        Q(location__in=locas_to_go)&
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                        Q(soldier=True)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__parent__title="استخدام و کاریابی") &
+                                        Q(location__in=locas_to_go)&
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+
+                else:
+                    print("ELELLELELLSSSSSEEe")
+                    if farWork:
+                        if soldier:
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities])         
+                                ).filter(
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                    Q(farWork=True)&
+                                    Q(soldier=True)
+                                ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities])         
+                                ).filter(
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                    Q(farWork=True)
+                                ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                    else:
+
+
+                        if soldier:
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities])         
+                                ).filter(
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                  
+                                    Q(soldier=True)
+                                ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities])         
+                                ).filter(
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+            elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                   
+                        if farWork:
+                            if soldier:
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                    Q(farWork=True)&
+                                    Q(soldier=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                    Q(farWork=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        else:
+
+                            if soldier:
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                    Q(soldier=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+     
+                else:
+                    if farWork:
+                        if soldier:
+
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                    Q(farWork=True)&
+                                    Q(soldier=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                    Q(farWork=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    else:
+
+                        if soldier:
+
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                               
+                                    Q(soldier=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+            elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    
+                    if farWork:
+                        if soldier:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                    Q(farWork=True)&
+                                    Q(soldier=True)
+
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                                    Q(farWork=True)
+
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    else:
+
+                        if soldier:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))&
+                            
+                                    Q(soldier=True)
+
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+
+                else:
+                    if farWork:
+                        if soldier:
+
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_min_price_for_work)))&
+                                    Q(soldier=True)&
+                                    Q(farWork=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_min_price_for_work)))&
+                                    Q(farWork=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+
+                        if soldier:
+
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_min_price_for_work)))&
+                                    Q(soldier=True)
+                                
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__parent__title="استخدام و کاریابی") &
+                                    Q(location__in=locas_to_go)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_min_price_for_work)))
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+    cat=get_object_or_404(Commerical,title=title)
     cat_childs=cat.children.all()
     cits=City.objects.filter(
         id__in=[int(i) for i in province]
     )
-    print(bool(justImg),"IIMAGESSSSSSSSSSSSSSSSSSSSSSSSSSSS")
-    print("^^^^^^^^^^^^^^^")
-    print("^^^^^^^^^^^^^^^")
-    print(type(max_price))
-    print(least_price)
-    print("^^^^^^^^^^^^^^^")
-    print("^^^^^^^^^^^^^^^")
+
     contex={
         'cat_childs':cat_childs,
-        'catMain':cat,
+        'cat':cat,
         'coms_to_show':coms_to_show,
         'cits':cits,
         'justImg':bool(justImg),
         'instatnceComs':instatnceComs,
         'least_price':int(least_price),
-        'max_price':int(max_price)
+        'max_price':int(max_price),
+        'locas_to_go':locas_to_go,
+        'immadate_location_image':immadate_location_image,
+        'price_Title':price_Title,
+        'moavezeh':moavezeh,
+        'exchange':exchange,
+        'farWork':farWork,
+        'soldier':soldier,
+        'publisher':publisher,
+        'publisherForCar':publisherForCar,
+        'phoneStatus':phoneStatus
+        # 'choose_min_price_for_work':choose_min_price_for_work,
 
         
     }
@@ -775,28 +2178,2914 @@ def handleAmlakFilterSecondLevel(request):
     locationIds=request.GET.get("ids")
     justImg=request.GET.get("justImg",False)
     instatnceComs=request.GET.get("instatnceComs","عادی")
-    parent_parent_title=request.GET.get("parent_parent_title")
+    title=request.GET.get("title")
+    publisherForCar=request.GET.get("publisherForCar","همه")
+    phoneStatus=request.GET.get("phoneStatus","همه")
+    choose_min_price_for_work=request.GET.get("choose_min_price_for_work",0)
+    choose_max_price_for_work=request.GET.get("choose_max_price_for_work",20)
+    minKarkard=request.GET.get("minKarkard",10)
+    maxKarkard=request.GET.get("maxKarkard",400)
+    minYearOfConstruction=request.GET.get("minYearOfConstruction",1365)
+    maxYearOfConstruction=request.GET.get("maxYearOfConstruction",1402)
+    roomNumber=request.GET.get("roomNumber",1)
+    publisherForAmlak=request.GET.get("publisher","همه")
+    farWork=request.GET.get("farWork",False)
+    soldier=request.GET.get("soldier",False)
+    insurance=request.GET.get("insurance",False)
+    exchange=request.GET.get("exchange",False)
 
-    
-
-
-    
+    title=request.GET.get("title")
+ 
 
     least_price=request.GET.get("least_price",0)
     max_price=request.GET.get("max_price",400000000)
 
     maxMeter=request.GET.get("maxMeter",200)
-    leastMeter=request.GET.get("leastMeter",0)
+    leastMeter=request.GET.get("leastMeter",65)
 
-    maxVadieh=request.GET.get("maxVadieh",900)
-    minVadieh=request.GET.get("minVadieh",0)
+    maxVadieh=request.GET.get("maxVadieh",800)
+    minVadieh=request.GET.get("minVadieh",30)
 
-    maxEjareh=request.GET.get("maxEjareh",8)
-    minEjareh=request.GET.get("minEjareh",0)
+    maxEjareh=request.GET.get("maxEjareh",7)
+    minEjareh=request.GET.get("minEjareh",1)
+
+    locas_to_go=list(map(
+
+            lambda x:int(x),locationIds.split(",")
+            if len(locationIds)>=1 else defaultLocalIds
+        ))
+    # publisherForAmlak=publisherForAmlak if len(publisher)>0 else "همه"
+
+
+    coms_to_show=None
     
+    cits=City.objects.filter(
+        id__in=[int(i) for i in province]
+    )
+
+
+    if title in typeOneForSecondLevelFilter_Amlak_Frosh:
+
+        
+        if province and smallCities:
+          
+                if bool(justImg):
+
+
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(price__range=(int(least_price),int(max_price))) & 
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak)&
+                            Q(rooms__gte=int(roomNumber))                  
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            img_length__gte=1
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(price__range=(int(least_price),int(max_price))) & 
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber)) 
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                        Q(city__in=[int(i) for i in province]) &
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q(price__range=(int(least_price),int(max_price))) & 
+                        Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                        Q(publisher=publisherForAmlak)&
+                        Q(rooms__gte=int(roomNumber))   
+
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) &
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q(price__range=(int(least_price),int(max_price))) & 
+                        Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                        Q(publisher=publisherForAmlak)&
+                        Q(rooms__gte=int(roomNumber))  
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+
+        elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q(price__range=(int(least_price),int(max_price))) & 
+                        Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                        Q(publisher=publisherForAmlak)&
+                            Q(rooms__gte=int(roomNumber))  
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    coms_to_show=Commerical.objects.filter(
+                            Q(smallCity__in=[int(i) for i in smallCities])&
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(price__range=(int(least_price),int(max_price))) & 
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber)) 
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+    
+    elif title in amlakEjareh:
+
+        if province and smallCities:
+          
+                if bool(justImg):
+
+
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
+                            Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))               
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            img_length__gte=1
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
+                            Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))    
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
 
 
 
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                        Q(city__in=[int(i) for i in province]) &
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                            Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
+                            Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))   
+
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) &
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                            Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
+                            Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))   
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+
+        elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                            Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
+                            Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))   
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    coms_to_show=Commerical.objects.filter(
+                            Q(smallCity__in=[int(i) for i in smallCities])&
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
+                            Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))   
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+    
+    elif title in vasayelNaghliehMotor_va_Car:
+        ourCom=get_object_or_404(Commerical,title=title)
+        first_child=ourCom.children.first()
+
+        if province and smallCities:
+                
+                if first_child.children.all():
+
+          
+                    if bool(justImg):
+
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(parent__parent__title=title)
+                                ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    Q()
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(parent__parent__title=title)
+                                ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        if exchange:
+
+                            print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&  
+                                    Q(ready_to_exchange=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                else:
+                    if bool(justImg):
+
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(parent__title=title)
+                                ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(parent__title=title)
+                                ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        if exchange:
+
+                            print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&  
+                                    Q(ready_to_exchange=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            print("FUUUUUNNNNNNNNNN")
+                            print("FUUUUUNNNNNNNNNN")
+                            print("FUUUUUNNNNNNNNNN")
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+        elif province and not smallCities:
+
+                print("B")
+                if first_child.children.all():
+
+                    if bool(justImg):
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                else:
+                    if bool(justImg):
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+        elif not province and smallCities:
+                if first_child.children.all():
+
+
+                    if bool(justImg):
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                    else:
+                        if exchange:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(publisherForCar=publisherForCar)&
+                                Q(ready_to_exchange=True)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(publisherForCar=publisherForCar)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+                
+                else:
+                    if bool(justImg):
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                    else:
+                        if exchange:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(publisherForCar=publisherForCar)&
+                                Q(ready_to_exchange=True)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(publisherForCar=publisherForCar)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+    elif title in vasayelNaghlieh_Both_and_supplies:
+
+        if province and smallCities:
+                        
+            if bool(justImg):
+
+                if exchange:
+
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(location__in=locas_to_go)&
+                            Q(parent__title=title)
+                        ).filter(
+                            Q(publisherForCar=publisherForCar)&
+                            Q(ready_to_exchange=True)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            img_length__gte=1
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(location__in=locas_to_go)&
+                            Q(parent__title=title)
+                        ).filter(
+                            Q(publisherForCar=publisherForCar)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            img_length__gte=1
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+            else:
+                if exchange:
+
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(publisherForCar=publisherForCar)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&  
+                            Q(ready_to_exchange=True)
+
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+        elif province and not smallCities:
+
+                print("B")
+                
+                if bool(justImg):
+                    if exchange:
+
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                                Q(publisherForCar=publisherForCar)&
+                                Q(ready_to_exchange=True)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                                Q(publisherForCar=publisherForCar)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                else:
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+        elif not province and smallCities:
+                
+            if bool(justImg):
+                if exchange:
+
+                    coms_to_show=Commerical.objects.annotate(
+                    img_length=Length("commericalimage")
+                    ).filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                            Q(publisherForCar=publisherForCar)&
+                            Q(ready_to_exchange=True)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+
+                    coms_to_show=Commerical.objects.annotate(
+                    img_length=Length("commericalimage")
+                    ).filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                            Q(publisherForCar=publisherForCar)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+            else:
+                if exchange:
+                    coms_to_show=Commerical.objects.filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q(publisherForCar=publisherForCar)&
+                        Q(ready_to_exchange=True)&
+                        Q(price__range=(int(least_price),int(max_price)))&
+                        Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+                else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(publisherForCar=publisherForCar)&
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+    elif title in digitalOrKitchenOrPersonalOrEntertaimentOrSupllies:
+
+        ourCom=get_object_or_404(Commerical,title=title)
+        first_child=ourCom.children.first()
+
+        if province and smallCities:
+                
+                if first_child.children.all():
+
+          
+                    if bool(justImg):
+
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(parent__parent__title=title)
+                                ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                  
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(parent__parent__title=title)
+                                ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        if exchange:
+
+                            print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(ready_to_exchange=True)
+
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                else:
+                    if bool(justImg):
+
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(parent__title=title)
+                                ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                   
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(location__in=locas_to_go)&
+                                    Q(parent__title=title)
+                                ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        if exchange:
+
+                            print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(ready_to_exchange=True)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+        elif province and not smallCities:
+
+                print("B")
+                if first_child.children.all():
+
+                    if bool(justImg):
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                else:
+                    if bool(justImg):
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+        elif not province and smallCities:
+                if first_child.children.all():
+
+
+                    if bool(justImg):
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                    else:
+                        if exchange:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(phone_status=phoneStatus)&
+                                Q(ready_to_exchange=True)&
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(phone_status=phoneStatus)&
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+                
+
+                else:
+                    if bool(justImg):
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(phone_status=phoneStatus)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                    else:
+                        if exchange:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(phone_status=phoneStatus)&
+                                Q(ready_to_exchange=True)&
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(phone_status=phoneStatus)&
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+    elif title in services:
+
+        if province and smallCities:
+                        
+            if bool(justImg):
+
+              
+                coms_to_show=Commerical.objects.annotate(
+                    img_length=Length("commericalimage")
+                ).filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                    ).filter(
+                        Q(location__in=locas_to_go)&
+                        Q(parent__title=title)
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                        img_length__gte=1
+                    ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+            else:        
+                coms_to_show=Commerical.objects.filter(
+                    Q(city__in=[int(i) for i in province]) | 
+                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                    ).filter(
+                    Q(parent__title=title) &
+                    Q(location__in=locas_to_go)
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+
+        elif province and not smallCities:
+
+                print("B")
+                
+                if bool(justImg):
+                    
+
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+                else:
+                             
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) &
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+
+        elif not province and smallCities:
+                
+            if bool(justImg):
+                
+
+                    coms_to_show=Commerical.objects.annotate(
+                    img_length=Length("commericalimage")
+                    ).filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+            else:
+                
+                    coms_to_show=Commerical.objects.filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+
+    elif title in social:
+
+        if province and smallCities:
+                        
+            if bool(justImg):
+
+                if exchange:
+
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(location__in=locas_to_go)&
+                            Q(parent__title=title)
+                        ).filter(
+                            Q(ready_to_exchange=True)&
+                            Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            img_length__gte=1
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(location__in=locas_to_go)&
+                            Q(parent__title=title)
+                        ).filter(
+                            Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            img_length__gte=1
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+            else:
+                if exchange:
+
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(publisherForCar=publisherForCar)&
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(ready_to_exchange=True)
+
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+        elif province and not smallCities:
+
+                print("B")
+                
+                if bool(justImg):
+                    if exchange:
+
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                                Q(ready_to_exchange=True)&
+                                Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                                Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                else:
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(ready_to_exchange=True)&
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+        elif not province and smallCities:
+                
+            if bool(justImg):
+                if exchange:
+
+                    coms_to_show=Commerical.objects.annotate(
+                    img_length=Length("commericalimage")
+                    ).filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                            Q(ready_to_exchange=True)&
+                            Q(price__range=(int(least_price),int(max_price)))
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                else:
+
+                    coms_to_show=Commerical.objects.annotate(
+                    img_length=Length("commericalimage")
+                    ).filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                            Q(price__range=(int(least_price),int(max_price)))
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+            else:
+                if exchange:
+                    coms_to_show=Commerical.objects.filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q(ready_to_exchange=True)&
+                        Q(price__range=(int(least_price),int(max_price)))
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                        com_status=instatnceComs
+                    ).distinct()
+                else:
+                        coms_to_show=Commerical.objects.filter(
+                            Q(smallCity__in=[int(i) for i in smallCities])&
+                            Q(parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+
+    elif title in employment:
+
+        if province and smallCities:
+                        
+            if bool(justImg):
+
+                if farWork:
+                    if soldier:
+                        if insurance:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(location__in=locas_to_go)&
+                                            Q(parent__title=title)
+                                        ).filter(
+                                            Q(farWork=True)&
+                                            Q(soldier=True)&
+                                            Q(insurance=True)&
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(location__in=locas_to_go)&
+                                            Q(parent__title=title)
+                                        ).filter(
+                                            Q(farWork=True)&
+                                            Q(soldier=True)&
+                    
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                    else:
+                        if insurance:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(location__in=locas_to_go)&
+                                            Q(parent__title=title)
+                                        ).filter(
+                                            Q(farWork=True)&
+                                            Q(insurance=True)&
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(location__in=locas_to_go)&
+                                            Q(parent__title=title)
+                                        ).filter(
+                                            Q(farWork=True)&
+                                        
+                    
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                else:
+                    if soldier:
+                        if insurance:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(location__in=locas_to_go)&
+                                            Q(parent__title=title)
+                                        ).filter(
+                                     
+                                            Q(soldier=True)&
+                                            Q(insurance=True)&
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(location__in=locas_to_go)&
+                                            Q(parent__title=title)
+                                        ).filter(
+                                  
+                                            Q(soldier=True)&
+                    
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                    else:
+                        if insurance:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(location__in=locas_to_go)&
+                                            Q(parent__title=title)
+                                        ).filter(
+                                      
+                                            Q(insurance=True)&
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(location__in=locas_to_go)&
+                                            Q(parent__title=title)
+                                        ).filter(
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+            else:
+
+                if farWork:
+                    if soldier:
+                        if insurance:
+                                print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(farWork=True)&
+                                        Q(soldier=True)&
+                                        Q(insurance=True)&
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(farWork=True)&
+                                        Q(soldier=True)&
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    else:
+                        if insurance:
+                                print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(farWork=True)&
+                                      
+                                        Q(insurance=True)&
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(farWork=True)&
+                                     
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+
+
+
+                else:
+                        if soldier:
+                            if insurance:
+                                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(soldier=True)&
+                                            Q(insurance=True)&
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                            else:
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(soldier=True)&
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        else:
+                            if insurance:
+                                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(insurance=True)&
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                            else:
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+
+        elif province and not smallCities:
+
+                print("B")
+                
+                if bool(justImg):
+
+                    if farWork:
+                        if soldier:
+
+                            if insurance:
+                                
+                                     coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(farWork=True)&
+                                                Q(soldier=True)&
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                            
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(farWork=True)&
+                                                Q(soldier=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                            
+                        else:
+
+                            if insurance:
+                                
+                                     coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(farWork=True)&
+                                               
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                            
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(farWork=True)&
+                               
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                            
+
+                
+                    else:
+
+                        if soldier:
+
+                            if insurance:
+                                
+                                     coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            
+                                                Q(soldier=True)&
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                            
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                              
+                                                Q(soldier=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                            
+                        else:
+
+                            if insurance:
+                                
+                                     coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                             
+                                               
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                            
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                             
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                            
+                else:
+                        if farWork:
+                            if soldier:
+                                if insurance:
+
+
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(farWork=True)&
+                                                Q(soldier=True)&
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+                                else:
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(farWork=True)&
+                                                Q(soldier=True)&
+                                  
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+                            else:
+                                if insurance:
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(farWork=True)&
+                                            
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+                                else:
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(farWork=True)&                                
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+
+
+
+
+
+
+
+                            # else farWork
+
+
+                        else:
+                            
+                            if soldier:
+                                if insurance:
+
+
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                        ).filter(
+                                        
+                                                Q(soldier=True)&
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+                                else:
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                        ).filter(
+                                             
+                                                Q(soldier=True)&
+                                  
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+                            else:
+                                if insurance:
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                        ).filter(
+                                          
+                                            
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+                                else:
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                        ).filter(
+                                                                           
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+
+
+        elif not province and smallCities:
+                
+            if bool(justImg):
+                if farWork:
+
+                    if soldier:
+                        if insurance:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(farWork=True)&
+                                                Q(soldier=True)&
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(farWork=True)&
+                                            Q(soldier=True)&
+                                  
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                    else:
+
+                        if insurance:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(farWork=True)&
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(farWork=True)&
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                # else FarWork
+                else:
+
+                    if soldier:
+                        if insurance:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                           
+                                                Q(soldier=True)&
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                           
+                                            Q(soldier=True)&
+                                  
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                    else:
+
+                        if insurance:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                
+                                                Q(insurance=True)&
+                                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                        else:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            
+                                            Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+
+
+
+
+            # else image
+            else:
+                if farWork:
+                    if soldier:
+                        if insurance:
+
+                                coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(farWork=True)&
+                                Q(soldier=True)&
+                                Q(insurance=True)&
+                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(farWork=True)&
+                                Q(soldier=True)&
+                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+                    else:
+                        if insurance:
+
+                                coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(farWork=True)&
+                                
+                                Q(insurance=True)&
+                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(farWork=True)&
+                                Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+                    # else farWork
+                else:
+                        if soldier:
+                            if insurance:
+
+                                    coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                  
+                                    Q(soldier=True)&
+                                    Q(insurance=True)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                            else:
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(soldier=True)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                        else:
+                            if insurance:
+
+                                    coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                
+                                    
+                                    Q(insurance=True)&
+                                    Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                            else:
+                                    coms_to_show=Commerical.objects.filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                    
+                                        Q(price_for_work__range=(int(choose_min_price_for_work),int(choose_max_price_for_work)))
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+    cat=get_object_or_404(Commerical,title=title)
+    cat_childs=cat.children.all()
+
+    contex={
+
+        'cat_childs':cat_childs,
+        'catMain':cat,
+        'cits':cits,
+        'coms_to_show':coms_to_show,
+        'GroupHasPrice':GroupHasPrice,
+        'GroupHasMeter':GroupHasMeter,
+        'GroupHasYearOfConstruction':GroupHasYearOfConstruction,
+        'GroupHasExchangePossibale':GroupHasExchangePossibale,
+        'GroupHasCommericalSituation_like_new_or_old':GroupHasCommericalSituation_like_new_or_old,
+        'Group_Employments':Group_Employments,
+     
+        'justImg':bool(justImg),
+        'instatnceComs':instatnceComs,
+        'least_price':int(least_price),
+        'max_price':int(max_price),
+        'locas_to_go':locas_to_go,
+        'immadate_location_image':immadate_location_image,
+        'price_Title':price_Title,
+        'moavezeh':moavezeh,
+        'exchange':exchange,
+        'farWork':farWork,
+        'soldier':soldier,
+        'publisherForAmlak':publisherForAmlak,
+        'publisherForCar':publisherForCar,
+        'phoneStatus':phoneStatus,
+        'choose_min_price_for_work':int(choose_min_price_for_work),
+        'choose_max_price_for_work':int(choose_max_price_for_work),
+        'minKarkard':int(minKarkard),
+        'maxKarkard':int(maxKarkard),
+        'minVadieh':int(minVadieh),
+        'maxVadieh':int(maxVadieh),
+        'minEjareh':int(minEjareh),
+        'maxEjareh':int(maxEjareh),
+        'leastMeter':int(leastMeter),
+        'maxMeter':int(maxMeter),
+        'roomNumber':int(roomNumber),
+        'minYearOfConstruction':int(minYearOfConstruction),
+        'maxYearOfConstruction':int(maxYearOfConstruction),
+
+
+    }
+    return render(request,"core/handleAmlakFilterSecondLevel.html",contex)
+
+
+
+
+
+def handleFilterThirdLevel(request):
+
+
+    province=request.session.get("bb")
+    smallCities=request.session.get("min")
+    defaultLocalIds=[]
+
+    cities=City.objects.filter(
+        id__in=[int(i) for i in province]
+    )
+    for c in cities:
+        for loc in c.location_set.all():
+            defaultLocalIds.append(loc.id)
+        
+
+    locationIds=request.GET.get("ids")
+    justImg=request.GET.get("justImg",False)
+    instatnceComs=request.GET.get("instatnceComs","عادی")
+    title=request.GET.get("title")
+    publisherForCar=request.GET.get("publisherForCar","همه")
+    phoneStatus=request.GET.get("phoneStatus","همه")
+    choose_min_price_for_work=request.GET.get("choose_min_price_for_work",0)
+    choose_max_price_for_work=request.GET.get("choose_max_price_for_work",20)
+    minKarkard=request.GET.get("minKarkard",10)
+    maxKarkard=request.GET.get("maxKarkard",400)
+    minYearOfConstruction=request.GET.get("minYearOfConstruction",1365)
+    maxYearOfConstruction=request.GET.get("maxYearOfConstruction",1402)
+    roomNumber=request.GET.get("roomNumber",1)
+    publisherForAmlak=request.GET.get("publisherForAmlak","همه")
+    farWork=request.GET.get("farWork",False)
+    soldier=request.GET.get("soldier",False)
+    insurance=request.GET.get("insurance",False)
+    exchange=request.GET.get("exchange",False)
+    internalOrExternal=request.GET.get("internalOrExternal","همه")
+
+    parking=request.GET.get("parking",False)
+    anbari=request.GET.get("anbari",False)
+    sanadEdari=request.GET.get("sanadEdari",False)
+    floor=request.GET.get("floor",1)
+    color=request.GET.get("color","همه")
+    esalat=request.GET.get("esalat","همه")
+    simcartNums=request.GET.get("simcartNums",1)
+    simcartType=request.GET.get("simcartType","ایرانسل")
+
+
+    title=request.GET.get("title")
+ 
+
+    least_price=request.GET.get("choose_min_price",0)
+    max_price=request.GET.get("choose_max_price",400000000)
+
+    maxMeter=request.GET.get("maxMeter",200)
+    leastMeter=request.GET.get("leastMeter",65)
+
+    maxVadieh=request.GET.get("maxVadieh",800)
+    minVadieh=request.GET.get("minVadieh",30)
+
+    maxEjareh=request.GET.get("maxEjareh",7)
+    minEjareh=request.GET.get("minEjareh",1)
+    memorySize=request.GET.get("memorySize",4)
+    coverSimcart=request.GET.get("coverSimcart","ندارد")
+    clothsType=request.GET.get("clothsType","همه")
 
 
     locas_to_go=list(map(
@@ -804,316 +5093,3969 @@ def handleAmlakFilterSecondLevel(request):
             lambda x:int(x),locationIds.split(",")
             if len(locationIds)>=1 else defaultLocalIds
         ))
+        
 
     coms_to_show=None
-    if parent_parent_title in filteramlak_groupA:
-        print('TYPYPYPYPYPPe OONOOONONONONONON')
-
-
-        if province and smallCities:
-                print("COCOCOCOCOTTINUEE")
-          
-                if bool(justImg):
-                    print("WIWIIWIWIWI IMAGGEHEGEGEGEGEGE")
-
-
-                    coms_to_show=Commerical.objects.annotate(
-                        img_length=Length("commericalimage")
-                    ).filter(
-                            Q(city__in=[int(i) for i in province]) | 
-                            Q(smallCity__in=[int(i) for i in smallCities]) 
-                        ).filter(
-                            Q(parent__parent__parent__title="املاک") &
-                            Q(location__in=locas_to_go)
-                        ).filter(
-
-                            Q(price__range=(int(least_price),int(max_price))) & 
-                            Q(meter__range=(int(leastMeter),int(maxMeter))) 
-                            
-                        ).filter(
-                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                        ).filter(
-                            img_length__gte=1
-                        ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-                else:
-                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
-                    coms_to_show=Commerical.objects.filter(
-                        Q(city__in=[int(i) for i in province]) | 
-                            Q(smallCity__in=[int(i) for i in smallCities]) 
-                        ).filter(
-                            Q(parent__parent__parent__title="املاک") &
-                            Q(location__in=locas_to_go)
-                        ).filter(
-                            Q(price__range=(int(least_price),int(max_price)))& 
-                            Q(meter__range=(int(leastMeter),int(maxMeter))) 
-                        ).filter(
-                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                        ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-
-
-        elif province and not smallCities:
-
-                print("B")
-
-                if bool(justImg):
-                    coms_to_show=Commerical.objects.annotate(
-                        img_length=Length("commericalimage")
-                    ).filter(
-                        Q(city__in=[int(i) for i in province]) &
-                        Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)
-                    ).filter(
-                        Q(price__range=(int(least_price),int(max_price)))&
-                        Q(meter__range=(int(leastMeter),int(maxMeter)))
-
-                    ).filter(
-                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                    ).filter(
-                            img_length__gte=1
-                    ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-                else:
-                    coms_to_show=Commerical.objects.filter(
-                        Q(city__in=[int(i) for i in province]) &
-                        Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)
-                    ).filter(
-                        Q(price__range=(int(least_price),int(max_price)))& 
-                        Q(meter__range=(int(leastMeter),int(maxMeter)))
-                    ).filter(
-                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                    ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-
-
-        elif not province and smallCities:
-                print("C")
-
-                if bool(justImg):
-                    coms_to_show=Commerical.objects.annotate(
-                        img_length=Length("commericalimage")
-                    ).filter(
-                        Q(smallCity__in=[int(i) for i in smallCities])&
-                        Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)
-                    ).filter(
-                        Q(price__range=(int(least_price),int(max_price)))&
-                        Q(meter__range=(int(leastMeter),int(maxMeter)))
-                    ).filter(
-                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                    ).filter(
-                            img_length__gte=1
-                    ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-                else:
-                    coms_to_show=Commerical.objects.filter(
-                            Q(smallCity__in=[int(i) for i in smallCities])&
-                            Q(parent__parent__parent__title="املاک") &
-                            Q(location__in=locas_to_go)
-                        ).filter(
-                            Q(price__range=(int(least_price),int(max_price)))& 
-                            Q(meter__range=(int(leastMeter),int(maxMeter)))
-                        ).filter(
-                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                        ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-
-
-
-    elif parent_parent_title in filteramlak_groupB:
-        print("CCCCCCCLLALLALALEDLDLDLLDDLD")
-        if province and smallCities:
-          
-                if bool(justImg):
-
-
-                    coms_to_show=Commerical.objects.annotate(
-                        img_length=Length("commericalimage")
-                    ).filter(
-                            Q(city__in=[int(i) for i in province]) | 
-                            Q(smallCity__in=[int(i) for i in smallCities]) 
-                        ).filter(
-                            Q(parent__parent__parent__title="املاک") &
-                            Q(location__in=locas_to_go)
-                        ).filter(
-
-                            Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
-                            Q(meter__range=(int(leastMeter),int(maxMeter))) &
-                            Q(rent__range=(int(minEjareh),int(maxEjareh)))
-                            
-                        ).filter(
-                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                        ).filter(
-                            img_length__gte=1
-                        ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-                else:
-                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
-                    coms_to_show=Commerical.objects.filter(
-                        Q(city__in=[int(i) for i in province]) | 
-                            Q(smallCity__in=[int(i) for i in smallCities]) 
-                        ).filter(
-                            Q(parent__parent__parent__title="املاک") &
-                            Q(location__in=locas_to_go)
-                        ).filter(
-                            Q(vadieh__range=(int(minVadieh),int(maxVadieh)))& 
-                            Q(meter__range=(int(leastMeter),int(maxMeter))) &
-                            Q(rent__range=(int(minEjareh),int(maxEjareh)))
-                        ).filter(
-                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                        ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-
-
-        elif province and not smallCities:
-
-                print("B")
-
-                if bool(justImg):
-                    coms_to_show=Commerical.objects.annotate(
-                        img_length=Length("commericalimage")
-                    ).filter(
-                        Q(city__in=[int(i) for i in province]) &
-                        Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)
-                    ).filter(
-                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
-                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                        Q(rent__range=(int(minEjareh),int(maxEjareh)))
-
-                    ).filter(
-                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                    ).filter(
-                            img_length__gte=1
-                    ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-                else:
-                    coms_to_show=Commerical.objects.filter(
-                        Q(city__in=[int(i) for i in province]) &
-                        Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)
-                    ).filter(
-                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))& 
-                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                        Q(rent__range=(int(minEjareh),int(maxEjareh)))
-                    ).filter(
-                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                    ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-
-
-        elif not province and smallCities:
-                print("C")
-
-                if bool(justImg):
-                    coms_to_show=Commerical.objects.annotate(
-                        img_length=Length("commericalimage")
-                    ).filter(
-                        Q(smallCity__in=[int(i) for i in smallCities])&
-                        Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)
-                    ).filter(
-                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
-                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                        Q(rent__range=(int(minEjareh),int(maxEjareh)))
-                    ).filter(
-                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                    ).filter(
-                            img_length__gte=1
-                    ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-                else:
-                    coms_to_show=Commerical.objects.filter(
-                            Q(smallCity__in=[int(i) for i in smallCities])&
-                            Q(parent__parent__parent__title="املاک") &
-                            Q(location__in=locas_to_go)
-                        ).filter(
-                            Q(vadieh__range=(int(minVadieh),int(maxVadieh)))& 
-                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                            Q(rent__range=(int(minEjareh),int(maxEjareh)))
-                        ).filter(
-                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                        ).filter(
-                            com_status=instatnceComs
-                        ).filter(
-                            Q(parent__parent__title=parent_parent_title)
-                        ).distinct()
-
-
-
-
-
-
-    cat=get_object_or_404(Commerical,title=parent_parent_title)
-    cat_childs=cat.children.all()
+    
     cits=City.objects.filter(
         id__in=[int(i) for i in province]
     )
 
+    if title in apartemanForosh:
+
+        if title in foroshJustForSanadEdari:
+
+            if province and smallCities:
+                    if bool(justImg):
+
+                        if parking:
+                            if anbari:
+                                if sanadEdari:
+                        
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                                ).filter(
+                                                    Q(city__in=[int(i) for i in province]) | 
+                                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                    Q(sanad_adari=True)&
+                                                    Q(anbari=True)&
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    img_length__gte=1
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadedari
+                                else:
+                                    coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                                ).filter(
+                                                    Q(city__in=[int(i) for i in province]) | 
+                                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                    Q(anbari=True)&
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    img_length__gte=1
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                            # else for anbari
+                            else:
+
+                                if sanadEdari:
+                        
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                                ).filter(
+                                                    Q(city__in=[int(i) for i in province]) | 
+                                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                    Q(sanad_adari=True)& 
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    img_length__gte=1
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadedari
+                                else:
+                                    coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                                ).filter(
+                                                    Q(city__in=[int(i) for i in province]) | 
+                                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(  
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    img_length__gte=1
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                        # else for parking
+                        else:
+                            if anbari:
+                                if sanadEdari:
+                        
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                                ).filter(
+                                                    Q(city__in=[int(i) for i in province]) | 
+                                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                    Q(sanad_adari=True)&
+                                                    Q(anbari=True)&
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    img_length__gte=1
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadedari
+                                else:
+                                    coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                                ).filter(
+                                                    Q(city__in=[int(i) for i in province]) | 
+                                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                    Q(anbari=True)&
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    img_length__gte=1
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                            # else for anbari
+                            else:
+
+                                if sanadEdari:
+                        
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                                ).filter(
+                                                    Q(city__in=[int(i) for i in province]) | 
+                                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                    Q(sanad_adari=True)& 
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    img_length__gte=1
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadedari
+                                else:
+                                    coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                                ).filter(
+                                                    Q(city__in=[int(i) for i in province]) | 
+                                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(  
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    img_length__gte=1
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+
+
+                    # else for image
+                    else:
+                        print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                        if parking:
+                            if anbari:
+                                if sanadEdari:
+
+                                        coms_to_show=Commerical.objects.filter(
+                                                Q(city__in=[int(i) for i in province]) | 
+                                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                        Q(sanad_adari=True)&
+                                                        Q(anbari=True)&
+                                                        Q(parking=True)&
+                                                        Q(price__range=(int(least_price),int(max_price)))&
+                                                        Q(rooms__gte=roomNumber)&
+                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(floor__gte=floor)   
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadedair
+                                else:   
+                                    coms_to_show=Commerical.objects.filter(
+                                                Q(city__in=[int(i) for i in province]) | 
+                                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                        Q(anbari=True)&
+                                                        Q(parking=True)&
+                                                        Q(price__range=(int(least_price),int(max_price)))&
+                                                        Q(rooms__gte=roomNumber)&
+                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(floor__gte=floor)   
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                            # else for anbari
+                            else:
+                                if sanadEdari:
+
+                                        coms_to_show=Commerical.objects.filter(
+                                                Q(city__in=[int(i) for i in province]) | 
+                                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                        Q(sanad_adari=True)&
+                                                        Q(parking=True)&
+                                                        Q(price__range=(int(least_price),int(max_price)))&
+                                                        Q(rooms__gte=roomNumber)&
+                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(floor__gte=floor)   
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadedair
+                                else:   
+                                    coms_to_show=Commerical.objects.filter(
+                                                Q(city__in=[int(i) for i in province]) | 
+                                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                        Q(parking=True)&
+                                                        Q(price__range=(int(least_price),int(max_price)))&
+                                                        Q(rooms__gte=roomNumber)&
+                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(floor__gte=floor)   
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                        # else for parking
+                        else:
+                            if anbari:
+                                if sanadEdari:
+
+                                        coms_to_show=Commerical.objects.filter(
+                                                Q(city__in=[int(i) for i in province]) | 
+                                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                        Q(sanad_adari=True)&
+                                                        Q(anbari=True)&
+                                                        
+                                                        Q(price__range=(int(least_price),int(max_price)))&
+                                                        Q(rooms__gte=roomNumber)&
+                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(floor__gte=floor)   
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadedair
+                                else:   
+                                    coms_to_show=Commerical.objects.filter(
+                                                Q(city__in=[int(i) for i in province]) | 
+                                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                        Q(anbari=True)&
+                                                        
+                                                        Q(price__range=(int(least_price),int(max_price)))&
+                                                        Q(rooms__gte=roomNumber)&
+                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(floor__gte=floor)   
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                            # else for anbari
+                            else:
+                                if sanadEdari:
+
+                                        coms_to_show=Commerical.objects.filter(
+                                                Q(city__in=[int(i) for i in province]) | 
+                                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                        Q(sanad_adari=True)&
+                                                        Q(price__range=(int(least_price),int(max_price)))&
+                                                        Q(rooms__gte=roomNumber)&
+                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(floor__gte=floor)   
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadedair
+                                else:   
+                                    coms_to_show=Commerical.objects.filter(
+                                                Q(city__in=[int(i) for i in province]) | 
+                                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                                ).filter(
+                                                    Q(parent__title=title) &
+                                                    Q(location__in=locas_to_go)
+                                                ).filter(
+                                                        Q(price__range=(int(least_price),int(max_price)))&
+                                                        Q(rooms__gte=roomNumber)&
+                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(floor__gte=floor)   
+                                                ).filter(
+                                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                                ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+
+            elif province and not smallCities:
+
+                    print("B")
+
+                    if bool(justImg):
+
+                        if parking:
+
+                            if anbari:
+                                if sanadEdari:
+                                    
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(sanad_adari=True)&
+                                                    Q(anbari=True)&
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadEdari
+                                else:
+                                     coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(anbari=True)&
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+                            # else for anbari
+
+                            else:
+                                if sanadEdari:
+                                    
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(sanad_adari=True)&    
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadEdari
+                                else:
+                                     coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                        # else for parking
+                        else:
+                            if anbari:
+                                if sanadEdari:
+                                    
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(sanad_adari=True)&
+                                                    Q(anbari=True)&
+                                                   
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadEdari
+                                else:
+                                     coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(anbari=True)&
+                                                    
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+                            # else for anbari
+
+                            else:
+                                if sanadEdari:
+                                    
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(sanad_adari=True)&    
+                                                   
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                                # else for sanadEdari
+                                else:
+                                     coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                   
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                    
+
+                    # else for image
+                    else:
+
+                        if parking:
+
+                            if anbari:
+                                if sanadEdari:
+
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(sanad_adari=True)&
+                                            Q(anbari=True)&
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                                # else for sanadEdari
+                                else:
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(anbari=True)&
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+                            # else for anbari
+                            else:
+
+                                if sanadEdari:
+
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(sanad_adari=True)&
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                                # else for sanadEdari
+                                else:
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+                        # else for parking
+                        else:
+
+                            if anbari:
+
+                                if sanadEdari:
+
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(sanad_adari=True)&
+                                            Q(anbari=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                                # else for sanadEdari
+                                else:
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(anbari=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+                            # else for anbari
+                            else:
+
+                                if sanadEdari:
+
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(sanad_adari=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                                # else for sanadEdari
+                                else:
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+
+
+            elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+
+                    if parking:
+
+                        if anbari:
+                            if sanadEdari:
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(sanad_adari=True)&
+                                                    Q(anbari=True)&
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                            # else sanadEdari  
+                            else:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(anbari=True)&
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct() 
+
+
+                        # else for anabri
+                        else:
+
+                            if sanadEdari:
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(sanad_adari=True)&
+                                                 
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                            # else sanadEdari  
+                            else:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                   
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct() 
+
+
+                    # else for parking
+                    else:
+
+                        if anbari:
+                            if sanadEdari:
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(sanad_adari=True)&
+                                                    Q(anbari=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                            # else sanadEdari  
+                            else:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(anbari=True)&
+                                                    
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct() 
+
+
+                        # else for anabri
+                        else:
+
+                            if sanadEdari:
+                                        coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(sanad_adari=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+                            # else sanadEdari  
+                            else:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                                img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct() 
+
+                        
+
+
+
+
+
+                # else for image
+                else:
+
+                    if parking:
+                        if anbari:
+                            if sanadEdari:
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(sanad_adari=True)&
+                                            Q(anbari=True)&
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)    
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                            # else for sanadEdari
+                            else :
+                                 coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(anbari=True)&
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)    
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                        # else for anbari
+                        else:
+
+                            if sanadEdari:
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(sanad_adari=True)&
+                                        
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)    
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                            # else for sanadEdari
+                            else :
+                                 coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)    
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                    
+                    # else for parking
+                    else:
+
+                        if anbari:
+                            if sanadEdari:
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(sanad_adari=True)&
+                                            Q(anbari=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)    
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                            # else for sanadEdari
+                            else :
+                                 coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(anbari=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)    
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                        # else for anbari
+                        else:
+
+                            if sanadEdari:
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(sanad_adari=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)    
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                            # else for sanadEdari
+                            else :
+                                 coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)    
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+        # else for aparteman haie ke sanad edari  nadarn
+        else:
+            
+            if province and smallCities:
+          
+                if bool(justImg):
+                    
+                    if parking:
+                        if anbari:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(anbari=True)&
+                                        Q(parking=True)&
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)             
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+                        # else for anbari
+                        else:
+                            
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(parking=True)&
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)             
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+                    # else for parking
+                    else:
+                        if anbari:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(anbari=True)&
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)             
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+                        # else for anbari
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)             
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+
+                # else for image
+                else:
+
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    if parking:
+                        if anbari:
+
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(anbari=True)&
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)   
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        # else for anbari
+                        else:
+                            print("BOBOBOBOBOOMMMMMM")
+                            print("BOBOBOBOBOOMMMMMM")
+                            print("BOBOBOBOBOOMMMMMM")
+                            coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)   
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                    
+                    # else for parking
+                    else:
+
+                        if anbari:
+
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(anbari=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)   
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        # else for anbari
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)   
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                    
+
+            elif province and not smallCities:
+
+                    print("B")
+
+                    if bool(justImg):
+
+                        if parking:
+                            if anbari:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                        ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(anbari=True)&
+                                        Q(parking=True)&
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)    
+
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                            # else for anbari
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                        ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(parking=True)&
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)    
+
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        
+                        # else for parking
+                        else:
+                            if anbari:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                        ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(anbari=True)&
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)    
+
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                            # else for anbari
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                        ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)    
+
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                    
+
+                # else for image
+                    else:
+                        if parking:
+                            if anbari:
+
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(anbari=True)&
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                            # else for anbari
+                            else:
+                                 coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        # else parking
+                        else:
+                            if anbari:
+
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(anbari=True)&
+                                           
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                            # else for anbari
+                            else:
+                                 coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+
+            elif not province and smallCities:
+                    print("C")
+
+                    if bool(justImg):
+                        if parking:
+                            if anbari:
+                                
+                                    coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(anbari=True)&
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+                            # else anbari
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                            
+                                                    Q(parking=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+                        # else for parking
+                        else:
+                            if anbari:
+                                
+                                    coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(anbari=True)&
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+                            # else anbari
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(    
+                                                    Q(price__range=(int(least_price),int(max_price)))&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor) 
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+                                      
+                    # else image
+                    else:
+
+                        if parking:
+                            if anbari:
+
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(anbari=True)&
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+        
+                            # else for anbari
+                            else:
+                                coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                
+                                            Q(parking=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                        # else for parking
+                        else:
+                            if anbari:
+
+                                    coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(anbari=True)&
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+        
+                            # else for anbari
+                            else:
+                                coms_to_show=Commerical.objects.filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+        
+    elif title in ejarehAll:
+
+        if province and smallCities:
+          
+                if bool(justImg):
+                    if parking:
+                        if anbari:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(anbari=True)&
+                                    Q(parking=True)&
+                                    Q(rooms__gte=roomNumber)&
+                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                    Q(publisher=publisherForAmlak)&
+                                    Q(floor__gte=floor)&
+                                    Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                    Q(rent__range=(int(minEjareh),int(maxEjareh)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                        # else for anbari
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(parking=True)&
+                                    Q(rooms__gte=roomNumber)&
+                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                    Q(publisher=publisherForAmlak)&
+                                    Q(floor__gte=floor)&
+                                    Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                    Q(rent__range=(int(minEjareh),int(maxEjareh)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                    # else for parking
+                    else:
+                        if anbari:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(anbari=True)&
+                                  
+                                    Q(rooms__gte=roomNumber)&
+                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                    Q(publisher=publisherForAmlak)&
+                                    Q(floor__gte=floor)&
+                                    Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                    Q(rent__range=(int(minEjareh),int(maxEjareh)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                        # else for anbari
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(rooms__gte=roomNumber)&
+                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                    Q(publisher=publisherForAmlak)&
+                                    Q(floor__gte=floor)&
+                                    Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                    Q(rent__range=(int(minEjareh),int(maxEjareh)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                # else for iamge
+                else:
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    if parking:
+                        if anbari:
+
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(anbari=True)&
+                                        Q(parking=True)&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)&
+                                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                        Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        # else for  anbari
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(parking=True)&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)&
+                                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                        Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    # else for parking
+                    else:
+                        if anbari:
+
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(anbari=True)&
+                                       
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)&
+                                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                        Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        # else for  anbari
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)&
+                                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                        Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+         
+                
+
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    if parking:
+                        if anbari:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(anbari=True)&
+                                                    Q(parking=True)&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)&
+                                                    Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                                    Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+                        # else for anbari
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                 
+                                                    Q(parking=True)&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)&
+                                                    Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                                    Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+                    # else for parking
+                    else:
+                        if anbari:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(anbari=True)&
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)&
+                                                    Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                                    Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+                        # else for anbari
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                            ).filter(
+                                                Q(city__in=[int(i) for i in province]) &
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                    Q(rooms__gte=roomNumber)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(floor__gte=floor)&
+                                                    Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                                    Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                    img_length__gte=1
+                                            ).filter(
+                                                    com_status=instatnceComs
+                                                ).distinct()
+
+
+
+                # else for image    
+                else:
+                    if parking:
+                        if anbari:
+
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(anbari=True)&
+                                            Q(parking=True)&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)&
+                                            Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                            Q(rent__range=(int(minEjareh),int(maxEjareh))) 
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(parking=True)&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)&
+                                            Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                            Q(rent__range=(int(minEjareh),int(maxEjareh))) 
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                    # else for parking
+                    else:
+                        if anbari:
+
+                                coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(anbari=True)&
+                                        
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)&
+                                            Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                            Q(rent__range=(int(minEjareh),int(maxEjareh))) 
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                    ).filter(
+                                           
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)&
+                                            Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                            Q(rent__range=(int(minEjareh),int(maxEjareh))) 
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+
+
+        elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    if parking:
+                        if anbari:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(anbari=True)&
+                                            Q(parking=True)&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)&
+                                            Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                            Q(rent__range=(int(minEjareh),int(maxEjareh)))  
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        # else for anbari
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                           
+                                            Q(parking=True)&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)&
+                                            Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                            Q(rent__range=(int(minEjareh),int(maxEjareh)))  
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                    # else for parking
+                    else:
+                        if anbari:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(anbari=True)&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)&
+                                            Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                            Q(rent__range=(int(minEjareh),int(maxEjareh)))  
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        # else for anbari
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)&
+                                            Q(floor__gte=floor)&
+                                            Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                            Q(rent__range=(int(minEjareh),int(maxEjareh)))  
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+
+                # else for iamge
+                else:
+                    if parking:
+
+                        if anbari:
+                        
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(anbari=True)&
+                                        Q(parking=True)&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)&
+                                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                        Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        # elsefor parking
+                        else:
+                             coms_to_show=Commerical.objects.filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(                                       
+                                        Q(parking=True)&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)&
+                                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                        Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    # else for parking'
+                    else:
+                        if anbari:
+                        
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(anbari=True)&
+                                       
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)&
+                                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                        Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        # elsefor parking
+                        else:
+                             coms_to_show=Commerical.objects.filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(                                       
+                                    
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)&
+                                        Q(floor__gte=floor)&
+                                        Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
+                                        Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+    
+
+    elif title in cars:
+
+        if province and smallCities:
+          
+                if bool(justImg):
+
+                    if exchange:
+
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(ready_to_exchange=True)&
+                                    Q(internal_or_external=internalOrExternal)&
+                                    Q(color=color)&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(publisherForCar=publisherForCar)&
+                                    Q(internal_or_external=internalOrExternal)&
+                                    Q(color=color)&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                # else for image
+                else:
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    if  exchange:
+
+                        coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(publisherForCar=publisherForCar)&
+                            Q(ready_to_exchange=True)&
+                            Q(internal_or_external=internalOrExternal)&
+                            Q(color=color)&
+                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+                    else:
+                         coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(price__range=(int(least_price),int(max_price)))&
+                            Q(publisherForCar=publisherForCar)&
+                          
+                            Q(internal_or_external=internalOrExternal)&
+                            Q(color=color)&
+                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            com_status=instatnceComs
+                        ).distinct()
+
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(publisherForCar=publisherForCar)&
+                                            Q(ready_to_exchange=True)&
+                                            Q(internal_or_external=internalOrExternal)&
+                                            Q(color=color)&
+                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                    
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(publisherForCar=publisherForCar)&
+    
+                                            Q(internal_or_external=internalOrExternal)&
+                                            Q(color=color)&
+                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+
+                # else for image
+
+                else:
+                    if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(publisherForCar=publisherForCar)&
+                                        Q(ready_to_exchange=True)&
+                                        Q(internal_or_external=internalOrExternal)&
+                                        Q(color=color)&
+                                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                        Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))    
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(publisherForCar=publisherForCar)&
+                                  
+                                        Q(internal_or_external=internalOrExternal)&
+                                        Q(color=color)&
+                                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                        Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))    
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        
+
+
+        elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(publisherForCar=publisherForCar)&
+                                Q(ready_to_exchange=True)&
+                                Q(internal_or_external=internalOrExternal)&
+                                Q(color=color)&
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                Q(publisherForCar=publisherForCar)&
+                               
+                                Q(internal_or_external=internalOrExternal)&
+                                Q(color=color)&
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct() 
+                    
+                # else for image
+                else:
+                    if exchange:
+
+                        coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(publisherForCar=publisherForCar)&
+                                            Q(ready_to_exchange=True)&
+                                            Q(internal_or_external=internalOrExternal)&
+                                            Q(color=color)&
+                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(publisherForCar=publisherForCar)&
+                                     
+                                            Q(internal_or_external=internalOrExternal)&
+                                            Q(color=color)&
+                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+    elif title in tablet_and_mobile:
+
+        if title == "تبلت":
+
+                if province and smallCities:
+          
+                    if bool(justImg):
+                        if exchange:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(phone_status=phoneStatus)&
+                                            Q(esalat=esalat)&
+                                            Q(sim_cart_number__gte=simcartNums)&
+                                            Q(color=color)&
+                                            Q(memory_size__gte=memorySize)&
+                                            Q(cover_simcart=coverSimcart)&
+                                            Q(ready_to_exchange=True)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        # else for exchange
+                        else:
+                             coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(phone_status=phoneStatus)&
+                                            Q(esalat=esalat)&
+                                            Q(sim_cart_number__gte=simcartNums)&
+                                            Q(color=color)&
+                                            Q(memory_size__gte=memorySize)&
+                                            Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+
+
+                    # else for image
+                    else:
+                        if exchange:
+
+                            print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(phone_status=phoneStatus)&
+                                        Q(esalat=esalat)&
+                                        Q(sim_cart_number__gte=simcartNums)&
+                                        Q(color=color)&
+                                        Q(memory_size__gte=memorySize)&
+                                        Q(cover_simcart=coverSimcart)&
+                                        Q(ready_to_exchange=True)  
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        
+                        # else for exhange
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(phone_status=phoneStatus)&
+                                        Q(esalat=esalat)&
+                                        Q(sim_cart_number__gte=simcartNums)&
+                                        Q(color=color)&
+                                        Q(memory_size__gte=memorySize)&
+                                        Q(cover_simcart=coverSimcart)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        
+                elif province and not smallCities:
+
+                        print("B")
+
+                        if bool(justImg):
+                            if exchange:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(phone_status=phoneStatus)&
+                                            Q(esalat=esalat)&
+                                            Q(sim_cart_number__gte=simcartNums)&
+                                            Q(color=color)&
+                                            Q(memory_size__gte=memorySize)&
+                                            Q(cover_simcart=coverSimcart)&
+                                            Q(ready_to_exchange=True)  
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        
+                            # else for exhange
+                            else:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(phone_status=phoneStatus)&
+                                            Q(esalat=esalat)&
+                                            Q(sim_cart_number__gte=simcartNums)&
+                                            Q(color=color)&
+                                            Q(memory_size__gte=memorySize)&
+                                            Q(cover_simcart=coverSimcart)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        
+                        # else for image
+
+                        else:
+                            if exhange:
+
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(phone_status=phoneStatus)&
+                                            Q(esalat=esalat)&
+                                            Q(sim_cart_number__gte=simcartNums)&
+                                            Q(color=color)&
+                                            Q(memory_size__gte=memorySize)&
+                                            Q(cover_simcart=coverSimcart)&
+                                            Q(ready_to_exchange=True) 
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+
+                            # else for exchange
+                            else:
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(phone_status=phoneStatus)&
+                                            Q(esalat=esalat)&
+                                            Q(sim_cart_number__gte=simcartNums)&
+                                            Q(color=color)&
+                                            Q(memory_size__gte=memorySize)&
+                                            Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                elif not province and smallCities:
+                    print("C")
+
+                    if bool(justImg):
+                        if exchange:
+
+                                    coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(price__range=(int(least_price),int(max_price)))&
+                                                Q(phone_status=phoneStatus)&
+                                                Q(esalat=esalat)&
+                                                Q(sim_cart_number__gte=simcartNums)&
+                                                Q(color=color)&
+                                                Q(memory_size__gte=memorySize)&
+                                                Q(cover_simcart=coverSimcart)&
+                                                Q(ready_to_exchange=True)   
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(price__range=(int(least_price),int(max_price)))&
+                                                Q(phone_status=phoneStatus)&
+                                                Q(esalat=esalat)&
+                                                Q(sim_cart_number__gte=simcartNums)&
+                                                Q(color=color)&
+                                                Q(memory_size__gte=memorySize)&
+                                                Q(cover_simcart=coverSimcart)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                    
+                    # else for image
+                    else:
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(phone_status=phoneStatus)&
+                                        Q(esalat=esalat)&
+                                        Q(sim_cart_number__gte=simcartNums)&
+                                        Q(color=color)&
+                                        Q(memory_size__gte=memorySize)&
+                                        Q(cover_simcart=coverSimcart)&
+                                        Q(ready_to_exchange=True)   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(phone_status=phoneStatus)&
+                                        Q(esalat=esalat)&
+                                        Q(sim_cart_number__gte=simcartNums)&
+                                        Q(color=color)&
+                                        Q(memory_size__gte=memorySize)&
+                                        Q(cover_simcart=coverSimcart)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+    
+        
+
+
+        # else for not tablet
+        else:
+            if province and smallCities:
+          
+                    if bool(justImg):
+                        if exchange:
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(phone_status=phoneStatus)&
+                                            Q(esalat=esalat)&
+                                            Q(sim_cart_number__gte=simcartNums)&
+                                            Q(color=color)&
+                                            Q(memory_size__gte=memorySize)&
+                                            Q(ready_to_exchange=True)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                        
+                        # else for exchange
+                        else:
+                             coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                    ).filter(
+                                            Q(city__in=[int(i) for i in province]) | 
+                                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                                        ).filter(
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(phone_status=phoneStatus)&
+                                            Q(esalat=esalat)&
+                                            Q(sim_cart_number__gte=simcartNums)&
+                                            Q(color=color)&
+                                            Q(memory_size__gte=memorySize)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                            img_length__gte=1
+                                        ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+
+
+                    # else for image
+                    else:
+                        if exchange:
+
+                            print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(phone_status=phoneStatus)&
+                                        Q(esalat=esalat)&
+                                        Q(sim_cart_number__gte=simcartNums)&
+                                        Q(color=color)&
+                                        Q(memory_size__gte=memorySize)&
+                                        Q(ready_to_exchange=True)  
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        
+                        # else for exhange
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(phone_status=phoneStatus)&
+                                        Q(esalat=esalat)&
+                                        Q(sim_cart_number__gte=simcartNums)&
+                                        Q(color=color)&
+                                        Q(memory_size__gte=memorySize)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        
+            elif province and not smallCities:
+
+                    print("B")
+
+                    if bool(justImg):
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(phone_status=phoneStatus)&
+                                        Q(esalat=esalat)&
+                                        Q(sim_cart_number__gte=simcartNums)&
+                                        Q(color=color)&
+                                        Q(memory_size__gte=memorySize)&
+                                       
+                                        Q(ready_to_exchange=True)  
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    
+                        # else for exhange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(phone_status=phoneStatus)&
+                                        Q(esalat=esalat)&
+                                        Q(sim_cart_number__gte=simcartNums)&
+                                        Q(color=color)&
+                                        Q(memory_size__gte=memorySize)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    
+                    # else for image
+
+                    else:
+                        if exhange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(phone_status=phoneStatus)&
+                                        Q(esalat=esalat)&
+                                        Q(sim_cart_number__gte=simcartNums)&
+                                        Q(color=color)&
+                                        Q(memory_size__gte=memorySize)&
+                                        
+                                        Q(ready_to_exchange=True) 
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(phone_status=phoneStatus)&
+                                        Q(esalat=esalat)&
+                                        Q(sim_cart_number__gte=simcartNums)&
+                                        Q(color=color)&
+                                        Q(memory_size__gte=memorySize)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+            elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    if exchange:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(phone_status=phoneStatus)&
+                                            Q(esalat=esalat)&
+                                            Q(sim_cart_number__gte=simcartNums)&
+                                            Q(color=color)&
+                                            Q(memory_size__gte=memorySize)&
+                                            Q(ready_to_exchange=True)   
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(phone_status=phoneStatus)&
+                                            Q(esalat=esalat)&
+                                            Q(sim_cart_number__gte=simcartNums)&
+                                            Q(color=color)&
+                                            Q(memory_size__gte=memorySize)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            com_status=instatnceComs
+                                        ).distinct()
+                
+                # else for image
+                else:
+                    if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(phone_status=phoneStatus)&
+                                    Q(esalat=esalat)&
+                                    Q(sim_cart_number__gte=simcartNums)&
+                                    Q(color=color)&
+                                    Q(memory_size__gte=memorySize)&
+                                    Q(ready_to_exchange=True)   
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(phone_status=phoneStatus)&
+                                    Q(esalat=esalat)&
+                                    Q(sim_cart_number__gte=simcartNums)&
+                                    Q(color=color)&
+                                    Q(memory_size__gte=memorySize)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+    elif title =="سیم کارت":
+        
+        if province and smallCities:
+          
+                if bool(justImg):
+                    if  exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(simcartType=simcartType)&
+                                        Q(ready_to_exchange=True)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    # else for exhange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(simcartType=simcartType)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                
+                # else for image
+                else:
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    if exchange:
+                        coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(simcartType=simcartType)&
+                                Q(ready_to_exchange=True)   
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(simcartType=simcartType)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    if exchange:
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                            ).filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(simcartType=simcartType)&
+                                    Q(ready_to_exchange=True)   
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                            ).filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(simcartType=simcartType) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                else:
+                    if exchange:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(simcartType=simcartType)&
+                                    Q(ready_to_exchange=True)   
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(simcartType=simcartType)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+
+        elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    if exchange:
+                                coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(smallCity__in=[int(i) for i in smallCities])&
+                                            Q(parent__title=title) &
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(price__range=(int(least_price),int(max_price)))&
+                                                Q(simcartType=simcartType)&
+                                                Q(ready_to_exchange=True)  
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(simcartType=simcartType)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                        
+                # else for image
+                else:
+                    if exchange:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(simcartType=simcartType)&
+                                    Q(ready_to_exchange=True)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))&
+                                    Q(simcartType=simcartType)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+    elif title in themSelf:
+
+        if province and smallCities:
+          
+                if bool(justImg):
+                    if exchange:
+                                coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                                Q(city__in=[int(i) for i in province]) | 
+                                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                            ).filter(
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                Q(price__range=(int(least_price),int(max_price))) &
+                                                Q(ready_to_exchange=True)
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                img_length__gte=1
+                                            ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                    
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                img_length__gte=1
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+                # else for image
+                else:
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    if exchange:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price))) &
+                                        Q(ready_to_exchange=True)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        
+
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price))) &
+                                        Q(ready_to_exchange=True)   
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                
+                # else for image
+                else:
+                    if exchange:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(price__range=(int(least_price),int(max_price))) &
+                                    Q(ready_to_exchange=True)    
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+        elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price))) &
+                                        Q(ready_to_exchange=True)   
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(price__range=(int(least_price),int(max_price))) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                else:
+                    if exchange:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price))) &
+                                    Q(ready_to_exchange=True)    
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price)))   
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+    elif title in male_or_female:
+        if province and smallCities:
+          
+                if bool(justImg):
+                    if exchange:
+                                coms_to_show=Commerical.objects.annotate(
+                                            img_length=Length("commericalimage")
+                                        ).filter(
+                                                Q(city__in=[int(i) for i in province]) | 
+                                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                                            ).filter(
+                                                Q(parent__title=title) &
+                                                Q(location__in=locas_to_go)
+                                            ).filter(
+                                                Q(price__range=(int(least_price),int(max_price))) &
+                                                Q(ready_to_exchange=True)&
+                                                Q(cloths_type=clothsType)
+                                            ).filter(
+                                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                            ).filter(
+                                                img_length__gte=1
+                                            ).filter(
+                                                com_status=instatnceComs
+                                            ).distinct()
+                    
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(price__range=(int(least_price),int(max_price))) &
+                                Q(cloths_type=clothsType)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                img_length__gte=1
+                            ).filter(
+                                com_status=instatnceComs
+                            ).distinct()
+
+                # else for image
+                else:
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    if exchange:
+                            coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                   Q(price__range=(int(least_price),int(max_price))) &
+                                   Q(ready_to_exchange=True)&
+                                   Q(cloths_type=clothsType)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price))) &       
+                                    Q(cloths_type=clothsType)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                        
+
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price))) &
+                                        Q(ready_to_exchange=True)&
+                                        Q(cloths_type=clothsType)  
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    # else for exchange
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) &
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price))) &
+                                        Q(cloths_type=clothsType)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                
+                # else for image
+                else:
+                    if exchange:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(price__range=(int(least_price),int(max_price))) &
+                                    Q(ready_to_exchange=True)&
+                                    Q(cloths_type=clothsType)   
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                Q(city__in=[int(i) for i in province]) &
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(price__range=(int(least_price),int(max_price))) &
+                                    Q(cloths_type=clothsType)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+        elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                        Q(price__range=(int(least_price),int(max_price))) &
+                                        Q(ready_to_exchange=True)&
+                                        Q(cloths_type=clothsType)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        com_status=instatnceComs
+                                    ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__title=title) &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                    Q(price__range=(int(least_price),int(max_price))) &
+                                    
+                                    Q(cloths_type=clothsType)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+                else:
+                    if exchange:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price))) &
+                                    Q(ready_to_exchange=True)&
+                                    Q(cloths_type=clothsType)   
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(price__range=(int(least_price),int(max_price))) &
+                                    Q(cloths_type=clothsType)  
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    com_status=instatnceComs
+                                ).distinct()
+
+
+
+    cat=get_object_or_404(Commerical,title=title)
+    cat_childs=cat.children.all()
+
     contex={
+
+       
+        'cits':cits,
         'cat_childs':cat_childs,
         'catMain':cat,
         'coms_to_show':coms_to_show,
-        'cits':cits,
+        'GroupHasPrice':GroupHasPrice,
+        'GroupHasMeter':GroupHasMeter,
+        'GroupHasYearOfConstruction':GroupHasYearOfConstruction,
+        'GroupHasExchangePossibale':GroupHasExchangePossibale,
+        'GroupHasCommericalSituation_like_new_or_old':GroupHasCommericalSituation_like_new_or_old,
+        'Group_Employments':Group_Employments,
+        'groupHas_Parking_And_Anbari_And_Floor':groupHas_Parking_And_Anbari_And_Floor,
+        'groupHas_sanadEdari':groupHas_sanadEdari,
+        'cloths_accessory':cloths_accessory,
+     
         'justImg':bool(justImg),
         'instatnceComs':instatnceComs,
-        'least_price':int(least_price) if least_price != "undefined" else 0,
-        'max_price':int(max_price) if max_price !="undefined" else 200,
-        'maxmeter':int(maxMeter),
-        'leastMeter':int(leastMeter),
-        'maxVadieh':int(maxVadieh),
+        'least_price':int(least_price),
+        'max_price':int(max_price),
+        'locas_to_go':locas_to_go,
+        'immadate_location_image':immadate_location_image,
+        'price_Title':price_Title,
+        'moavezeh':moavezeh,
+        'exchange':exchange,
+        'farWork':farWork,
+        'soldier':soldier,
+        'publisherForAmlak':publisherForAmlak,
+        'publisherForCar':publisherForCar,
+        'phoneStatus':phoneStatus,
+        'choose_min_price_for_work':int(choose_min_price_for_work),
+        'choose_max_price_for_work':int(choose_max_price_for_work),
+        'minKarkard':int(minKarkard),
+        'maxKarkard':int(maxKarkard),
         'minVadieh':int(minVadieh),
-        'maxEjareh':int(maxEjareh),
+        'maxVadieh':int(maxVadieh),
         'minEjareh':int(minEjareh),
-
-
-        
+        'maxEjareh':int(maxEjareh),
+        'leastMeter':int(leastMeter),
+        'maxMeter':int(maxMeter),
+        'roomNumber':int(roomNumber),
+        'minYearOfConstruction':int(minYearOfConstruction),
+        'maxYearOfConstruction':int(maxYearOfConstruction),
+        'clothsType':clothsType,
+        'coverSimcart':coverSimcart,
+        'memorySize':memorySize,
+        'simcartType':simcartType,
+        'simcartNums':simcartNums,
+        'esalat':esalat,
+        'color':color,
+        'sanadEdari':sanadEdari,
+        'parking':parking,
+        'anbari':anbari,
+        'floor':floor,
+        'internalOrExternal':internalOrExternal,
     }
 
-    return render(request,"core/handleAmlakFilterSecondLevel.html",contex)
 
-
-
-
-
-
-
-
+    return render(request,"core/filterAmlakThirdLevel.html",contex)
 
 
 
@@ -1251,3 +9193,27 @@ def load_more(request):
         print(type(a2),)
 
         return JsonResponse({"data":a2})
+
+
+
+
+
+def first(request):
+
+    contex={
+        'name':'mohammad',
+        'age':22
+    }
+    if request.method=="POST":
+        contex={
+            "name":"alireza"
+        }
+    return render(request,"core/test1.html",contex)
+
+
+def second(request):
+    contex={
+        'email':'mohammadalipanah80@gmail.com',
+        'cool':'yes'
+    }
+    return render(request,"core/second.html",contex)

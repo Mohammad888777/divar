@@ -50,7 +50,7 @@
                     </article> 
                     <article class="filter-group">
                         <header class="card-header">
-                            <!-- <a href="#" data-toggle="collapse" data-target="#collapse_4" aria-expanded="true" class=""> -->
+                            <a href="#" data-toggle="collapse" data-target="#collapse_4" aria-expanded="true" class="">
                     
                                 <br>
                                 
@@ -73,9 +73,15 @@
                                                     <form action="" method="get" id="chooseLocation">
                                                         {% for c in cits %}
                                                             {% for loc in c.location_set.all %}
-                                                                <a href="#" style="color:black;text-decoration:none">{{loc.name}}</a>
-                                                                <input  type="checkbox" name="ids" id="" value="{{loc.id}}">
-                                                                <br>
+                                                                {% if loc.id in locas_to_go %}
+                                                                    <a href="#" style="color:black;text-decoration:none">{{loc.name}}</a>
+                                                                    <input  type="checkbox" name="ids" id="" value="{{loc.id}}" checked="checked">
+                                                                    <br>
+                                                                {% else %}
+                                                                    <a href="#" style="color:black;text-decoration:none">{{loc.name}}</a>
+                                                                    <input  type="checkbox" name="ids" id="" value="{{loc.id}}">
+                                                                    <br>
+                                                                {% endif %}
                                                             {% endfor %}
                                                         {% endfor %}
                                                         <br>
@@ -100,50 +106,98 @@
                                         <label>حداقل</label>
                                         <!-- <input class="form-control" placeholder="$0" type="number"> -->
                                             <select class="mr-2 form-control" id="choose_min_price" name="least_price">
-                                                <option selected="selected" value="0"></option>
+                                                <!-- <option selected="selected" value="0"></option> -->
 
-                                                
+                                                {% if least_price == 5 %}
+                                                    <option value="5" selected="selected">5 میلیون</option>
+
+                                                {% else %}
                                                     <option value="5" >5 میلیون</option>
 
-                                                
+                                                {% endif %}
+                                                {% if least_price == 10 %}
+                                                    <option value="10" selected="selected">10 میلیون</option>
+
+                                                {% else %}
                                                     <option value="10" >10 میلیون</option>
 
-                                                
+                                                {% endif %}
+                                                {% if least_price == 20 %}
+                                                    <option value="20" selected="selected">20 میلیون</option>
+
+                                                {% else %}
                                                     <option value="20" >20 میلیون</option>
 
-                                                
+                                                {% endif %}
+                                                {% if least_price == 50 %}
+                                                    <option value="50" selected="selected">50 میلیون</option>
+
+                                                {% else %}
                                                     <option value="50" >50 میلیون</option>
 
-                                                
+                                                {% endif %}
+                                                {% if least_price == 100 %}
+                                                    <option value="100" selected="selected">100 میلیون</option>
+
+                                                {% else %}
                                                     <option value="100" >100 میلیون</option>
 
-                                               
+                                                {% endif %}
+                                                {% if least_price == 200 %}
+                                                    <option value="200" selected="selected">200 میلیون</option>
+
+                                                {% else %}
                                                     <option value="200" >200 میلیون</option>
 
-                                                
+                                                {% endif %}
                                             </select>
                                         </div>
                                         <div class="form-group text-right col-md-6">
                                         <label>حداکثر </label>
                                             <select class="mr-2 form-control" id="choose_max_price" name="max_price">
-                                                <option selected="selected" value="400000000"></option>
-                                                
+                                                <!-- <option selected="selected" value="400000000"></option> -->
+                                                {% if max_price == 5 %}
+                                                    <option value="5" selected="selected">5 میلیون</option>
+
+                                                {% else %}
                                                     <option value="5" >5 میلیون</option>
 
-                                                
+                                                {% endif %}
+                                                {% if max_price == 10 %}
+                                                    <option value="10" selected="selected">10 میلیون</option>
+
+                                                {% else %}
                                                     <option value="10" >10 میلیون</option>
 
-                                            
+                                                {% endif %}
+                                                {% if max_price == 20 %}
+                                                    <option value="20" selected="selected">20 میلیون</option>
+
+                                                {% else %}
                                                     <option value="20" >20 میلیون</option>
 
+                                                {% endif %}
+                                                {% if max_price == 50 %}
+                                                    <option value="50" selected="selected">50 میلیون</option>
+
+                                                {% else %}
                                                     <option value="50">50 میلیون</option>
 
-                                                
+                                                {% endif %}
+                                                {% if max_price == 100 %}
+                                                    <option value="100" selected="selected">100 میلیون</option>
+
+                                                {% else %}
                                                     <option value="100" >100 میلیون</option>
 
-                                                
+                                                {% endif %}
+                                                {% if max_price == 200 %}
+                                                    <option value="200" selected="selected">200 میلیون</option>
+
+                                                {% else %}
                                                     <option value="200" >200 میلیون</option>
 
+                                                {% endif %}
                                                 
                                             </select>
                                         </div>
@@ -266,8 +320,6 @@
                                         })
 
 
-                                            
-
 
                                             $("#chooseLocation").submit(function(e){
 
@@ -308,20 +360,11 @@
                                                 }
 
 
-
-
-
                                                 
                                                 
                                                 
                                             });
 
-
-                                            
-
-
-                                            
-                                          
 
 
                                             $("#choose_min_price,#choose_max_price").change(function(){
@@ -337,7 +380,6 @@
                                                 
                                                 var imgStatus=$("input[type=checkbox][id=justImg]")
                                                 var instanceStatus=$("input[type=checkbox][id=justIm]")
-
                                                 if(imgStatus.is(":checked")){
                                                     if(instanceStatus.is(":checked")){
 
@@ -357,6 +399,8 @@
 
                                                     }
                                                 }
+
+                                                
                                             
                                             });
 
@@ -365,7 +409,7 @@
 
                                         </script>
                                 
-                            
+                            </a>
                         </header>
                     </article> 
                     

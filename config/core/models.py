@@ -7,12 +7,15 @@ from .managers import (CityManager,
                        TagManger,FeatureManger,SavedCommericalManger,
                        CommericalManger
                        )
+from django.utils.html import format_html
+
 from .utilty import (   
                         BODY_STATUS,COMMERICAL_STATUS,
                         FUEL_CHOICES,
                         PUBLISHER_CHOICES,ORIGINAL_OR_NOT,
                         ENGIN_TYPE,PHONE_STATUS,TRANSMITION_TYPE,
-                        RENT_STATUS
+                        RENT_STATUS,PUBLISHERForCar_CHOICES,COVERSIMCART,COLORS,
+                        INTERNALOREXTERNAL,MEMORYSIZE,SIMCARTTYPE,CLOSTHTYPE
                      )
 
 
@@ -109,12 +112,15 @@ class Commerical(models.Model):
     publisher=models.CharField(max_length=200,null=True,blank=True,choices=PUBLISHER_CHOICES,default="شخصی")
     floor=models.IntegerField(null=True,blank=True)
     detail=models.TextField(max_length=450,null=True,blank=True)
+    parking=models.BooleanField(default=False)
+    anbari=models.BooleanField(default=False)
+    sanad_adari=models.CharField(max_length=200,null=True,blank=True,choices=COVERSIMCART,default="ندارد")
 
     # وسایل نقلیه
     karkard_mashin=models.IntegerField(null=True,blank=True)
     day_rent_paid=models.IntegerField(null=True,blank=True)
     production_year=models.IntegerField(null=True,blank=True)
-    color=models.CharField(max_length=100,null=True,blank=True)
+    color=models.CharField(max_length=100,null=True,blank=True,choices=COLORS,default="همه")
     brand_or_tip=models.CharField(max_length=100,null=True,blank=True)
     brand_or_tip=models.CharField(max_length=100,null=True,blank=True)
     fuel_type=models.CharField(max_length=100,null=True,blank=True,choices=FUEL_CHOICES)
@@ -123,25 +129,42 @@ class Commerical(models.Model):
     body_type=models.CharField(max_length=100,null=True,blank=True,choices=BODY_STATUS)
     insurance_time=models.IntegerField(null=True,blank=True)
     girbox=models.CharField(max_length=100,null=True,blank=True,choices=TRANSMITION_TYPE)
-
+    publisherForCar=models.CharField(max_length=200,null=True,blank=True,choices=PUBLISHERForCar_CHOICES,default="همه")
+    internal_or_external=models.CharField(max_length=200,null=True,blank=True,choices=INTERNALOREXTERNAL,default="همه")
+    
 
     # کالاهای دیجیتال
-    phone_status=models.CharField(max_length=100,null=True,blank=True,choices=PHONE_STATUS)
-    esalat=models.CharField(max_length=100,null=True,blank=True,choices=ORIGINAL_OR_NOT)
+    phone_status=models.CharField(max_length=100,null=True,blank=True,choices=PHONE_STATUS,default="همه")
+    esalat=models.CharField(max_length=100,null=True,blank=True,choices=ORIGINAL_OR_NOT,default="همه")
     sim_cart_number=models.IntegerField(null=True,blank=True)
-    memory_size=models.IntegerField(null=True,blank=True)
+    memory_size=models.IntegerField(null=True,blank=True,choices=MEMORYSIZE,default=4)
     ram_size=models.IntegerField(null=True,blank=True)
     window_size=models.CharField(max_length=100,null=True,blank=True)
     os_typpe=models.CharField(max_length=100,null=True,blank=True)
     game_pad_number=models.IntegerField(null=True,blank=True)
+    cover_simcart=models.CharField(max_length=100,null=True,blank=True,choices=COVERSIMCART,default="ندارد")
+    simcartType=models.CharField(max_length=100,null=True,blank=True,choices=SIMCARTTYPE,default="ایرانسل")
+    
+
+    # وسایل شخصی 
+
+    cloths_type=models.CharField(max_length=100,null=True,blank=True,choices=CLOSTHTYPE,default="همه")
 
     com_status=models.CharField(max_length=200,null=True,blank=True,choices=COMMERICAL_STATUS,default='عادی')
 
+    #استخدام و کاریابی
+    price_for_work=models.IntegerField(null=True,blank=True,default=0)
+    
+    farWork=models.BooleanField(default=False)
+    soldier=models.BooleanField(default=False)
+    insurance=models.BooleanField(default=False)
+
+    
     created=models.DateTimeField(default=timezone.now)
     updated=models.DateTimeField(auto_now=True)
 
     # objects=CommericalManger()
-
+    ready_to_exchange.bool=True
     def __str__(self):
         return self.title
     
@@ -180,8 +203,17 @@ class Commerical(models.Model):
     def iranTimeCreated2(self):
         return date2jalali(self.created)
 
+    @property
+    def bg_red_for_cars(self):
+        if self.parent:
+            if self.parent.title=="سواری و وانت":
+                return format_html(f'<p style="background-color:red;" >{self.title}</p>')
 
-
+    @property
+    def yellow_red_for_phones(self):
+        if self.parent:
+            if self.parent.title=="گوشی موبایل":
+                return format_html(f'<p style="background-color:yellow;" >{self.title}</p>')
 
 
 def comImagesPath(instance,filename):
