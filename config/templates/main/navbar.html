@@ -65,7 +65,7 @@
 
             <li><a href="#" class="nav-link" style="margin-top: 8px;"><i class="far fa-comment"></i>  چت  </a></li>
             <li><a href="#" class="nav-link" style="margin-top: 8px;">  پشتیبانی </a></li>
-            <li><a href="#" class="nav-link">  <button class="btn btn-danger">ثبت آگهی</button> </a></li>
+            <li><a href="{% url 'MakeCommerical' %}" class="nav-link"  >  <button class="btn btn-danger">ثبت آگهی</button> </a></li>
         </ul> <!-- list-inline //  -->
       </div> <!-- navbar-collapse .// -->
     </div> <!-- container //  -->
@@ -99,11 +99,16 @@
                                           </div>
                                           <div id="scan1_api{{child.id}}" class="panel-collapse collapse">
                                               <ul class="list-group">
-                                                  {% if child.children %}
-                                                      {% for mini_child in child.children %}
-                                                          <li class="list-group-item" style="color:black!important">{{mini_child.title}}</li>
-                                                      {% endfor %}
-                                                  {% endif %}
+                                                    {% with a=child.children.first %}
+                                                      {% if a.children.all %}
+
+                                                          {% for mini_child in child.children %}
+                                                              <li class="list-group-item" style="color:black!important">{{mini_child.title}}</li>
+                                                          {% endfor %}
+                                                          
+                                                      {% endif %}
+                                                    {% endwith %}
+                                                  
                                                   
                                               </ul>
                                           </div>
@@ -119,7 +124,7 @@
               {% endfor %}
           
           
-            </div>
+          </div>
       </div>
 
 

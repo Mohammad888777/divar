@@ -14,7 +14,8 @@ class CommericalAdmin(admin.ModelAdmin):
         "price",'com_status','location',
         'publisher','ready_to_exchange','phone_status',
         'publisherForCar',
-        'bg_red_for_cars','yellow_red_for_phones'
+        'bg_red_for_cars','yellow_red_for_phones',
+        'all_parents'
     ]
     search_fields=["title"]
     

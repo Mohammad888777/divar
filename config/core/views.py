@@ -26,7 +26,7 @@ GroupHasCommericalSituation_like_new_or_old,Group_Employments,
 typeOneForSecondLevelFilter_Amlak_Frosh,amlakEjareh,vasayelNaghliehMotor_va_Car,
 vasayelNaghlieh_Both_and_supplies,digitals,kitchen,personal,digitalOrKitchenOrPersonalOrEntertaimentOrSupllies,
 services,foroshJustForSanadEdari,ejarehAll,cars,tablet_and_mobile,
-themSelf,male_or_female
+themSelf,male_or_female,social,employment
                      )
 
 from django.http import JsonResponse
@@ -541,14 +541,13 @@ def eachCategorySecondlevel(request,categoryId):
     elif cat.parent.title in two_level_parent:
         print("SECONND TOUCHHED")
         if province and smallCities:
+            print("FFFNNNNN")
 
             coms_to_show=Commerical.objects.filter(
                 Q(city__in=[int(i) for i in province]) | 
                 Q(smallCity__in=[int(i) for i in smallCities]) 
-                
-
             ).filter(
-                Q(parent__parent__parent__title=cat.parent.title) & Q(parent__parent__title=cat.title)
+                 Q(parent__title=cat.title)
             ).filter(
                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
             ).distinct()
@@ -557,10 +556,8 @@ def eachCategorySecondlevel(request,categoryId):
 
             coms_to_show=Commerical.objects.filter(
                 Q(city__in=[int(i) for i in province]) 
-                
-
             ).filter(
-                Q(parent__parent__title=cat.parent.title) &
+                
                 Q(parent__title=cat.title)
             ).filter(
                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
@@ -571,10 +568,7 @@ def eachCategorySecondlevel(request,categoryId):
             coms_to_show=Commerical.objects.filter(
                 
                 Q(smallCity__in=[int(i) for i in smallCities])
-                
-
             ).filter(
-                Q(parent__parent__parent__title=cat.parent.title) & 
                 Q(parent__title=cat.title)
             ).filter(
                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
@@ -659,6 +653,14 @@ def eachCategorySecondlevel(request,categoryId):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).distinct()
+
+    print("$$$$$$$$$$$$$$$$$$$$$")
+    print("$$$$$$$$$$$$$$$$$$$$$")
+    print("$$$$$$$$$$$$$$$$$$$$$")
+    print(coms_to_show)
+    print("$$$$$$$$$$$$$$$$$$$$$")
+    print("$$$$$$$$$$$$$$$$$$$$$")
+    print("$$$$$$$$$$$$$$$$$$$$$")
 
     
 
@@ -9108,7 +9110,6 @@ def threadView(request,threadId):
 
 
 
-
     
 def load_more(request):
 
@@ -9197,6 +9198,129 @@ def load_more(request):
 
 
 
+class MakeCommerical(View):
+
+    def get(self,request,*args,**kwargs):
+        
+        coms=Commerical.objects.filter(     
+          parent=None
+            )
+  
+    
+        contex={
+            'cats2':coms
+        }
+
+        return render(request,"core/makeCommerical.html",contex)
+
+
+
+class NewCommericalForm(View):
+    
+    def get(self,request,id=None,parent_id=None,*args,**kwargs):
+        coms_to_show=None
+        if parent_id:
+            coms_to_show=get_object_or_404(Commerical,id=id)
+        else:
+            coms_to_show=get_object_or_404(Commerical,id=id)
+
+        all_cits=City.objects.all()
+        all_locs=Location.objects.all()
+
+        locs=[]
+        for l in all_locs:
+            locs.append({
+                "id":l.id,
+                "name":l.name,
+                "city":l.city.name,
+                "city_id":l.city.id
+            })
+
+        print(locs)
+
+
+        contex={
+
+            'coms_to_show':coms_to_show,
+            'cits':all_cits,
+            'all_locs':json.dumps(locs),
+            'locs':all_locs,
+            'GroupHasMeter':GroupHasMeter,
+            'GroupHasExchangePossibale':GroupHasExchangePossibale,
+            'GroupHasPrice':GroupHasPrice,
+            'GroupHasCommericalSituation_like_new_or_old':GroupHasCommericalSituation_like_new_or_old,
+            'male_or_female':male_or_female
+        }
+
+        return render(request,"core/newCommerical.html",contex)
+
+
+    def post(self,request,*args,**kwargs):
+
+        images=None
+        if self.request.POST.getlist("images"):
+
+            images=self.request.POST.getlist("images")
+        
+        
+        city_id=self.request.POST.get("city")
+        location_id=self.request.POST.get("location")
+        title=request.POST.get("title")
+        detail=self.request.POST.get("detail")
+
+        city=get_object_or_404(City,id=city_id)
+        location=get_object_or_404(Location,id=location_id)
+
+        
+        frosh=["فروش مسکونی","فروش اداری و تجاری"]
+
+        new_com=None
+        if self.request.POST.get("parent_parent_title"):
+
+            parent_parent_title=self.request.POST.get("parent_parent_title")
+            com_id=self.request.POST.get("self_id_three_level")
+            print(com_id,"TTITLTITLTITL")
+
+            com_self=get_object_or_404(Commerical,id=com_id) 
+
+            match parent_parent_title:
+
+                case "املاک":
+                    price=self.request.POST.get("price")
+                    meter=self.request.POST.get("meter")
+                    vadieh=self.request.POST.get("vadieh")
+                    ejareh=self.request.POST.get("ejareh") 
+                    rooms=self.request.POST.get("rooms")
+                    floor=self.request.POST.get("floor")
+                    parking=self.request.POST.get("parking")
+                    anbari=self.request.POST.get("anbari")
+                    publisher=self.request.POST.get("publisher")
+
+                    if com_self.parent.title in frosh:
+
+                        if com_self.parent.title == "فروش اداری و تجاری":
+                            sandEdari=self.request.POST.get("sandEdari")
+
+                            new_com=Commerical(
+                                sanad_adari=sandEdari,
+                                floor=floor,rooms=rooms,parking=True if parking else False,
+                                anbari=True if anbari else False,meter=meter,price=price,city=city,
+                                location=location,title=title,detail=detail,publisher=publisher
+                            )
+
+                        
+            
+              
+                    
+
+        return JsonResponse({
+            'yes':True
+        })
+
+
+
+
+
 
 def first(request):
 
@@ -9217,3 +9341,6 @@ def second(request):
         'cool':'yes'
     }
     return render(request,"core/second.html",contex)
+
+
+

@@ -9,6 +9,12 @@ urlpatterns=[
     path("handleAmlakFilterSecondLevel/",views.handleAmlakFilterSecondLevel,name="handleAmlakFilterSecondLevel"),
     path("handleAmlakFilterSecondLevel/forThird",views.handleAmlakFilterSecondLevel,name="handleAmlakFilterSecondLevel"),
     path("handleFilterThirdLevel/",views.handleFilterThirdLevel,name="handleFilterThirdLevel"),
+
+    path("MakeCommerical/",views.MakeCommerical.as_view(),name="MakeCommerical"),
+    path("NewCommericalForm/<str:id>/",views.NewCommericalForm.as_view(),name="NewCommericalForm"),
+    path("NewCommericalForm/<str:id>/<str:parent_id>/",views.NewCommericalForm.as_view(),name="NewCommericalForm"),
+
+
     path("loadMore/",views.load_more,name="loadMore"),
     path("first/",views.first,name="first"),
     path("second/",views.second,name="second"),

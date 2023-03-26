@@ -1,0 +1,656 @@
+a{% extends 'main/base.html' %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+{% load mathfilters %}
+{% load base_tags %}
+
+<h1>{{coms_to_show.title}}</h1>
+
+<div class="container " style="margin-top:100px">
+    <div class="container">
+        <div class="container">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4">
+                        <form action="" method="post" id="newCom" >
+
+                            {% csrf_token %}
+                            <label for="">انخاب شهر</label>
+                    
+                            <select name="city" id="city">
+                                {% for c in cits %}
+                                    <option value="{{c.id}}">{{c.name}}</option>
+                                {% endfor %}
+                            </select>
+                            <br>
+                            <br>
+                            <label for="">انتخاب محل</label>
+                            
+                            <select name="location" id="location">
+                    
+                        
+                            </select>
+                            
+                            <br>
+                            <h6>عکس آگهی</h6>
+                            <p>عکس‌هایی از فضای داخل و بیرون ملک اضافه کنید. آگهی‌های دارای عکس تا «۳ برابر» بیشتر توسط کاربران دیده می‌شوند.</p>
+                            <br>
+                            <input type="file" name="images" id="images" multiple="multiple">
+                            <br>
+                            <br>
+                            
+                    
+                            {% if coms_to_show.parent.parent %}
+                                <input type="hidden" name="parent_parent_title" id="parent_parent_title" value="{{coms_to_show.parent.parent.title}}">
+                                <input type="hidden" name="self_id_three_level" value="{{coms_to_show.id}}" >
+
+                                {% if coms_to_show.parent.parent.title == "املاک" %}
+                                    <div class="amlak">
+
+                                            {% if coms_to_show.parent.title in GroupHasMeter %}
+                                            <br>
+                                                <label for="meter">متراژ</label>
+                                                <input type="text" id="meter" name="meter" placeholder="">
+                                            <br>
+                                            {% endif %}
+
+                                            {% if coms_to_show.title == "آپارتمان اجاره" or coms_to_show.title == "خانه و ویلا اجاره" %}
+                                                <br>
+                                                <h5>ودیعه و اجاره</h5>
+                                                <p>در صورتی که مبلغ ودیعه یا اجاره را وارد نکنید، در آگهی شما «توافقی» و اگر آن را صفر وارد کنید، «رایگان» نمایش داده می‌شود.</p>
+                                                <br>
+                                                <label for="">ودیعه</label>
+                                                <input type="text" id="vadieh" name="vadieh" placeholder="مثلا 50">
+                                                <br>
+                                                <br>
+                                                <label for="">اجارهٔ ماهانه</label>
+                                                <input type="text" id="ejareh" name="ejareh" placeholder="مثلا 1">
+                                                <br>
+                                                <br>
+                                                <h5>آگهی‌دهنده</h5>
+                                                <br>
+
+                                            {% endif %}
+
+                                            <div class="form-group">
+                                                    
+                                                <label for="">شخصی</label>
+                                                <input type="radio" name="publisher" id="publisher" value="شخخصی">
+                                                <label for="">املاک</label>
+
+                                                <input type="radio" name="publisher" id="publisher" value="املاک">
+                                            </div>
+                                            <br>
+                                            <h5>تعداد اتاق</h5>
+                                            <select name="rooms" id="rooms" required>
+                                                
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                            </select>
+                                            <br>
+                                            {% if coms_to_show.title == "آپارتمان فروش" or coms_to_show.title == "آپارتمان اجاره" %}
+                                                    <br>
+                                                    <h5>طبقه</h5>
+                                                    <select name="floor" id="floor" required>
+                                                        
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                    </select>
+                                                    <br>
+                                            {% endif %}
+                                            <br>
+                                            <h5>
+                                                پارکینگ
+                                            </h5>
+                                            <select id="parking" name="parking" > 
+                                                <option value="True">دارد</option>
+                                                <option value="">ندارد</option>
+                                            </select>
+                                            <br>
+                                            <br>
+                                            <h5>انباری</h5>
+                                            <select id="anbari" name="anbari"> 
+                                                <option value="True">دارد</option>
+                                                <option value="">ندارد</option>
+                                            </select>
+                                            <br>
+                                            <br><br>
+                                            {% if coms_to_show.parent.title == "فروش اداری و تجاری"  or coms_to_show.parent.title == "اجاره اداری و تجاری" %}
+                                                <label for="">سند اداری ؟</label>
+                                                
+                                                <select name="sandEdari" id="sandEdari">
+                                                    <option value="ندارد">ندارد</option>
+                                                    <option value="دارد">دارد</option>
+
+                                                </select>
+                                            {% endif %}
+                                            <br>
+                                            {% if coms_to_show.parent.title == " اجاره کوتاه مدت" %}
+                                                <label for="">اجاره روزانه</label>
+                                                <input type="text" name="day_rent" placeholder="اجاره روزانه"  required >
+                                            {% endif %}
+
+
+
+                                           
+
+                                    </div>
+                                {% elif coms_to_show.parent.parent.title == "وسایل نقلیه" %}
+                                    <div class="vasayel naghlieh">
+                                        {% if coms_to_show.parent.title == "خودرو" or coms_to_show.parent.title == "موتورسیکلت" %}
+                                            <div class="mashin_and_motor">
+                                                <h5>مدل (سال تولید)</h5>
+                                                <select name="yearOfConstruction" id="yearOfConstruction">
+                                                    <option value="1365">1365</option>
+                                                    <option value="1370">1370</option>
+                                                    <option value="1375">1375</option>
+                                                    <option value="1380">1380</option>
+                                                    <option value="1380">1380</option>
+                                                    <option value="1385">1385</option>
+                                                    <option value="1390">1390</option>
+                                                    <option value="1392">1392</option>
+                                                    <option value="1394">1394</option>
+                                                    <option value="1396">1396</option>
+                                                    <option value="1398">1398</option>
+                                                    <option value="1400">1400</option>
+                                                    <option value="1402">1402</option>
+                                                </select>
+                                                <br>
+                                                <br>
+                                                
+                                                
+                                                <br><br>
+                                                <h5>کارکرد</h5>
+                                                <input type="text" id="karkard" name="karkard" >
+                                                <br><br>
+                                                {% if coms_to_show.parent.title == "خودرو" %}
+                                                    <div class="just_car">
+
+                                                        <h5>وضعیت بدنه</h5>
+                                                        <select name="body_status" id="body_status">
+                                                            <option value="سالم و بی‌خط و خش">سالم و بی‌خط و خش</option>
+                                                            <option value="رنگ">رنگ</option>
+                                                            <option value="بی رنگ">بی رنگ</option>
+                                                            <option value="خط و خش جزیی">خط و خش جزیی</option>
+                                                            <option value="صافکاری بی‌رنگ">صافکاری بی‌رنگ</option>
+                                                            <option value="رنگ‌شدگی">رنگ‌شدگی</option>
+                                                            <option value="دوررنگ">دوررنگ</option>
+                                                            <option value="تمام‌رنگ">تمام‌رنگ</option>
+                                                            <option value="تصادفی">تصادفی</option>
+                                                            <option value="اوراقی">اوراقی</option>
+                                                        </select>
+                                                        <br><br>
+                                                        <h5>وضعیت موتور</h5>
+                                                        <select name="engin_type" id="engin_type">
+                                                            <option value="سالم">سالم</option>
+                                                            <option value="نیاز به تعمیر">نیاز به تعمیر</option>
+                                                            <option value="تعویض شده">تعویض شده</option>
+                                                        </select>
+                                                        <br><br>
+                                                        <h5>وضعیت شاسی‌ها</h5>
+                                                        <select name="shasti_type" id="shasti_type">
+                                                            <option value="هر دو سالم و پلمپ">هر دو سالم و پلمپ</option>
+                                                            <option value="عقب ضربه‌خورده">عقب ضربه‌خورده</option>
+                                                            <option value="عقب رنگ‌شده">عقب رنگ‌شده</option>
+                                                            <option value="جلو ضربه‌خورده">جلو ضربه‌خورده</option>
+                                                            <option value="جلو رنگ‌شده">جلو رنگ‌شده</option>
+                                                            <option value="عقب ضربه‌خورده، جلو رنگ‌شده">عقب ضربه‌خورده، جلو رنگ‌شده</option>
+                                                            <option value="عقب رنگ‌شده، جلو ضربه‌خورده">عقب رنگ‌شده، جلو ضربه‌خورده</option>
+                                                            <option value="هردو ضربه‌خورده">هردو ضربه‌خورده</option>
+                                                            <option value="هردو رنگ‌شده">هردو رنگ‌شده</option>
+                                                        </select>
+                                                        <br>
+                                                        <br>
+                                                        <h5>مهلت بیمهٔ شخص ثالث</h5>
+                                                        <select name="insurance_time" id="insurance_time">
+                                                            <option value="1">1 ماه</option>
+                                                            <option value="2">2 ماه</option>
+                                                            <option value="3">3 ماه</option>
+                                                            <option value="4">4 ماه</option>
+                                                            <option value="5">5 ماه</option>
+                                                            <option value="6">6 ماه</option>
+                                                            <option value="7">7 ماه</option>
+                                                            <option value="8">8 ماه</option>
+                                                            <option value="9">9 ماه</option>
+                                                            <option value="10">10 ماه</option>
+                                                            <option value="11">11 ماه</option>
+                                                            <option value="12">12 ماه</option>
+                                                        </select>
+                                                        <br>
+                                                        <br>
+                                                        <h5>گیربکس</h5>
+                                                        <select name="girbox" id="girbox">
+                                                            <option value="دنده ای">دنده ای</option>
+                                                            <option value="اتومات">اتومات</option>
+                                                        </select>
+                                                        <br>
+                                                        <br>
+
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% elif coms_to_show.parent.parent.title == "کالای دیجیتال" %}
+                                    <div class="kalayeh_digital">
+                                        {% if coms_to_show.title == "سیم کارت"  %}
+                                            <h5>نوع سیم کارت</h5>
+                                            <select name="simcart_type" id="simcart_type">
+                                                <option value="ایرانسل">ایرانسل</option>
+                                                <option value="همراه اول">همراه اول</option>
+                                                <option value="رایتل">رایتل</option>
+                                            </select>
+                                        {% endif %}
+
+                                        
+                                        {% if coms_to_show.title == "گوشی موبایل"  %}
+                                                <h5>تعداد سیم‌کارت</h5>
+                                                <select name="simCartNums" id="simCartNums">
+                                                    <option value="1">1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                </select>
+                                        {% endif %}
+                                        <br><br>
+
+                                        {% if coms_to_show.title == "تبلت" %}
+                                            <h5>پشتیبانی از سیم‌کارت</h5>
+                                            <select name="cover_simcart" id="cover_simcart">
+                                                <option value="ندارد">ندارد</option>
+                                                <option value="دارد">دارد</option>
+                                            </select>
+                                        {% endif %}
+
+                                        <br><br>
+                                        <h5>اصالت برند</h5>
+                                        <select name="esalet" id="esalet">
+                                            <option value="همه">همه</option>
+                                            <option value="اصل">اصل</option>
+                                            <option value="تقلبی">تقلبی</option>
+                                        </select>
+                                        <br><br>
+                                        {% if coms_to_show.title == "گوشی موبایل" or coms_to_show.title == "تبلت" or coms_to_show.parent.title == "رایانه" %}
+                                                <h5>برند و مدل</h5>
+                                                <select name="phone_brand" id="phone_brand">
+                                                    <option value="ایسر">ایسر</option>
+                                                    <option value="آلکاتل">آلکاتل</option>
+                                                    <option value="آلویو">آلویو</option>
+                                                    <option value="آمازون">آمازون</option>
+                                                    <option value="اپل">اپل</option>
+                                                    <option value="ایسوس">ایسوس</option>
+                                                    <option value="بلک‌بری">بلک‌بری</option>
+                                                    <option value="اچ‌تی‌سی">اچ‌تی‌سی</option>
+                                                    <option value="هواوی">هواوی</option>
+                                                    <option value="جی‌‌ال‌ایکس">جی‌‌ال‌ایکس</option>
+                                                    <option value="مایکروسافت">مایکروسافت</option>
+                                                    <option value="موتورولا">موتورولا</option>
+                                                    <option value="سونی">سونی</option>
+                                                    <option value="نوکیا">نوکیا</option>
+                                                    <option value="شیائومی">شیائومی</option>
+                                                    <option value="سامسونگ">سامسونگ</option>
+                                                    <option value="سونی اریکسون">سونی اریکسون</option>
+                                                </select>
+                                                <br>
+                                                <br>
+                                                <h5>حافظهٔ داخلی</h5>
+                                                <select name="memory_size" id="memory_size">
+                                                    <option value="4">4</option>
+                                                    <option value="8">8</option>
+                                                    <option value="16">16</option>
+                                                    <option value="32">32</option>
+                                                    <option value="64">64</option>
+                                                    <option value="128">128</option>
+                                                    <option value="256">256</option>
+                                                </select>
+                                                <br>
+                                                <br>
+                                                <h5>مقدار رم</h5>
+                                                <select name="memory_size" id="memory_size">
+                                                    <option value="4">4</option>
+                                                    <option value="8">8</option>
+                                                    <option value="16">16</option>
+                                                    <option value="32">32</option>
+                                                    <option value="64">64</option>
+                                                    <option value="128">128</option>
+                                                    <option value="256">256</option>
+                                                </select>
+                                                <br>
+                                                <br>
+                                        {% endif %}
+                                        <br><br>
+                                        {% if coms_to_show.parent.title == "رایانه" or coms_to_show.title == "تبلت" %}
+                                                <h5>اندازهٔ صفحه</h5>
+                                                <select name="window_size" id="window_size">
+                                                    <option value="7">۷ اینچ و کوچکتر</option>
+                                                    <option value="10">۸ تا ۱۰ اینچ</option>
+                                                    <option value="13">۱۱ تا ۱۳ اینچ</option>
+                                                    <option value="20">بزرگتر از ۱۳ اینچ</option>
+                                                </select>
+                                                <br><br>
+                                                <h5>سیستم عامل</h5>
+                                                <select name="os_type" id="os_type">
+                                                    <option value="Android">Android</option>
+                                                    <option value="Windows">Windows</option>
+                                                    <option value="iOS - iPadOS">iOS - iPadOS</option>
+                                                    <option value="Linux">Linux</option>
+                                                </select>
+                                        {% endif %}
+                                    
+
+
+
+
+                                    </div>
+                                {% elif coms_to_show.parent.parent.title == "خانه و آشپزخانه" %}
+
+                                {% elif coms_to_show.parent.parent.title == "وسایل شخصی" %}
+                                    <div class="personal">
+                                            {% if coms_to_show.title in male_or_female %}
+                                                <h5>زنانه/مردانه</h5>
+                                                <select name="male_or_female" id="male_or_female">
+                                                    <option value="همه">همه</option>
+                                                    <option value="مردانه">مردانه</option>
+                                                    <option value="زنانه">زنانه</option>
+                                                    <option value="بچگانه">بچگانه</option>
+                                                </select>
+                                            {% endif %}
+                                    </div>
+                                {% elif coms_to_show.parent.parent.title == "سرگرمی و فراغت" %}
+
+                            
+                                {% endif %}
+
+                    
+                            {% else %}
+
+                                    <input type="hidden" name="parent_title" id="parent_title" value="{{coms_to_show.parent.title}}">
+                                    <input type="hidden" name="self_id" value="{{coms_to_show.id}}" >
+                                    
+                                    {% if coms_to_show.parent.title == "استخدام و کاریابی" %}
+                                        <div class="employement">
+                                            <h4>شرح موقعیت شغلی</h4>
+                                            <br>
+                                            <h5>نوع همکاری</h5>
+                                            <select name="work_type" id="work_type">
+                                                <option value="تمام وقت">تمام وقت</option>
+                                                <option value="پاره وقت">پاره وقت</option>
+                                                <option value="پیمان‌کاری/پروژه‌ای">پیمان‌کاری/پروژه‌ای</option>
+                                                <option value="کارآموزی">کارآموزی</option>
+                                                <option value=""></option>
+                                            </select>
+                                            <br><br><br>
+                                            <h5>شیوهٔ پرداخت</h5>
+                                            <select name="pendding_type" id="pendding_type">
+                                                <option value="ماهانه">ماهانه</option>
+                                                <option value="روزانه">روزانه</option>
+                                                <option value="ساعتی">ساعتی</option>
+                                                <option value="پورسانتی/درصدی">پورسانتی/درصدی</option>
+                                                <option value="توافقی">توافقی</option>
+        
+                                            </select>
+                                            <br>
+                                            <br>
+                                            <h5>بیمه</h5>
+                                            <input type="checkbox" name="insurance" id="insurance" >
+                                            <br>
+                                            <br>
+                                            <h5>سابقه</h5>
+                                            <select name="sabegheh" id="sabegheh">
+                                                <option value="1">1 سال</option>
+                                                <option value="2">2 سال</option>
+                                                <option value="3">3 سال</option>
+                                                <option value="4">4 سال</option>
+                                                <option value="5">5 سال</option>
+                                                <option value="7">7 سال</option>
+                                            </select>
+                                            <br><br><br>
+                                            <h5>وضعیت سربازی</h5>
+                                            <select name="soldier" id="soldier">
+                                                <option value="True">اتمام یا معافیت الزامی است</option>
+                                                <option value="">فرقی ندارد</option>
+                                            </select>
+                                            <br>
+                                            <br>
+
+                                        </div>
+
+                                    {% endif %}
+                                    
+                            {% endif %}
+                            <br>
+                            <br>
+                            {% if coms_to_show.parent.title == "خودرو" or coms_to_show.title == "تبلت" or coms_to_show.title == "گوشی موبایل" %}
+                                <h5>رنگ</h5>
+                                <select name="color" id="color">
+                                    <option value="همه">همه</option>
+                                    <option value="مشکی">مشکی</option>
+                                    <option value="آبی">آبی</option>
+                                    <option value="قرمز">قرمز</option>
+                                    <option value="زرد">زرد</option>
+                                    <option value="سفید">سفید</option>
+                                    <option value="سبز">سبز</option>
+
+                                </select>
+                            {% endif %}
+                            <br><br>
+
+                            {% if coms_to_show.parent.title in GroupHasCommericalSituation_like_new_or_old or coms_to_show.title in GroupHasCommericalSituation_like_new_or_old %}
+                                <h5>وضعیت</h5>
+                                <select name="phone_status" id="phone_status">
+                                    <option value="همه">همه</option>
+                                    <option value="نو">نو</option>
+                                    <option value="در حد نو">در حد نو</option>
+                                    <option value="کارکرده">کارکرده</option>
+                                </select>
+                            {% endif %}
+                            <br><br>
+                            {% if coms_to_show.parent.title in GroupHasPrice or coms_to_show.title in GroupHasPrice %}
+                                <label for="">قیمت</label>
+                                <input type="text" id="price" name="price">
+
+                            {% endif %}
+                            <br><br>
+                            {% if coms_to_show.parent.title in GroupHasExchangePossibale or coms_to_show.title in  GroupHasExchangePossibale %}
+                                <label for="">مایلم معاوضه کنم</label>
+                                <input type="checkbox" id="exchange" name="exchange">
+                            {% endif %}
+                            <br>
+                            <br>
+                            <h4>تأیید هویت</h4>
+                            <p>برای جلوگیری از ورود شمارهٔ موبایل متخلف و افزایش سلامت تعاملات، تأیید هویت در دیوار انجام می‌شود.</p>
+                            <br>
+                            <p>حساب شما در دیوار با شمارهٔ {{request.user.phone_number}} فعال است.</p>
+                            <br>
+                            <h4>چت دیوار</h4>
+                            <p>اگر مایل به انتشار شماره موبایل خود نیستید، می توانید انتخاب کنید شماره شما نمایش داده نشود.</p>
+                            <br>
+                            <p>این آگهی با چت فعال ثبت می‌شود.</p>
+                            <br>
+                            <label for="">شمارهٔ موبایل نمایش داده نشود.</label>
+                            <input type="checkbox" id="number_show" name="number_show" >
+                            <br>
+                            <br>
+                            <h5>عنوان آگهی</h5>
+                            <label for="">در عنوان آگهی به موارد مهمی مانند نوع ملک، متراژ و محله اشاره کنید.</label>
+                            <input type="text" id="title" name="title" placeholder="عنوان">
+                            <br>
+                            <br>
+                            <h5>توضیحات آگهی</h5>
+                            <p>در توضیحات آگهی به مواردی مانند شرایط اجاره، جزئیات و ویژگی‌های قابل توجه، دسترسی‌های محلی و موقعیت قرارگیری ملک اشاره کنید.</p>
+                            <textarea name="detail" id="detail" cols="30" rows="10"></textarea>
+                            <br>
+                            <br>
+                            <input style="float:left" class="btn btn-danger" type="submit" value="ارسال آگهی">
+
+                            <button class="btn btn-outline-dark">
+                                <a    >انصراف</a>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-4"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+<br>
+<br>
+<br>
+
+
+<script>
+    $(document).ready(function(){
+
+        var city=$("#city").val()
+ 
+        
+        var locations="{{all_locs}}"
+        var parsed_location=JSON.parse(locations.replace(/&quot;/g,'"'))
+     
+        var news=parsed_location.filter(
+            item=>item.city_id===parseInt(city)
+        )
+   
+    
+        var locs_options=document.getElementById("location").options
+   
+
+
+        for(let i in news){
+            locs_options.add(
+                new Option(news[i].name,news[i].id)
+            )
+        }
+
+        $("#city").change(function(){
+
+            var city=$("#city").val()
+ 
+            
+            var locations="{{all_locs}}"
+            var parsed_location=JSON.parse(locations.replace(/&quot;/g,'"'))
+        
+            var news=parsed_location.filter(
+                item=>item.city_id===parseInt(city)
+            )
+    
+        
+            var locs_options=document.getElementById("location")
+    
+
+            removeAll(locs_options)
+
+            for(let i in news){
+                locs_options.add(
+                    new Option(news[i].name,news[i].id)
+                )
+
+            }
+
+        });;
+
+        function removeAll(selectBox) {
+            while (selectBox.options.length > 0) {
+                selectBox.remove(0);
+            }
+        };
+        
+        
+        
+    })
+</script>
+
+
+{% endblock content %}
+
+
+
+
+{% comment %}
+<script>
+    var currentUrl=window.location.href
+        var slpited=currentUrl.split("/")
+        var two_ids=new Array()
+        var one_ids=[]
+
+
+        var newSplited=slpited.slice(4)
+
+        if (newSplited.length>2){
+            two_ids=newSplited.slice(0,2)
+
+        }else{
+            one_ids.push(newSplited[0])
+        }
+
+        var ids_to_go= two_ids.length>=1 ? two_ids :one_ids
+        
+        console.log("###########")
+        
+        
+        console.log(ids_to_go)
+        console.log("###########")
+
+        $("#newCom").submit(function(e){
+
+            e.preventDefault();
+
+            const data=new FormData(this)
+
+            var title=$("#title").val()
+            var detail=$("#detail").val()
+            console.log(title,"TITITIIT")
+            console.log(detail,"detaoittit")
+
+            data.append("title",title)
+            data.append("detail",detail)
+
+
+            console.log(data,"DAATATATA")
+            var converted={}
+            data.forEach((key,value)=>converted[value]=key)
+            console.log(converted,"OCOCOCOCONNN")
+            
+            const sendCommericalPost=async()=>{
+
+                if (ids_to_go.length>1){
+                    console.log("ASDASDASDASDasd")
+
+                    const url=`http://127.0.0.1:8000/NewCommericalForm/${ids_to_go[0]}/${ids_to_go[1]}/`
+                    const resonse=await fetch(url,{
+                        method:"POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            "X-CSRFToken": '{{csrf_token}}'
+                        },
+                        body:JSON.stringify(converted),
+                        
+
+    
+                    });
+                    const res=await  resonse.json()         
+
+    
+                }
+
+            }
+            sendCommericalPost()
+
+            
+
+
+        }) 
+   
+
+</script>
+{% endcomment %}

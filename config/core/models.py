@@ -15,7 +15,7 @@ from .utilty import (
                         PUBLISHER_CHOICES,ORIGINAL_OR_NOT,
                         ENGIN_TYPE,PHONE_STATUS,TRANSMITION_TYPE,
                         RENT_STATUS,PUBLISHERForCar_CHOICES,COVERSIMCART,COLORS,
-                        INTERNALOREXTERNAL,MEMORYSIZE,SIMCARTTYPE,CLOSTHTYPE
+                        INTERNALOREXTERNAL,MEMORYSIZE,SIMCARTTYPE,CLOSTHTYPE,SHASTITYPE
                      )
 
 
@@ -89,9 +89,10 @@ class Commerical(models.Model):
 
 
     title=models.CharField(max_length=50)
-    tags=models.ManyToManyField(Tag,related_name="tags")
-    saved=models.ManyToManyField(SavedCommerical,related_name="saved")
-    features=models.ManyToManyField(Feature,related_name="features")
+    tags=models.ManyToManyField(Tag,related_name="tags",null=True,blank=True)
+    news=models.ManyToManyField(User,related_name="news",null=True,blank=True)
+    # saved=models.ManyToManyField(SavedCommerical,related_name="saved")
+    # features=models.ManyToManyField(Feature,related_name="features")
     user=models.ForeignKey(User,on_delete=models.CASCADE,related_name="user",null=True,blank=True)
     ready_to_exchange=models.BooleanField(default=False)
     parent=models.ForeignKey("self",on_delete=models.CASCADE,null=True,blank=True,related_name="+")
@@ -125,7 +126,7 @@ class Commerical(models.Model):
     brand_or_tip=models.CharField(max_length=100,null=True,blank=True)
     fuel_type=models.CharField(max_length=100,null=True,blank=True,choices=FUEL_CHOICES)
     engin_type=models.CharField(max_length=100,null=True,blank=True,choices=ENGIN_TYPE)
-    shasti_type=models.CharField(max_length=100,null=True,blank=True,choices=ENGIN_TYPE)
+    shasti_type=models.CharField(max_length=100,null=True,blank=True,choices=SHASTITYPE)
     body_type=models.CharField(max_length=100,null=True,blank=True,choices=BODY_STATUS)
     insurance_time=models.IntegerField(null=True,blank=True)
     girbox=models.CharField(max_length=100,null=True,blank=True,choices=TRANSMITION_TYPE)
@@ -154,7 +155,8 @@ class Commerical(models.Model):
 
     #استخدام و کاریابی
     price_for_work=models.IntegerField(null=True,blank=True,default=0)
-    
+    # kindCollobrating=models.CharField(max_length=100,null=True,blank=True)
+    # pendding_type=models.CharField(max_length=100,null=True,blank=True)
     farWork=models.BooleanField(default=False)
     soldier=models.BooleanField(default=False)
     insurance=models.BooleanField(default=False)
@@ -207,14 +209,25 @@ class Commerical(models.Model):
     def bg_red_for_cars(self):
         if self.parent:
             if self.parent.title=="سواری و وانت":
-                return format_html(f'<p style="background-color:red;" >{self.title}</p>')
+                return format_html(f'<p style="background-color:red;color:white" >{self.title}</p>')
 
     @property
     def yellow_red_for_phones(self):
         if self.parent:
             if self.parent.title=="گوشی موبایل":
-                return format_html(f'<p style="background-color:yellow;" >{self.title}</p>')
+                return format_html(f'<p style="background-color:yellow;color:black" >{self.title}</p>')
 
+
+
+    @property
+    def all_parents(self):
+        if self.parent is None:
+            return format_html(f'<p style="background-color:blue;" >{self.title}</p>')
+
+    # @property
+    # def pink_for_digital(self):
+    #     if self.parent:
+            
 
 def comImagesPath(instance,filename):
     return f"{instance.commerical.title} + {instance.commerical.user.phone_number}/{filename}"
