@@ -285,3 +285,6 @@
 #                                             Q(floor__gte=floor)  
 
 
+a=99
+b="hello" if a==5 else 7|2
+print(b)

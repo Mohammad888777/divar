@@ -102,12 +102,6 @@ def allCities(request):
 
     
 
-    # print("@@@@@@@@@@@@@@")
-    # print("@@@@@@@@@@@@@@")
-    
-    # print("@@@@@@@@@@@@@@")
-    # print("@@@@@@@@@@@@@@")
-
     
 
     show_result=None

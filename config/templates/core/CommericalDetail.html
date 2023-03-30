@@ -46,164 +46,225 @@
                             
                         <div class="row">
                             {% if c.parent.parent.parent %}
+                                    <div class="with_parent">
 
-                                    {% if c.parent.parent.parent.title == "املاک" %}
+                                            {% if c.parent.parent.parent.title == "املاک" %}
+                                                    <div class="amlak">
 
-                                            {% if  c.parent.parent.title == "فروش مسکونی" %}
-
-                                                <div class="aparteman frosh">
-                                                    <div class="col-md-4 text-center">
-                                                        <p>متراژ</p>
-                                                        <b>{{c.meter}}</b>
-                                                    </div>
-                                                    <div class="col-md-4 text-center">
-                                                        <p>ساخت</p>
-                                                        <b>{{c.year_of_construction}}</b>
-                                                    </div>
-                                                    <div class="col-md-4 text-center">
-                                                        <p>اتاق</p>
-                                                        <b>{{c.rooms}}</b>
-                                                    </div>
-                                                    <br>
-                                                
-                                                
-                                                    <ul class="list-group" style="margin-top:30px">
-                                                        <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
-                                                            قیمت کل
-                                                        <p style="float:left ;margin-right:180px" class="">{{c.price}}</p>
-                                                        </li>
-                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                             قیمت هر متر
-                                                        <p style="float:left ;margin-right:180px" >{{c.price_each_meter}}</p>
-                                                        </li>
-                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                            آگهی‌دهنده
-                                                        <p style="float:left ;margin-right:180px" >{{c.publisher}}</p>
-                                                        </li>
-
-                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                            طبقه
-                                                        <p style="float:left ;margin-right:180px" >{{c.floor}}</p>
-                                                        </li>
-                                                    </ul>
-                                                    <br><br>
-                                                    <hr>
-                                                    <h4 style="margin-top:20px">ویژگی‌ها و امکانات</h4>
-                                                    <br>
-                                                    <br>
-                                                    <div style="margin-top:80px">
-                                                        {% for f in c.features.all %}
-                                                            <span    style="padding: 15px;font-weight:bold;font-size:20px;">{{f.name}}</span>
-                                                        {% endfor %}
-
-                                                    </div>
-                                                    <br>
-                                                    <br>
-                                                    <br>
-                                                    <hr>
-                                                    <div style="margin-top:40px">
-                                                        <p>
-                                                            {{c.detail}}
-                                                        </p>
-                                                    </div>
-
-                                                    <div style="margin-top:40px;float:right">
-                                                        <hr>
-                                                        <br>
-                                                        <br>
-                                                        <br>
-                                                        {% for tag in c.tags.all %}
-                                                            <span style="font-weight:bold;font-size:20px;">
-                                                                <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
-
-                                                            </span>
-                                                        {% endfor %}
-                                                    </div>
                                                     
-                                                </div>
-                                                
-                                            {% elif  c.parent.parent.title == "اجاره مسکونی" %}
 
-                                                {% if c.parent.title == "آپارتمان اجاره" %}
-                                                        <div class="col-md-4 text-center">
-                                                            <p>متراژ</p>
-                                                            <b>{{c.meter}}</b>
-                                                        </div>
-                                                        <div class="col-md-4 text-center">
-                                                            <p>ساخت</p>
-                                                            <b>{{c.year_of_construction}}</b>
-                                                        </div>
-                                                        <div class="col-md-4 text-center">
-                                                            <p>اتاق</p>
-                                                            <b>{{c.rooms}}</b>
-                                                        </div>
-                                                        <br>
-                                                    
-                                                    
-                                                        <ul class="list-group" style="margin-top:30px">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
-                                                                ودیعه
-                                                            <p style="float:left ;margin-right:180px" class="">{{c.vadieh}}</p>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                                اجارهٔ ماهانه
-                                                            <p style="float:left ;margin-right:180px" >{{c.rent}}</p>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                                آگهی‌دهنده
-                                                            <p style="float:left ;margin-right:180px" >{{c.publisher}}</p>
-                                                            </li>
+                                                        {% if  c.parent.parent.title == "فروش مسکونی" or  c.parent.parent.title == "فروش اداری و تجاری" %}
 
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                                طبقه
-                                                            <p style="float:left ;margin-right:180px" >{{c.floor}}</p>
-                                                            </li>
-                                                        </ul>
-                                                        <br><br>
-                                                        <hr>
-                                                        <h4 style="margin-top:20px">ویژگی‌ها و امکانات</h4>
-                                                        <br>
-                                                        <br>
-                                                        <div style="margin-top:80px">
-                                                            {% for f in c.features.all %}
-                                                            <span style="padding: 15px;font-weight:bold;font-size:20px;">{{f.name}}</span>
-                                                        {% endfor %}
+                                                                <div class="aparteman frosh">
+                                                                    <div class="col-md-4 text-center">
+                                                                        <p>متراژ</p>
+                                                                        <b>{{c.meter}}</b>
+                                                                    </div>
+                                                                    <div class="col-md-4 text-center">
+                                                                        <p>ساخت</p>
+                                                                        <b>{{c.year_of_construction}}</b>
+                                                                    </div>
+                                                                    {% if not c.parent.title == "زمین و کلنگی" %}
+                                                                        <div class="col-md-4 text-center">
+                                                                            <p>اتاق</p>
+                                                                            <b>{{c.rooms}}</b>
+                                                                        </div>
+                                                                        <br>
+                                                                    {% endif %}
+                                                                
+                                                                
+                                                                    <ul class="list-group" style="margin-top:30px">
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                            قیمت کل
+                                                                        <p style="float:left ;margin-right:180px" class="">{{c.price}}</p>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            قیمت هر متر
+                                                                        <p style="float:left ;margin-right:180px" >{{c.price_each_meter}}</p>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            آگهی‌دهنده
+                                                                        <p style="float:left ;margin-right:180px" >{{c.publisher}}</p>
+                                                                        </li>
+                                                                        {% if c.parent.title == "آپارتمان فروش" or c.parent.parent.title == "فروش اداری و تجاری" %}
+                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                طبقه
+                                                                            <p style="float:left ;margin-right:180px" >{{c.floor}}</p>
+                                                                            </li>
+                                                                        {% endif %}
+                                                                        {% if c.parent.parent.title == "فروش اداری و تجاری" %}
+                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                سند اداری
+                                                                                <p style="float:left ;margin-right:180px" >
+                                                                                    {% if c.sanad_adari %}
+                                                                                        دارد
+                                                                                    {% else %}
+                                                                                        ندارد
+                                                                                    {% endif %}
+                                                                                </p>
+                                                                            </li>
+                                                                        {% endif %}
+                                                                    </ul>
+                                                                    <br><br>
+                                                                    <hr>
+                                                                    <h4 style="margin-top:20px">ویژگی‌ها و امکانات</h4>
+                                                                    <br>
+                                                                    <br>
+                                                                    {% if not c.parent.title == "زمین و کلنگی" %}
+                                                                        <div style="margin-top:80px">
+                                                                            {% if c.parking %}
+                                                                                <i  class="fas fa-parking"  style="padding: 15px;font-weight:bold;font-size:35px;"></i>پارکینگ
+                                                                            {% else %}
+                                                                                <i  class="fas fa-parking"  style="padding: 15px;font-weight:bold;font-size:35px;opacity:0.5"> </i><span> </span><span>پارکینگ ندارد</span>
+                                                                            {% endif %}
 
-                                                        </div>
-                                                        <br>
-                                                        <br>
-                                                        <br>
-                                                        <hr>
-                                                        <div style="margin-top:40px">
-                                                            <p>
-                                                                {{c.detail}}
-                                                            </p>
-                                                        </div>
+                                                                            {% if c.anbari %}
+                                                                                <i  class="fa fa-car"  style="padding: 15px;font-weight:bold;font-size:35px;"></i> انباری
+                                                                            {% else %}
+                                                                                <i  class="fa fa-car"  style="padding: 15px;font-weight:bold;font-size:35px;opacity:0.5"></i><span> </span><span>انباری ندارد</span>
+                                                                                
+                                                                            {% endif %}
 
-                                                        <div style="margin-top:40px;float:right">
-                                                            <hr>
-                                                            <br>
-                                                            <br>
-                                                            <br>
-                                                            {% for tag in c.tags.all %}
-                                                                <span style="font-weight:bold;font-size:20px;">
-                                                                    <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+                                                                    
 
-                                                                </span>
-                                                            {% endfor %}
-                                                        </div>
+                                                                        </div>
+                                                                    {% endif %}
+                                                                    <br>
+                                                                    <br>
+                                                                    <br>
+                                                                    <hr>
+                                                                    <div style="margin-top:40px">
+                                                                        <p>
+                                                                            {{c.detail}}
+                                                                        </p>
+                                                                    </div>
 
-                                                {% elif c.parent.title == "خانه و ویلا اجاره" %}
+                                                                    <div style="margin-top:40px;float:right">
+                                                                        <hr>
+                                                                        <br>
+                                                                        <br>
+                                                                        <br>
+                                                                        {% for tag in c.tags.all %}
+                                                                            <span style="font-weight:bold;font-size:20px;">
+                                                                                <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
 
-                                                                <div class="col-md-4 text-center">
+                                                                            </span>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                    
+                                                                </div>
+                                                            
+                                                        {% elif  c.parent.parent.title == "اجاره مسکونی" or c.parent.parent.title == "اجاره اداری و تجاری"  %}
+
+                                                            
+                                                                <div class="aparteman_ajareh">
+                                                                    <div class="col-md-4 text-center">
+                                                                        <p>متراژ</p>
+                                                                        <b>{{c.meter}}</b>
+                                                                    </div>
+                                                                    <div class="col-md-4 text-center">
+                                                                        <p>ساخت</p>
+                                                                        <b>{{c.year_of_construction}}</b>
+                                                                    </div>
+                                                                    <div class="col-md-4 text-center">
+                                                                        <p>اتاق</p>
+                                                                        <b>{{c.rooms}}</b>
+                                                                    </div>
+                                                                    <br>
+                                                                
+                                                                
+                                                                    <ul class="list-group" style="margin-top:30px">
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                            ودیعه
+                                                                        <p style="float:left ;margin-right:180px" class="">{{c.vadieh}}</p>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            اجارهٔ ماهانه
+                                                                        <p style="float:left ;margin-right:180px" >{{c.rent}}</p>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            آگهی‌دهنده
+                                                                        <p style="float:left ;margin-right:180px" >{{c.publisher}}</p>
+                                                                        </li>
+                                                                        {% if c.parent.title == "آپارتمان اجاره" or c.parent.parent.title == "اجاره اداری و تجاری" %}
+
+                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                طبقه
+                                                                            <p style="float:left ;margin-right:180px" >{{c.floor}}</p>
+                                                                            </li>
+                                                                        {% endif %}
+
+                                                                        {% if c.parent.parent.title == "اجاره اداری و تجاری" %}
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            سند اداری
+                                                                            <p style="float:left ;margin-right:180px" >
+                                                                                {% if c.sanad_adari %}
+                                                                                    دارد
+                                                                                {% else %}
+                                                                                    ندارد
+                                                                                {% endif %}
+                                                                            </p>
+                                                                        </li>
+                                                                    {% endif %}
+
+                                                                    </ul>
+                                                                    <br><br>
+                                                                    <hr>
+                                                                    <h4 style="margin-top:20px">ویژگی‌ها و امکانات</h4>
+                                                                    <br>
+                                                                    <br>
+
+                                                                    {% if not c.parent.title == "زمین و کلنگی" %}
+                                                                            <div style="margin-top:80px">
+                                                                                {% if c.parking %}
+                                                                                    <i  class="fas fa-parking"  style="padding: 15px;font-weight:bold;font-size:35px;"></i>پارکینگ
+                                                                                {% else %}
+                                                                                    <i  class="fas fa-parking"  style="padding: 15px;font-weight:bold;font-size:35px;opacity:0.5"> </i><span> </span><span>پارکینگ ندارد</span>
+                                                                                {% endif %}
+
+                                                                                {% if c.anbari %}
+                                                                                    <i  class="fa fa-car"  style="padding: 15px;font-weight:bold;font-size:35px;"></i> انباری
+                                                                                {% else %}
+                                                                                    <i  class="fa fa-car"  style="padding: 15px;font-weight:bold;font-size:35px;opacity:0.5"></i><span> </span><span>انباری ندارد</span>
+                                                                                    
+                                                                                {% endif %}
+
+                                                                            </div>
+                                                                    {% endif %}
+                                                                    <br>
+                                                                    <br>
+                                                                    <br>
+                                                                    <hr>
+                                                                    <div style="margin-top:40px">
+                                                                        <p>
+                                                                            {{c.detail}}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <div style="margin-top:40px;float:right">
+                                                                        <hr>
+                                                                        <br>
+                                                                        <br>
+                                                                        <br>
+                                                                        {% for tag in c.tags.all %}
+                                                                            <span style="font-weight:bold;font-size:20px;">
+                                                                                <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                            </span>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                </div>
+                                                        
+                                                        {% elif c.parent.parent.title == "اجاره کوتاه مدت" %}
+
+
+                                                            <div class="temper_rent">
+                                                                <div class="col-md-6 text-center">
                                                                     <p>متراژ</p>
                                                                     <b>{{c.meter}}</b>
                                                                 </div>
-                                                                <div class="col-md-4 text-center">
-                                                                    <p>ساخت</p>
-                                                                    <b>{{c.year_of_construction}}</b>
-                                                                </div>
-                                                                <div class="col-md-4 text-center">
+                                                            
+                                                                <div class="col-md-6 text-center">
                                                                     <p>اتاق</p>
                                                                     <b>{{c.rooms}}</b>
                                                                 </div>
@@ -212,32 +273,17 @@
                                                             
                                                                 <ul class="list-group" style="margin-top:30px">
                                                                     <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
-                                                                        ودیعه
-                                                                    <p style="float:left ;margin-right:180px" class="">{{c.vadieh}}</p>
-                                                                    </li>
-                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                                        اجارهٔ ماهانه
-                                                                    <p style="float:left ;margin-right:180px" >{{c.rent}}</p>
+                                                                        اجاره روزانه
+                                                                    <p style="float:left ;margin-right:180px" class="">{{c.day_rent_paid}}</p>
                                                                     </li>
                                                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                                                         آگهی‌دهنده
                                                                     <p style="float:left ;margin-right:180px" >{{c.publisher}}</p>
-                                                                    </li>
-
-                                                                    
                                                                 </ul>
                                                                 <br><br>
                                                                 <hr>
                                                                 <h4 style="margin-top:20px">ویژگی‌ها و امکانات</h4>
-                                                                <br>
-                                                                <br>
-                                                                <div style="margin-top:80px">
-                                                                    {% for f in c.features.all %}
-                                                                    <span style="padding: 15px;font-weight:bold;font-size:20px;">{{f.name}}</span>
-                                                                {% endfor %}
-
-                                                                </div>
-                                                                <br>
+                                                        
                                                                 <br>
                                                                 <br>
                                                                 <hr>
@@ -259,142 +305,1210 @@
                                                                         </span>
                                                                     {% endfor %}
                                                                 </div>
-                                                {% endif %}
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="else_amlak">
+                                                                <ul class="list-group" style="margin-top:30px">
+                                                                    <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                        آگهی‌دهنده
+                                                                    <p style="float:left ;margin-right:180px" class="">{{c.publisher}}</p>
+                                                                    </li>
+                                                                    
+                                                                </ul>
+                                                            </div>
+                                                        {% endif %}
 
-                                            {% endif %}
+                                                    </div>
 
-                                            <!-- وسایل نقلیه -->
+                                                    <!-- وسایل نقلیه -->
 
-                                    {% elif c.parent.parent.parent.title == "وسایل نقلیه" %}
+                                            {% elif c.parent.parent.parent.title == "وسایل نقلیه" %}
+                                                    <div class="vasayel_naghlieh">
 
-                                            {% if c.parent.parent %}
+                                                            <!-- خودرو -->
+                                                            {% if c.parent.parent.title == "خودرو" %}
 
-                                                <!-- خودرو -->
+                                                                {% if c.parent.title == "سواری و وانت" %}
+                    
+                                                                            <div class="savari_va_vanet">
+                                                                                <div class="col-md-4 text-center">
+                                                                                    <p>کارکرد</p>
+                                                                                    <b>{{c.karkard_mashin}}</b>
+                                                                                </div>
+                                                                                <div class="col-md-4 text-center">
+                                                                                    <p>مدل (سال تولید)</p>
+                                                                                    <b>{{c.production_year}}</b>
+                                                                                </div>
+                                                                            
+                                                                                <div class="col-md-4 text-center">
+                                                                                    <p>رنگ</p>
+                                                                                    <b>{{c.color}}</b>
+                                                                                </div>
+                                                                                <br>
+            
+                                                                                <ul class="list-group" style="margin-top:30px">
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                                        نوع آگهی 
+                                                                                    <p style="float:left ;margin-right:180px" class="">{{c.publisherForCar}}</p>
+                                                                                    </li>
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        برند و تیپ
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.brand_or_tip}}</p>
+                                                                                    </li>
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        نوع سوخت
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.fuel_type}}</p>
+                                                                                    </li>
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        وضعیت موتور
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.engin_type}}</p>
+                                                                                    </li>
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        وضعیت شاسی‌ها
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.shasti_type}}</p>
+                                                                                    </li>
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        وضعیت بدنه
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.body_type}}</p>
+                                                                                    </li>
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        مهلت بیمهٔ شخص ثالث
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.insurance_time}}</p>
+                                                                                    </li>
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        گیربکس
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.girbox}}</p>
+                                                                                    </li>
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        قیمت فروش نقدی
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                                    </li>
 
-                                                {% if c.parent.parent.title == "خودرو" %}
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        مایل به معاوضه
+                                                                                        <p style="float:left ;margin-right:180px" >
+                                                                                            {% if c.ready_to_exchange %}
+                                                                                                <span>مایل به معاوضه هستم</span>
+                                                                                            {% else %}
+                                                                                                <span>مایل به معاوضه نیستم</span>
+                                                                                            {% endif %}
+                                                                                        </p>
+                                                                                    </li>
 
-                                                    {% if c.parent.title == "سواری و وانت" %}
-                                                            <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
-                                                            <br>
-                                                            <span class="price">{{c.price|intcomma}}</span> تومان
-                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                </ul>
+                                                                                <br><br>
+                                                                                <hr>
+                                                                                <br><br>
+                                                                                
+                                                                        
+                                                                                <hr>
+                                                                                <div style="margin-top:40px">
+                                                                                    <p>
+                                                                                        {{c.detail}}
+                                                                                    </p>
+                                                                                </div>
+                    
+                                                                                <div style="margin-top:40px;float:right">
+                                                                                    <hr>
+                                                                                    <br>
+                                                                                    <br>
+                                                                                    <br>
+                                                                                    {% for tag in c.tags.all %}
+                                                                                        <span style="font-weight:bold;font-size:20px;">
+                                                                                            <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+                    
+                                                                                        </span>
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                                
+                                                                            </div>
+                                                                    
+                                                                {% elif c.parent.title == "کلاسیک" or c.parent.title == "اجاره ای" %}
 
-                                                    {% elif c.parent.title == "کلاسیک" %}
-                                                            <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
-                                                            <br>
-                                                            <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span>
-                                                    {% elif c.parent.title == "اجاره" %}
-                                                            <span class="price">{{c.day_rent_paid|intcomma}}</span> تومان
-                                                            <br>
-                                                            <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span>   
-                                                    {% elif c.parent.title == "سنگین" %}
-                                                            <span class="price">{{c.price|intcomma}}</span> تومان
-                                                            <br>
-                                                            <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                            <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                            <div class="classic_or_rent">
+                                                                                <br>
+                                                                                <br>
 
-                                                    {% endif %}
+                                                                                <ul class="list-group" style="margin-top:30px">
 
-                                                {% endif %}
+                                                                                    {% if c.parent.title == "کلاسیک" %}
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            قیمت فروش نقدی
+                                                                                        <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                                        </li>
+                                                                                    {% else %}
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            قیمت  
+                                                                                        <p style="float:left ;margin-right:180px" >{{c.day_rent_paid}}</p>
+                                                                                        </li>
+                                                                                    {% endif %}
+
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        رنگ
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.color}}</p>
+                                                                                    </li>
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        نوع آگهی
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.publisherForCar}}</p>
+                                                                                    </li>
+
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        مایل به معاوضه
+                                                                                        <p style="float:left ;margin-right:180px" >
+                                                                                            {% if c.ready_to_exchange %}
+                                                                                                <span>مایل به معاوضه هستم</span>
+                                                                                            {% else %}
+                                                                                                <span>مایل به معاوضه نیستم</span>
+                                                                                            {% endif %}
+                                                                                        </p>
+                                                                                    </li>
+
+                                                                                </ul>
+                                                                                <br><br>
+                                                                                <hr>
+                                                                                <br><br>
+                                                                                
+                                                                        
+                                                                                <hr>
+                                                                                <div style="margin-top:40px">
+                                                                                    <p>
+                                                                                        {{c.detail}}
+                                                                                    </p>
+                                                                                </div>
+
+                                                                                <div style="margin-top:40px;float:right">
+                                                                                    <hr>
+                                                                                    <br>
+                                                                                    <br>
+                                                                                    <br>
+                                                                                    {% for tag in c.tags.all %}
+                                                                                        <span style="font-weight:bold;font-size:20px;">
+                                                                                            <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                                        </span>
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                                
+                                                                            </div>
+                                                                {% elif c.parent.title == "سنگین" %}
+
+                                                                        <div class="sangin">
+                                                                            <div class="col-md-4 text-center">
+                                                                                <p>کارکرد</p>
+                                                                                <b>{{c.karkard_mashin}}</b>
+                                                                            </div>
+                                                                            <div class="col-md-4 text-center">
+                                                                                <p>مدل (سال تولید)</p>
+                                                                                <b>{{c.production_year}}</b>
+                                                                            </div>
+                                                                        
+                                                                            <div class="col-md-4 text-center">
+                                                                                <p>رنگ</p>
+                                                                                <b>{{c.color}}</b>
+                                                                            </div>
+                                                                            <br>
+
+                                                                            <ul class="list-group" style="margin-top:30px">
+                                                                                <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                                    نوع آگهی 
+                                                                                <p style="float:left ;margin-right:180px" class="">{{c.publisherForCar}}</p>
+                                                                                </li>
+            
+                                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                    قیمت فروش نقدی
+                                                                                <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                                </li>
+
+                                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                    مایل به معاوضه
+                                                                                    <p style="float:left ;margin-right:180px" >
+                                                                                        {% if c.ready_to_exchange %}
+                                                                                            <span>مایل به معاوضه هستم</span>
+                                                                                        {% else %}
+                                                                                            <span>مایل به معاوضه نیستم</span>
+                                                                                        {% endif %}
+                                                                                    </p>
+                                                                                </li>
+
+                                                                            </ul>
+                                                                            <br><br>
+                                                                            <hr>
+                                                                            <br><br>
+                                                                            
+                                                                    
+                                                                            <hr>
+                                                                            <div style="margin-top:40px">
+                                                                                <p>
+                                                                                    {{c.detail}}
+                                                                                </p>
+                                                                            </div>
+
+                                                                            <div style="margin-top:40px;float:right">
+                                                                                <hr>
+                                                                                <br>
+                                                                                <br>
+                                                                                <br>
+                                                                                {% for tag in c.tags.all %}
+                                                                                    <span style="font-weight:bold;font-size:20px;">
+                                                                                        <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                                    </span>
+                                                                                {% endfor %}
+                                                                            </div>
+                                                                            
+                                                                        </div>
+
+                                                                {% endif %}
+                                                            
+
+                                                            {% endif %}
+                                                        
+                                                    
+                                                    </div>
                                             
-                                            {% endif %}
-                                    
-                                    {% elif c.parent.parent.parent.title == "کالای دیجیتال" %}
-                                            
-                                            {% if c.parent.parent %}
-                                                    {% if c.parent.parent.title == "موبایل و تبلت" %}
-                                                            {% if c.parent.title == "گوشی موبایل" %}
-                                                                <span class="price">{{c.phone_status}}</span> 
-                                                                <br>
-                                                                <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                <br>
-                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                            {% elif c.parent.title == "تبلت" %}
 
-                                                                <span class="price">{{c.phone_status}}</span> 
-                                                                <br>
-                                                                <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                <br>
-                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                            {% elif c.parent.title == "لوازم جانبی موبایل و تبلت" %}
+                                            {% elif c.parent.parent.parent.title == "کالای دیجیتال" %}
+
+                                                    <div class="kalayeh_digital">
 
                                                         
-                                                                <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                {% if c.parent.parent.title == "موبایل و تبلت" %}
+                                                                    <div class="mobile_and_tablet">
+                                                                        
+                                                                        {% if c.parent.title == "گوشی موبایل" or c.parent.title == "تبلت" %}
+                                                                                <div class="just_phone">
+                                                                                    
+                                                                                    <br>
+                
+                                                                                    <ul class="list-group" style="margin-top:30px">
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                                            برند و مدل
+                                                                                        <p style="float:left ;margin-right:180px" class="">{{c.brand_or_tip}}</p>
+                                                                                        </li>
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            وضعیت
+                                                                                        <p style="float:left ;margin-right:180px" >{{c.phone_status}}</p>
+                                                                                        </li>
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            اصالت برند
+                                                                                        <p style="float:left ;margin-right:180px" >{{c.esalat}}</p>
+                                                                                        </li>
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            تعداد سیم‌کارت
+                                                                                        <p style="float:left ;margin-right:180px" >{{c.sim_cart_number}}</p>
+                                                                                        </li>
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            حافظهٔ داخلی
+                                                                                        <p style="float:left ;margin-right:180px" >{{c.memory_size}}</p>
+                                                                                        </li>
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            مقدار رم
+                                                                                        <p style="float:left ;margin-right:180px" >{{c.ram_size}}</p>
+                                                                                        </li>
+                                                                                        {% if coms_to_show.parent.title == "تبلت" %}
+
+                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                اندازهٔ صفحه
+                                                                                            <p style="float:left ;margin-right:180px" >{{c.window_size}}</p>
+                                                                                            </li>
+
+                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                سیستم عامل
+                                                                                            <p style="float:left ;margin-right:180px" >{{c.os_typpe}}</p>
+                                                                                            </li>
+
+                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                 پشتیبانی از سیم‌کارت
+                                                                                                <p style="float:left ;margin-right:180px" >
+                                                                                                    {{c.cover_simcart}}
+                                                                                                </p>
+                                                                                            </li>
+
+                                                                                        {% endif %}
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            رنگ
+                                                                                        <p style="float:left ;margin-right:180px" >{{c.color}}</p>
+                                                                                        </li>
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            قیمت
+                                                                                        <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                                        </li>
+                                                                                       
+
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            مایل به معاوضه
+                                                                                            <p style="float:left ;margin-right:180px" >
+                                                                                                {% if c.ready_to_exchange %}
+                                                                                                    <span>مایل به معاوضه هستم</span>
+                                                                                                {% else %}
+                                                                                                    <span>مایل به معاوضه نیستم</span>
+                                                                                                {% endif %}
+                                                                                            </p>
+                                                                                        </li>
+
+                                                                                    </ul>
+                                                                                    <br><br>
+                                                                                    <hr>
+                                                                                    <br><br>
+                                                                                    
+                                                                            
+                                                                                    <hr>
+                                                                                    <div style="margin-top:40px">
+                                                                                        <p>
+                                                                                            {{c.detail}}
+                                                                                        </p>
+                                                                                    </div>
+                        
+                                                                                    <div style="margin-top:40px;float:right">
+                                                                                        <hr>
+                                                                                        <br>
+                                                                                        <br>
+                                                                                        <br>
+                                                                                        {% for tag in c.tags.all %}
+                                                                                            <span style="font-weight:bold;font-size:20px;">
+                                                                                                <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+                        
+                                                                                            </span>
+                                                                                        {% endfor %}
+                                                                                    </div>
+                                                                                    
+                                                                                </div>
+                                                                            
+                                                                     
+                                                                        {% elif c.parent.title == "لوازم جانبی موبایل و تبلت" or c.parent.title == "سیم کارت" %}
+
+                                                                    
+                                                                            <div class="phones_supplies">
+                                                                                        
+                                                                                <br>
+            
+                                                                                <ul class="list-group" style="margin-top:30px">
+                                                                                    
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        وضعیت
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.phone_status}}</p>
+                                                                                    </li>
+                                                                                    
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        قیمت
+                                                                                    <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                                    </li>
+                                                                                    {% if c.parent.title == "سیم کارت" %}
+                                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                            نوع سیم‌کارت
+                                                                                            <p style="float:left ;margin-right:180px" >{{c.simcartType}}</p>
+                                                                                        </li>
+                                                                                    {% endif %}
+
+                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                        مایل به معاوضه
+                                                                                        <p style="float:left ;margin-right:180px" >
+                                                                                            {% if c.ready_to_exchange %}
+                                                                                                <span>مایل به معاوضه هستم</span>
+                                                                                            {% else %}
+                                                                                                <span>مایل به معاوضه نیستم</span>
+                                                                                            {% endif %}
+                                                                                        </p>
+                                                                                    </li>
+
+                                                                                </ul>
+                                                                                <br><br>
+                                                                                <hr>
+                                                                                <br><br>
+                                                                                
+                                                                        
+                                                                                <hr>
+                                                                                <div style="margin-top:40px">
+                                                                                    <p>
+                                                                                        {{c.detail}}
+                                                                                    </p>
+                                                                                </div>
+                    
+                                                                                <div style="margin-top:40px;float:right">
+                                                                                    <hr>
+                                                                                    <br>
+                                                                                    <br>
+                                                                                    <br>
+                                                                                    {% for tag in c.tags.all %}
+                                                                                        <span style="font-weight:bold;font-size:20px;">
+                                                                                            <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+                    
+                                                                                        </span>
+                                                                                    {% endfor %}
+                                                                                </div>
+                                                                                
+                                                                            </div>
+
+                                                                        
+                                                                        {% endif %}
+                                                                    </div>
+
+                                                                {% elif c.parent.parent.title == "رایانه" %}
+                                                                        <div class="all_pcs">
+
+                                                                            {% if c.parent.title == "رایانه همراه" or c.parent.title == "رایانه رومیزی" %}
+                                                                                    <div class="pcs">
+                                                                                            
+                                                                                            <br>
+                        
+                                                                                            <ul class="list-group" style="margin-top:30px">
+                                                                                                <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                                                    برند و مدل
+                                                                                                <p style="float:left ;margin-right:180px" class="">{{c.brand_or_tip}}</p>
+                                                                                                </li>
+                                                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                    وضعیت
+                                                                                                <p style="float:left ;margin-right:180px" >{{c.phone_status}}</p>
+                                                                                                </li>
+                                                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                    اصالت برند
+                                                                                                <p style="float:left ;margin-right:180px" >{{c.esalat}}</p>
+                                                                                                </li>
+                                                                                            
+                                                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                    حافظهٔ داخلی
+                                                                                                <p style="float:left ;margin-right:180px" >{{c.memory_size}}</p>
+                                                                                                </li>
+                                                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                    مقدار رم
+                                                                                                <p style="float:left ;margin-right:180px" >{{c.ram_size}}</p>
+                                                                                                </li>
+                                                                                                
+
+                                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                        اندازهٔ صفحه
+                                                                                                    <p style="float:left ;margin-right:180px" >{{c.window_size}}</p>
+                                                                                                    </li>
+
+                                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                        سیستم عامل
+                                                                                                    <p style="float:left ;margin-right:180px" >{{c.os_typpe}}</p>
+                                                                                                    </li>
+
+                                                                                                
+
+                                                                                                {% if c.parent.title == "رایانه همراه" %}
+                                                                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                        رنگ
+                                                                                                        <p style="float:left ;margin-right:180px" >{{c.color}}</p>
+                                                                                                    </li>
+                                                                                                {% endif %}
+
+                                                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                    قیمت
+                                                                                                <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                                                </li>
+                                                                                            
+
+                                                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                    مایل به معاوضه
+                                                                                                    <p style="float:left ;margin-right:180px" >
+                                                                                                        {% if c.ready_to_exchange %}
+                                                                                                            <span>مایل به معاوضه هستم</span>
+                                                                                                        {% else %}
+                                                                                                            <span>مایل به معاوضه نیستم</span>
+                                                                                                        {% endif %}
+                                                                                                    </p>
+                                                                                                </li>
+
+                                                                                            </ul>
+                                                                                            <br><br>
+                                                                                            <hr>
+                                                                                            <br><br>
+                                                                                            
+                                                                                    
+                                                                                            <hr>
+                                                                                            <div style="margin-top:40px">
+                                                                                                <p>
+                                                                                                    {{c.detail}}
+                                                                                                </p>
+                                                                                            </div>
+                                
+                                                                                            <div style="margin-top:40px;float:right">
+                                                                                                <hr>
+                                                                                                <br>
+                                                                                                <br>
+                                                                                                <br>
+                                                                                                {% for tag in c.tags.all %}
+                                                                                                    <span style="font-weight:bold;font-size:20px;">
+                                                                                                        <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+                                
+                                                                                                    </span>
+                                                                                                {% endfor %}
+                                                                                            </div>
+                                                                                            
+                                                                                    </div> 
+                                                                            {% else %}
+                                                                                    <div class="else_for_pcs">
+                                                                                                    
+                                                                                        <br>
+                    
+                                                                                        <ul class="list-group" style="margin-top:30px">
+                                                                                            
+                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                وضعیت
+                                                                                            <p style="float:left ;margin-right:180px" >{{c.phone_status}}</p>
+                                                                                            </li>
+
+                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                قیمت
+                                                                                            <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                                            </li>
+                                                                                        
+
+                                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                                مایل به معاوضه
+                                                                                                <p style="float:left ;margin-right:180px" >
+                                                                                                    {% if c.ready_to_exchange %}
+                                                                                                        <span>مایل به معاوضه هستم</span>
+                                                                                                    {% else %}
+                                                                                                        <span>مایل به معاوضه نیستم</span>
+                                                                                                    {% endif %}
+                                                                                                </p>
+                                                                                            </li>
+
+                                                                                        </ul>
+                                                                                        <br><br>
+                                                                                        <hr>
+                                                                                        <br><br>
+                                                                                        
+                                                                                
+                                                                                        <hr>
+                                                                                        <div style="margin-top:40px">
+                                                                                            <p>
+                                                                                                {{c.detail}}
+                                                                                            </p>
+                                                                                        </div>
+                            
+                                                                                        <div style="margin-top:40px;float:right">
+                                                                                            <hr>
+                                                                                            <br>
+                                                                                            <br>
+                                                                                            <br>
+                                                                                            {% for tag in c.tags.all %}
+                                                                                                <span style="font-weight:bold;font-size:20px;">
+                                                                                                    <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+                            
+                                                                                                </span>
+                                                                                            {% endfor %}
+                                                                                        </div>
+                                                                                        
+                                                                                    </div> 
+                                                                            {% endif %}
+
+                                                                        </div>
+                                                                {% else %}
+
+                                                                    <div class="soti_va_tasviri">
+                                                                                                        
+                                                                        <br>
+
+                                                                        <ul class="list-group" style="margin-top:30px">
+                                                                            
+                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                وضعیت
+                                                                            <p style="float:left ;margin-right:180px" >{{c.phone_status}}</p>
+                                                                            </li>
+
+                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                قیمت
+                                                                            <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                            </li>
+                                                                        
+
+                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                مایل به معاوضه
+                                                                                <p style="float:left ;margin-right:180px" >
+                                                                                    {% if c.ready_to_exchange %}
+                                                                                        <span>مایل به معاوضه هستم</span>
+                                                                                    {% else %}
+                                                                                        <span>مایل به معاوضه نیستم</span>
+                                                                                    {% endif %}
+                                                                                </p>
+                                                                            </li>
+
+                                                                        </ul>
+                                                                        <br><br>
+                                                                        <hr>
+                                                                        <br><br>
+                                                                        
+                                                                
+                                                                        <hr>
+                                                                        <div style="margin-top:40px">
+                                                                            <p>
+                                                                                {{c.detail}}
+                                                                            </p>
+                                                                        </div>
+            
+                                                                        <div style="margin-top:40px;float:right">
+                                                                            <hr>
+                                                                            <br>
+                                                                            <br>
+                                                                            <br>
+                                                                            {% for tag in c.tags.all %}
+                                                                                <span style="font-weight:bold;font-size:20px;">
+                                                                                    <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+            
+                                                                                </span>
+                                                                            {% endfor %}
+                                                                        </div>
+                                                                        
+                                                                    </div>
+                                                                {% endif %}
+                                                    </div>
+                                            {% elif c.parent.parent.parent.title == "خانه و آشپزخانه" %}
+                                                    
+                                                        <div class="kitchen">
+                                                                                    
+                                                            <br>
+
+                                                            <ul class="list-group" style="margin-top:30px">
+                                                                
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    وضعیت
+                                                                <p style="float:left ;margin-right:180px" >{{c.phone_status}}</p>
+                                                                </li>
+                                                              
+                                                                
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    قیمت
+                                                                <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                </li>
+
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    مایل به معاوضه
+                                                                    <p style="float:left ;margin-right:180px" >
+                                                                        {% if c.ready_to_exchange %}
+                                                                            <span>مایل به معاوضه هستم</span>
+                                                                        {% else %}
+                                                                            <span>مایل به معاوضه نیستم</span>
+                                                                        {% endif %}
+                                                                    </p>
+                                                                </li>
+
+                                                            </ul>
+                                                            <br><br>
+                                                            <hr>
+                                                            <br><br>
+
+                                                            <hr>
+                                                            <div style="margin-top:40px">
+                                                                <p>
+                                                                    {{c.detail}}
+                                                                </p>
+                                                            </div>
+
+                                                            <div style="margin-top:40px;float:right">
+                                                                <hr>
                                                                 <br>
-                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                <br>
+                                                                <br>
+                                                                {% for tag in c.tags.all %}
+                                                                    <span style="font-weight:bold;font-size:20px;">
+                                                                        <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
 
-                                                            {% elif c.parent.title == "سیم کارت" %}
-
+                                                                    </span>
+                                                                {% endfor %}
+                                                            </div>
                                                             
-                                                            {% endif %}
-                                                    {% elif c.parent.parent.title == "رایانه" %}
-                                                            {% if c.parent.title == "رایانه همراه" %}
-                                                                <span class="price">{{c.phone_status}}</span> 
-                                                                <br>
-                                                                <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                <br>
-                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                            {% elif c.parent.title == "رایانه رومیزی" %}
+                                                        </div>
+                                            {% elif c.parent.parent.parent.title == "وسایل شخصی" %}
+                                                    <div class="personal">
+                                                        {% if c.parent.parent.title == "کیف، کفش و لباس" or c.parent.parent.title == "زیورآلات و اکسسوری" or c.parent.parent.title == "وسایل بچه و اسباب بازی" %}
+                                                            <div class="bag_and_watch">
+                                                                        <br>
 
-                                                                <span class="price">{{c.phone_status}}</span> 
-                                                                <br>
-                                                                <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                <br>
-                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                            {% elif c.parent.title == "قطعات و لوازم جانبی" %}
-                                                                <span class="price">{{c.phone_status}}</span> 
-                                                                <br>
-                                                                <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                <br>
-                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
-                                                            {% elif c.parent.title == "مودم و شبکه" %}
-                                                                <span class="price">{{c.phone_status}}</span> 
-                                                                <br>
-                                                                <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                <br>
-                                                                <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
-                                                            
-                                                            {% endif %}
+                                                                    <ul class="list-group" style="margin-top:30px">
+                                                                    {% if not c.parent.parent.title == "وسایل بچه و اسباب بازی" %}
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            زنانه/مردانه
+                                                                        <p style="float:left ;margin-right:180px" >{{c.cloths_type}}</p>
+                                                                        </li>
+                                                                    {% endif %}
 
-                                                    {% endif %}
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            وضعیت
+                                                                        <p style="float:left ;margin-right:180px" >{{c.phone_status}}</p>
+                                                                        </li>
+                                                                    
+                                                                        
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            قیمت
+                                                                        <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                        </li>
+
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            مایل به معاوضه
+                                                                            <p style="float:left ;margin-right:180px" >
+                                                                                {% if c.ready_to_exchange %}
+                                                                                    <span>مایل به معاوضه هستم</span>
+                                                                                {% else %}
+                                                                                    <span>مایل به معاوضه نیستم</span>
+                                                                                {% endif %}
+                                                                            </p>
+                                                                        </li>
+
+                                                                    </ul>
+                                                                    <br><br>
+                                                                    <hr>
+                                                                    <br><br>
+
+                                                                    <hr>
+                                                                    <div style="margin-top:40px">
+                                                                        <p>
+                                                                            {{c.detail}}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <div style="margin-top:40px;float:right">
+                                                                        <hr>
+                                                                        <br>
+                                                                        <br>
+                                                                        <br>
+                                                                        {% for tag in c.tags.all %}
+                                                                            <span style="font-weight:bold;font-size:20px;">
+                                                                                <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                            </span>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                            {% elif c.parent.parent.parent.title == "سرگرمی و فراغت" or c.parent.parent.parent.title == "تجهیزات و صنعتی" or c.parent.parent.parent.title == "اجتماعی" %}
+                                                        <div class="entertaiment">
+                                                            <br>
+
+                                                            <ul class="list-group" style="margin-top:30px">
+
+                                                                
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    قیمت
+                                                                <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                </li>
+
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    مایل به معاوضه
+                                                                    <p style="float:left ;margin-right:180px" >
+                                                                        {% if c.ready_to_exchange %}
+                                                                            <span>مایل به معاوضه هستم</span>
+                                                                        {% else %}
+                                                                            <span>مایل به معاوضه نیستم</span>
+                                                                        {% endif %}
+                                                                    </p>
+                                                                </li>
+
+                                                            </ul>
+                                                            <br><br>
+                                                            <hr>
+                                                            <br><br>
+
+                                                            <hr>
+                                                            <div style="margin-top:40px">
+                                                                <p>
+                                                                    {{c.detail}}
+                                                                </p>
+                                                            </div>
+
+                                                            <div style="margin-top:40px;float:right">
+                                                                <hr>
+                                                                <br>
+                                                                <br>
+                                                                <br>
+                                                                {% for tag in c.tags.all %}
+                                                                    <span style="font-weight:bold;font-size:20px;">
+                                                                        <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                    </span>
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
                                             {% endif %}
-
-                                    {% endif %}
+                                    </div>
 
 
                             {% elif not c.parent.parent.parent %}
-                                    {% if c.parent.parent %}
-                                                    {% if c.parent.parent.title == "وسایل نقلیه" %}
-                                                                {% if c.parent.title == "موتور سیکلت" %}
+                                    <div class="not_parent">
+                                            
+                                                {% if c.parent.parent.title == "وسایل نقلیه" %}
+                                                    <div class="naghlieh">
 
-                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                        <br>
-                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                    
+                                                            {% if c.parent.title == "موتور سیکلت" %}
+
+                                                                <div class="motor">
+                                                                    <div class="col-md-6 text-center">
+                                                                        <p>کارکرد</p>
+                                                                        <b>{{c.karkard_mashin}}</b>
+                                                                    </div>
+                                                                    <div class="col-md-6 text-center">
+                                                                        <p>مدل (سال تولید)</p>
+                                                                        <b>{{c.production_year}}</b>
+                                                                    </div>
                                                                 
-                                                                {% elif c.parent.title == "قطعات یدکی" %}
+                                                            
+                                                                    <br>
 
-                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
+                                                                    <ul class="list-group" style="margin-top:30px">
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                            نوع آگهی 
+                                                                        <p style="float:left ;margin-right:180px" class="">{{c.publisherForCar}}</p>
+                                                                        </li>
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            برند
+                                                                        <p style="float:left ;margin-right:180px" >{{c.brand_or_tip}}</p>
+                                                                        </li>
+    
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            قیمت فروش نقدی
+                                                                        <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                        </li>
+
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            مایل به معاوضه
+                                                                            <p style="float:left ;margin-right:180px" >
+                                                                                {% if c.ready_to_exchange %}
+                                                                                    <span>مایل به معاوضه هستم</span>
+                                                                                {% else %}
+                                                                                    <span>مایل به معاوضه نیستم</span>
+                                                                                {% endif %}
+                                                                            </p>
+                                                                        </li>
+
+                                                                    </ul>
+                                                                    <br><br>
+                                                                    <hr>
+                                                                    <br><br>
+                                                                    
+                                                            
+                                                                    <hr>
+                                                                    <div style="margin-top:40px">
+                                                                        <p>
+                                                                            {{c.detail}}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <div style="margin-top:40px;float:right">
+                                                                        <hr>
                                                                         <br>
-                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
-
-                                                                {% elif c.parent.title == "قایق و سایر" %}
-                                                                        <span class="price">{{c.price|intcomma}}</span> تومان
                                                                         <br>
-                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
-                                                                {% endif %}
-                                                        
+                                                                        <br>
+                                                                        {% for tag in c.tags.all %}
+                                                                            <span style="font-weight:bold;font-size:20px;">
+                                                                                <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
 
+                                                                            </span>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                    
+                                                                </div>
+                                                            
+                                                            {% elif c.parent.title == "قطعات یدکی و لوازم جانبی" or c.parent.title == "قایق و سایر وسایل نقلیه" %}
+
+                                                                <div class="cars_supplies">
+                                                                    <br>
+                                                                    <br>
+
+                                                                    <ul class="list-group" style="margin-top:30px">
+
+                                                                            <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                                نوع آگهی 
+                                                                            <p style="float:left ;margin-right:180px" class="">{{c.publisherForCar}}</p>
+                                                                            </li>
+                                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                                قیمت  
+                                                                            <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                            </li>
+                                                                
+
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            مایل به معاوضه
+                                                                            <p style="float:left ;margin-right:180px" >
+                                                                                {% if c.ready_to_exchange %}
+                                                                                    <span>مایل به معاوضه هستم</span>
+                                                                                {% else %}
+                                                                                    <span>مایل به معاوضه نیستم</span>
+                                                                                {% endif %}
+                                                                            </p>
+                                                                        </li>
+
+                                                                    </ul>
+                                                                    <br><br>
+                                                                    <hr>
+                                                                    <br><br>
+                                                                    
+                                                            
+                                                                    <hr>
+                                                                    <div style="margin-top:40px">
+                                                                        <p>
+                                                                            {{c.detail}}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <div style="margin-top:40px;float:right">
+                                                                        <hr>
+                                                                        <br>
+                                                                        <br>
+                                                                        <br>
+                                                                        {% for tag in c.tags.all %}
+                                                                            <span style="font-weight:bold;font-size:20px;">
+                                                                                <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                            </span>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                    
+                                                                </div>
+                                                            {% endif %}
+                                                    </div>
+
+                                                {% elif parent.parent.title == "کالای دیجیتال" or c.parent.parent.title == "خانه و آشپزخانه" or c.parent.parent.title == "خدمات" %}
+                                                    <div class="else_for_digital_and_kitcehn">
+                                                        <br>
+                                                        <br>
+                                                    {% if not c.parent.parent.title == "خدمات" %}
+                                                        <ul class="list-group" style="margin-top:30px">
+
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                    نوع آگهی 
+                                                                <p style="float:left ;margin-right:180px" class="">{{c.phone_status}}</p>
+                                                                </li>
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    قیمت  
+                                                                <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                                </li>
+                                                    
+
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                مایل به معاوضه
+                                                                <p style="float:left ;margin-right:180px" >
+                                                                    {% if c.ready_to_exchange %}
+                                                                        <span>مایل به معاوضه هستم</span>
+                                                                    {% else %}
+                                                                        <span>مایل به معاوضه نیستم</span>
+                                                                    {% endif %}
+                                                                </p>
+                                                            </li>
+
+                                                        </ul>
+                                                        <br><br>
+                                                        <hr>
+                                                        <br><br>
                                                     {% endif %}
-                                    {% endif %}
+                                                        
+                                                
+                                                        <hr>
+                                                        <div style="margin-top:40px">
+                                                            <p>
+                                                                {{c.detail}}
+                                                            </p>
+                                                        </div>
+
+                                                        <div style="margin-top:40px;float:right">
+                                                            <hr>
+                                                            <br>
+                                                            <br>
+                                                            <br>
+                                                            {% for tag in c.tags.all %}
+                                                                <span style="font-weight:bold;font-size:20px;">
+                                                                    <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                </span>
+                                                            {% endfor %}
+                                                        </div>
+                                                        
+                                                    </div>
+                                                {% elif parent.parent.title == "وسایل شخصی" %}
+                                                    <div class="bag_and_watch">
+                                                        <br>
+
+                                                        <ul class="list-group" style="margin-top:30px">
+
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                وضعیت
+                                                            <p style="float:left ;margin-right:180px" >{{c.phone_status}}</p>
+                                                            </li>
+                                                        
+                                                            
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                قیمت
+                                                            <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                            </li>
+
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                مایل به معاوضه
+                                                                <p style="float:left ;margin-right:180px" >
+                                                                    {% if c.ready_to_exchange %}
+                                                                        <span>مایل به معاوضه هستم</span>
+                                                                    {% else %}
+                                                                        <span>مایل به معاوضه نیستم</span>
+                                                                    {% endif %}
+                                                                </p>
+                                                            </li>
+
+                                                        </ul>
+                                                        <br><br>
+                                                        <hr>
+                                                        <br><br>
+
+                                                        <hr>
+                                                        <div style="margin-top:40px">
+                                                            <p>
+                                                                {{c.detail}}
+                                                            </p>
+                                                        </div>
+
+                                                        <div style="margin-top:40px;float:right">
+                                                            <hr>
+                                                            <br>
+                                                            <br>
+                                                            <br>
+                                                            {% for tag in c.tags.all %}
+                                                                <span style="font-weight:bold;font-size:20px;">
+                                                                    <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                </span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                {% elif c.parent.parent.title == "سرگرمی و فراغت" or c.parent.parent.title == "تجهیزات و صنعتی" %}
+                                                    <div class="entertament">
+                                                        <br>
+
+                                                        <ul class="list-group" style="margin-top:30px">
+
+                                                            
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                قیمت
+                                                            <p style="float:left ;margin-right:180px" >{{c.price}}</p>
+                                                            </li>
+
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                مایل به معاوضه
+                                                                <p style="float:left ;margin-right:180px" >
+                                                                    {% if c.ready_to_exchange %}
+                                                                        <span>مایل به معاوضه هستم</span>
+                                                                    {% else %}
+                                                                        <span>مایل به معاوضه نیستم</span>
+                                                                    {% endif %}
+                                                                </p>
+                                                            </li>
+
+                                                        </ul>
+                                                        <br><br>
+                                                        <hr>
+                                                        <br><br>
+
+                                                        <hr>
+                                                        <div style="margin-top:40px">
+                                                            <p>
+                                                                {{c.detail}}
+                                                            </p>
+                                                        </div>
+
+                                                        <div style="margin-top:40px;float:right">
+                                                            <hr>
+                                                            <br>
+                                                            <br>
+                                                            <br>
+                                                            {% for tag in c.tags.all %}
+                                                                <span style="font-weight:bold;font-size:20px;">
+                                                                    <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                </span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                {% elif c.parent.parent.title == "استخدام و کاریابی" %} 
+
+                                                    <div class="employment">
+                                                        <div class="col-md-6 text-center">
+                                                            <p>نوع همکاری</p>
+                                                            <b>{{c.how_college_are}}</b>
+                                                        </div>
+                                                        <div class="col-md-6 text-center">
+                                                            <p>نیاز به سابقه</p>
+                                                            <b>{{c.price_for_work}}</b>
+                                                        </div>
+                                                    
+                                                
+                                                        <br>
+
+                                                        <ul class="list-group" style="margin-top:30px">
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center" style="width: 420px;">
+                                                                شیوهٔ پرداخت
+                                                            <p style="float:left ;margin-right:180px" class="">{{c.how_we_pay}}</p>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                بیمه
+                                                                <p style="float:left ;margin-right:180px" >
+                                                                    {% if  c.insurance %}
+                                                                        دارد
+                                                                    {% else %}
+                                                                        ندارد
+                                                                    {% endif %}
+                                                                </p>
+                                                            </li>
+
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                امکان دورکاری؟
+                                                                <p style="float:left ;margin-right:180px" >
+                                                                    {% if  c.insurance %}
+                                                                        دارد
+                                                                    {% else %}
+                                                                        ندارد
+                                                                    {% endif %}
+                                                                </p>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                وضعیت سربازی
+                                                                <p style="float:left ;margin-right:180px" >
+                                                                    {% if  c.soldier %}
+                                                                        الزامی
+                                                                    {% else %}
+                                                                        نیاز نیست
+                                                                    {% endif %}
+                                                                </p>
+                                                            </li>
+
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                دستمزد
+                                                            <p style="float:left ;margin-right:180px" >{{c.salary}}</p>
+                                                            </li>
+
+                                                            
+
+                                                        </ul>
+                                                        <br><br>
+                                                        <hr>
+                                                        <br><br>
+                                                        
+                                                
+                                                        <hr>
+                                                        <div style="margin-top:40px">
+                                                            <p>
+                                                                {{c.detail}}
+                                                            </p>
+                                                        </div>
+
+                                                        <div style="margin-top:40px;float:right">
+                                                            <hr>
+                                                            <br>
+                                                            <br>
+                                                            <br>
+                                                            {% for tag in c.tags.all %}
+                                                                <span style="font-weight:bold;font-size:20px;">
+                                                                    <button class="btn btn-outline-dark" >{{tag.tag_name}}</button>
+
+                                                                </span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                {% endif %}
+                                            
+                                    </div>
+                                   
                                                         
                             {% endif %}
                         </div>                    

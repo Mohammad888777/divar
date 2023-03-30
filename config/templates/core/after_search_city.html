@@ -100,7 +100,7 @@
                                         <label>حداقل</label>
                                         <!-- <input class="form-control" placeholder="$0" type="number"> -->
                                             <select class="mr-2 form-control" id="choose_min_price" name="least_price">
-                                                <option selected="selected" value="0"></option>
+                                                <option selected="selected" value="5"></option>
 
                                                 
                                                     <option value="5" >5 میلیون</option>
@@ -126,7 +126,7 @@
                                         <div class="form-group text-right col-md-6">
                                         <label>حداکثر </label>
                                             <select class="mr-2 form-control" id="choose_max_price" name="max_price">
-                                                <option selected="selected" value="400000000"></option>
+                                                <option selected="selected" value="200"></option>
                                                 
                                                     <option value="5" >5 میلیون</option>
 
@@ -389,6 +389,9 @@
                     {% for c in coms %}
 
                         <div class="col-md-4">
+                            {% if c.com_status == "فوری" %}
+                                <span class="badge badge-danger" >فوری </span>
+                            {% endif %}
                             <figure class="card card-product-grid" >
                                 <div class="img-wrap"> 
                                     {% if c.commericalimage_set.all %}
@@ -398,7 +401,8 @@
                                 </div> <!-- img-wrap.// -->
                                 <figcaption class="info-wrap" >
                                     <div class="fix-height" style="height:100px">
-                                        <a href="./product-detail.html" class="title">
+                                        <a href="{% url 'CommericalDetail' c.id %}" class="title">
+                                            
                                             {{c.title|slice:"20"}}
                                         </a>
                                         <div class="price-wrap mt-2">
@@ -415,16 +419,21 @@
                                                                                 {% elif  c.parent.parent.title == "اجاره مسکونی" or c.parent.parent.title == "اجاره اداری و تجاری" %}
                                                                                         ودیعه <span class="price">{{c.vadieh|intcomma}}</span>    تومان
                                                                                                 <br>
-                                                                                                اجاره <span class="price">{{c.rent|intcomma}}</span>    تومان
+                                                                                                اجاره <span class="price">{{c.rent|intcomma}}</span>    تومان <p>
+                                                                                                    <span class="price">{{c.iranTimeCreated|findTime}}</span><span> </span><span>{{c.location.name}}</span>
+                                                                                                </p>
                                                                                                 <br>
-                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                                
+                                                                                                
+                                                                                                <br>
+                                                                                                <br>
                                                                                                 <br>
                                                                                 {% elif c.parent.parent.title == "اجاره کوتاه مدت" %}
                                                                                         <span class="price">{{c.rooms}}</span>    اتاق
                                                                                         <br>
                                                                                         <span class="price">{{c.iranTimeCreated|findTime}}</span>
                                                                                 {% elif c.parent.parent.title == "پروژه‌های ساخت و ساز" %}
-                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span><span> </span><span>{{c.location.name}}</span>
                                                                                 {% endif %}
                                                                         </div>
 
@@ -443,23 +452,23 @@
                                                                                                                 <span class="price">{{c.karkard_mashin|intcomma}}</span> کیلومتر
                                                                                                                 <br>
                                                                                                                 <span class="price">{{c.price|intcomma}}</span> تومان
-                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span><span> </span><span>{{c.location.name}}</span>
                                                                                                                 <br>
                                                                                                         {% elif c.parent.title == "کلاسیک" %}
                                                                                                                 <br>
                                                                                                                 <span class="price">{{c.price|intcomma}}</span> تومان
                                                                                                                 <br>
-                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>
+                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span><span> </span><span>{{c.location.name}}</span>
                                                                                                                 <br>
                                                                                                         {% elif c.parent.title == "اجاره‌ای" %}
                                                                                                                 <span class="price">{{c.day_rent_paid|intcomma}}</span> تومان
                                                                                                                 <br>
-                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>   
+                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span>   <span> </span><span>{{c.location.name}}</span>
                                                                                                                 <br>
                                                                                                         {% elif c.parent.title == "سنگین" %}
                                                                                                                 <span class="price">{{c.price|intcomma}}</span> تومان
                                                                                                                 <br>
-                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> <span> </span><span>{{c.location.name}}</span>
                                                                                                                 <br>    
                                                                                                         {% endif %}
 
@@ -482,7 +491,7 @@
                                                                                                                 <span class="price">{{c.price|intcomma}}</span> تومان
                                                                                                                 <br>
                                                                                                                 <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> <span> </span><span>{{c.location.name}}</span>
                                                                                                                 <br>
                        
                                                                                                         {% elif c.parent.title == "لوازم جانبی موبایل و تبلت" or c.parent.title == "سیم کارت" %}
@@ -490,7 +499,7 @@
                                                                                                                 <span class="price">{{c.price|intcomma}}</span> تومان
                                                                                                                 <br>
                                                                                                                 <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> <span> </span><span>{{c.location.name}}</span>
                                                                                                                 <br>
                                                                                                        
 
@@ -505,7 +514,7 @@
                                                                                                         <span class="price">{{c.price|intcomma}}</span> تومان
                                                                                                         <br>
                                                                                                         <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                                        <span class="price">{{c.iranTimeCreated|findTime}}</span> <span> </span><span>{{c.location.name}}</span>
                                                                                                         <br>                                                                    
                                                                                                 </div>
                                                                                         
@@ -520,7 +529,7 @@
                                                                                 <span class="price">{{c.price|intcomma}}</span> تومان
                                                                                 <br>
                                                                                 <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> <span> </span><span>{{c.location.name}}</span>
                                                                                 <br>                                                                    
                                                                         </div>
                                                                 {% elif c.parent.parent.parent.title == "وسایل شخصی" %}
@@ -530,7 +539,7 @@
                                                                                 <span class="price">{{c.price|intcomma}}</span> تومان
                                                                                 <br>
                                                                                 <!-- <span class="price">{{c.price|intcomma}}</span> تومان -->
-                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> <span> </span><span>{{c.location.name}}</span>
                                                                                 <br>                                                                    
                                                                         </div>
                                                                 {% elif c.parent.parent.parent.title == "سرگرمی و فراغت" %}
@@ -538,7 +547,7 @@
                                                                                 <br>
                                                                                 <span class="price">{{c.price|intcomma}}</span> تومان
                                                                                 <br>
-                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> <span> </span><span>{{c.location.name}}</span>
                                                                                 <br> 
                                                                         </div>
                                                                 {% elif c.parent.parent.parent.title == "اجتماعی" %}
@@ -546,7 +555,7 @@
                                                                                 <br>
                                                                                 <span class="price">{{c.price|intcomma}}</span> تومان
                                                                                 <br>
-                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> <span> </span><span>{{c.location.name}}</span>
                                                                                 <br>
                                                                         </div>
                                                                 {% elif c.parent.parent.parent.title == "تجهیزات و صنعتی" %}
@@ -554,7 +563,7 @@
                                                                                 <br>
                                                                                 <span class="price">{{c.price|intcomma}}</span> تومان
                                                                                 <br>
-                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> 
+                                                                                <span class="price">{{c.iranTimeCreated|findTime}}</span> <span> </span><span>{{c.location.name}}</span>
                                                                                 <br>
                                                                         </div>
                                                                 {% endif %}
@@ -654,7 +663,7 @@
                                     <br>
                                     <br>
                                     <br>
-                                    <a href="#" class="btn btn-block btn-success">Added to cart </a>
+          
                                 </figcaption>
                             </figure>
                         </div> 

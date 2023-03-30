@@ -1,7 +1,7 @@
 from django.shortcuts import render,get_object_or_404,redirect
 from .models import (Commerical,SavedCommerical,
                     SmallCity,City,Thread,Message,
-                    Feature,Tag,Location
+                    Feature,Tag,Location,CommericalImage
                     )
 from django.contrib import messages
 from django.views import View
@@ -14,29 +14,30 @@ from django.utils import timezone
 
 
 from .utilty import    (findTimeDiffrence,title_not_to_be,
-three_level_parent,
-two_level_parent,
-two_and_three_parent,
-apartemanForosh,
-immadate_location_image,
-price_Title,
-moavezeh,GroupHasYearOfConstruction,
-GroupHasPrice,GroupHasMeter,GroupHasExchangePossibale,
-GroupHasCommericalSituation_like_new_or_old,Group_Employments,
-typeOneForSecondLevelFilter_Amlak_Frosh,amlakEjareh,vasayelNaghliehMotor_va_Car,
-vasayelNaghlieh_Both_and_supplies,digitals,kitchen,personal,digitalOrKitchenOrPersonalOrEntertaimentOrSupllies,
-services,foroshJustForSanadEdari,ejarehAll,cars,tablet_and_mobile,
-themSelf,male_or_female,social,employment
+    three_level_parent,
+    two_level_parent,
+    two_and_three_parent,
+    apartemanForosh,
+    immadate_location_image,
+    price_Title,
+    moavezeh,GroupHasYearOfConstruction,
+    GroupHasPrice,GroupHasMeter,GroupHasExchangePossibale,
+    GroupHasCommericalSituation_like_new_or_old,Group_Employments,
+    typeOneForSecondLevelFilter_Amlak_Frosh,amlakEjareh,vasayelNaghliehMotor_va_Car,
+    vasayelNaghlieh_Both_and_supplies,digitals,kitchen,personal,digitalOrKitchenOrPersonalOrEntertaimentOrSupllies,
+    services,foroshJustForSanadEdari,ejarehAll,cars,tablet_and_mobile,
+    themSelf,male_or_female,social,employment
                      )
 
 from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.core import serializers
+from .mixins import Loginrequired
 
 from .utils2 import (
     groupHas_Parking_And_Anbari_And_Floor,groupHas_sanadEdari,
-    cloths_accessory
+    cloths_accessory,justFloor,for_daily_rent,mosharekat
 
 )
 
@@ -62,12 +63,12 @@ class CityView(View):
         big=self.request.GET.getlist("bigCity")
         self.request.session["bb"]=big
         self.request.session["min"]=ls
-        print("BEFFOORREEE")
-        print("BEFFOORREEE")
-        print("BEFFOORREEE")
-        print(self.request.GET)
-        print("AFTTTERRRR")
-        print("AFTTTERRRR")
+        # print("BEFFOORREEE")
+        # print("BEFFOORREEE")
+        # print("BEFFOORREEE")
+        # print(self.request.GET)
+        # print("AFTTTERRRR")
+        # print("AFTTTERRRR")
         bigInJson=[int(i) for i in big]
 
         ci=City.objects.filter(id__in=bigInJson)
@@ -83,20 +84,22 @@ class CityView(View):
             ).filter(
                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
             ).distinct()
-            print("OONNNEEe")
+            # print("OONNNEEe")
         else:
             filtred_coms=Commerical.objects.filter(
                 Q(city__in=bigInJson) 
                 ).filter(
                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                 ).distinct()
-            print("TWOOWOOWOWOOWOW")
+            # print("TWOOWOOWOWOOWOW")
          
         all_cats=Commerical.objects.filter(
             parent=None
         )
 
-        print(filtred_coms,"FFFIILLFLFLFLLFLFL")
+        # print(filtred_coms,"FFFIILLFLFLFLLFLFL")
+        for c in filtred_coms:
+            print(c.city.name)
 
         cits=City.objects.filter(
             id__in=[int(i) for i in big]
@@ -216,14 +219,13 @@ def allComsFilter(request):
                         # Q(parent__parent__parent__title="املاک") &
                         Q(location__in=locas_to_go)
                     ).filter(
-                        Q(price__range=(int(least_price),int(max_price))) |
-                        Q(vadieh__range=(int(least_price),int(max_price)))
+                        Q(price__range=(int(least_price),int(max_price))) 
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
                         img_length__gte=1
                     ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
             else:
                 print("ELELLELELLSSSSSEEe")
@@ -239,7 +241,7 @@ def allComsFilter(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
 
 
@@ -248,26 +250,30 @@ def allComsFilter(request):
             print("B")
 
             if bool(justImg):
+                print("ITTSSSSSSSS")
+                print("ITTSSSSSSSS")
+                print("ITTSSSSSSSS")
+                print("ITTSSSSSSSS")
                 coms_to_show=Commerical.objects.annotate(
                     img_length=Length("commericalimage")
                 ).filter(
                     Q(city__in=[int(i) for i in province]) &
-                    # Q(parent__parent__parent__title="املاک") &
                     Q(location__in=locas_to_go)
                 ).filter(
-                    Q(price__range=(least_price,max_price))|
+                    Q(price__range=(int(least_price),int(max_price)))|
                     Q(vadieh__range=(int(least_price),int(max_price)))
                 ).filter(
                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                 ).filter(
                         img_length__gte=1
                 ).filter(
-                        com_status=instatnceComs
+
+                      Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+
                     ).distinct()
             else:
                 coms_to_show=Commerical.objects.filter(
                     Q(city__in=[int(i) for i in province]) &
-                    Q(parent__parent__parent__title="املاک") &
                     Q(location__in=locas_to_go)
                 ).filter(
                     Q(price__range=(least_price,max_price))|
@@ -275,7 +281,7 @@ def allComsFilter(request):
                 ).filter(
                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                 ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
 
 
@@ -287,22 +293,21 @@ def allComsFilter(request):
                     img_length=Length("commericalimage")
                 ).filter(
                     Q(smallCity__in=[int(i) for i in smallCities])&
-                    # Q(parent__parent__parent__title="املاک") &
                     Q(location__in=locas_to_go)
                 ).filter(
-                    Q(price__range=(least_price,max_price))|
-                    Q(vadieh__range=(int(least_price),int(max_price)))
+                    Q(price__range=(int(least_price),int(max_price)))|
+                     Q(vadieh__range=(int(least_price),int(max_price)))
+                   
                 ).filter(
                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                 ).filter(
                         img_length__gte=1
                 ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
             else:
                 coms_to_show=Commerical.objects.filter(
                         Q(smallCity__in=[int(i) for i in smallCities])&
-                        # Q(parent__parent__parent__title="املاک") &
                         Q(location__in=locas_to_go)
                     ).filter(
                         Q(price__range=(least_price,max_price))|
@@ -310,18 +315,18 @@ def allComsFilter(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
 
     cits=City.objects.filter(
         id__in=[int(i) for i in province]
     )
-    for i in cits:
-        for l in i.location_set.all():
-            if l.id in locas_to_go :
-                print("yese","********************************")
-            else:
-                print("NONONONOONONON")
+    # for i in cits:
+    #     for l in i.location_set.all():
+    #         if l.id in locas_to_go :
+    #             print("yese","********************************")
+    #         else:
+    #             print("NONONONOONONON")
     
 
  
@@ -513,6 +518,9 @@ def eachCategorySecondlevel(request,categoryId):
             ).distinct()
 
         elif province and not smallCities:
+            print("calleddd gooodd")
+            print("calleddd gooodd")
+            print("calleddd gooodd")
 
             coms_to_show=Commerical.objects.filter(
                 Q(city__in=[int(i) for i in province]) 
@@ -717,6 +725,9 @@ def eachCategoryThirdLevel(request,categoryId):
             ).distinct()
 
     elif province and not smallCities:
+            print("marseeeyeyeyeyyeyeyeyeyey")
+            print("marseeeyeyeyeyyeyeyeyeyey")
+            print("marseeeyeyeyeyyeyeyeyeyey")
 
             coms_to_show=Commerical.objects.filter(
                 Q(city__in=[int(i) for i in province]) 
@@ -724,10 +735,12 @@ def eachCategoryThirdLevel(request,categoryId):
 
             ).filter(
                 Q(parent__parent__parent__title=cat.parent.parent.title) &
-                Q(parent__title=cat.title)
+                Q(parent__title=cat.title)&
+                Q(parent__id=cat.id)
             ).filter(
                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
             ).distinct()
+
     elif not province and smallCities:
 
             coms_to_show=Commerical.objects.filter(
@@ -760,7 +773,8 @@ def eachCategoryThirdLevel(request,categoryId):
         'Group_Employments':Group_Employments,
         'groupHas_Parking_And_Anbari_And_Floor':groupHas_Parking_And_Anbari_And_Floor,
         'groupHas_sanadEdari':groupHas_sanadEdari,
-        'cloths_accessory':cloths_accessory
+        'cloths_accessory':cloths_accessory,
+        'justFloor':justFloor
     }
 
 
@@ -781,6 +795,9 @@ class CityDetail(View):
         city=get_object_or_404(City,name=name) 
         self.request.session["city_name2"]=city.id
         coms=city.commerical_set.all()
+
+
+        
 
         contex={
             'city':city,
@@ -886,7 +903,7 @@ def handleAmlakFilter(request):
                         ).filter(
                             img_length__gte=1
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                     print("ELELLELELLSSSSSEEe")
@@ -900,7 +917,7 @@ def handleAmlakFilter(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
 
 
@@ -921,7 +938,7 @@ def handleAmlakFilter(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                     coms_to_show=Commerical.objects.filter(
@@ -932,7 +949,7 @@ def handleAmlakFilter(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -952,7 +969,7 @@ def handleAmlakFilter(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                     coms_to_show=Commerical.objects.filter(
@@ -963,7 +980,7 @@ def handleAmlakFilter(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
         case "وسایل نقلیه":
@@ -992,7 +1009,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
 
@@ -1013,7 +1030,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                 else:
                     print("ELELLELELLSSSSSEEe")
@@ -1032,7 +1049,7 @@ def handleAmlakFilter(request):
                             ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                     else:
 
@@ -1049,7 +1066,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
 
@@ -1075,7 +1092,7 @@ def handleAmlakFilter(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                     else:
                         coms_to_show=Commerical.objects.annotate(
@@ -1094,7 +1111,7 @@ def handleAmlakFilter(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                 else:
                     if exchange:
@@ -1112,7 +1129,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         coms_to_show=Commerical.objects.filter(
@@ -1126,7 +1143,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -1153,7 +1170,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         coms_to_show=Commerical.objects.annotate(
@@ -1171,7 +1188,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                 else:
                     if exchange:
@@ -1188,7 +1205,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                     else:
                         coms_to_show=Commerical.objects.filter(
@@ -1203,7 +1220,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
 
@@ -1230,7 +1247,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                 else:
                     print("ELELLELELLSSSSSEEe")
@@ -1247,7 +1264,7 @@ def handleAmlakFilter(request):
                         ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -1272,7 +1289,7 @@ def handleAmlakFilter(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
      
                 else:
@@ -1288,7 +1305,7 @@ def handleAmlakFilter(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                     
 
@@ -1316,7 +1333,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
   
                 else:
@@ -1331,7 +1348,7 @@ def handleAmlakFilter(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -1359,7 +1376,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
 
@@ -1380,7 +1397,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                 else:
                     print("ELELLELELLSSSSSEEe")
@@ -1399,7 +1416,7 @@ def handleAmlakFilter(request):
                             ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                     else:
                         coms_to_show=Commerical.objects.filter(
@@ -1414,7 +1431,7 @@ def handleAmlakFilter(request):
                             ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
 
@@ -1441,7 +1458,7 @@ def handleAmlakFilter(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                     else:
                         coms_to_show=Commerical.objects.annotate(
@@ -1458,7 +1475,7 @@ def handleAmlakFilter(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
      
                 else:
@@ -1475,7 +1492,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         coms_to_show=Commerical.objects.filter(
@@ -1488,7 +1505,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -1517,7 +1534,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         coms_to_show=Commerical.objects.annotate(
@@ -1534,7 +1551,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
   
                 else:
@@ -1551,7 +1568,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                     else:
                         coms_to_show=Commerical.objects.filter(
@@ -1564,7 +1581,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
         case "اجتماعی":
@@ -1587,7 +1604,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                 else:
                     print("ELELLELELLSSSSSEEe")
@@ -1601,7 +1618,7 @@ def handleAmlakFilter(request):
                         ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -1624,7 +1641,7 @@ def handleAmlakFilter(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
      
                 else:
@@ -1638,7 +1655,7 @@ def handleAmlakFilter(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                     
 
@@ -1664,7 +1681,7 @@ def handleAmlakFilter(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
   
                 else:
@@ -1677,7 +1694,7 @@ def handleAmlakFilter(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -1706,7 +1723,7 @@ def handleAmlakFilter(request):
                                     ).filter(
                                         img_length__gte=1
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                             else:
                                 coms_to_show=Commerical.objects.annotate(
@@ -1724,7 +1741,7 @@ def handleAmlakFilter(request):
                                     ).filter(
                                         img_length__gte=1
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
                         else:
@@ -1745,7 +1762,7 @@ def handleAmlakFilter(request):
                                     ).filter(
                                         img_length__gte=1
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                             else:
                                 coms_to_show=Commerical.objects.annotate(
@@ -1762,7 +1779,7 @@ def handleAmlakFilter(request):
                                     ).filter(
                                         img_length__gte=1
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
 
@@ -1783,7 +1800,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
 
@@ -1798,7 +1815,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                     else:
@@ -1818,7 +1835,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
 
@@ -1832,7 +1849,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -1859,7 +1876,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                             else:
                                 coms_to_show=Commerical.objects.annotate(
@@ -1876,7 +1893,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         else:
 
@@ -1895,7 +1912,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                             else:
                                 coms_to_show=Commerical.objects.annotate(
@@ -1911,7 +1928,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
      
@@ -1931,7 +1948,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     
                         else:
@@ -1945,7 +1962,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     else:
 
@@ -1963,7 +1980,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     
                         else:
@@ -1976,7 +1993,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
             elif not province and smallCities:
@@ -2003,7 +2020,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
                         else:
@@ -2022,7 +2039,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     else:
 
@@ -2044,7 +2061,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
                         else:
@@ -2062,7 +2079,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
 
@@ -2081,7 +2098,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -2094,7 +2111,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
 
@@ -2111,7 +2128,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -2123,7 +2140,7 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -2210,6 +2227,10 @@ def handleAmlakFilterSecondLevel(request):
 
     maxEjareh=request.GET.get("maxEjareh",7)
     minEjareh=request.GET.get("minEjareh",1)
+    max_day_rent_paid_for_house=request.GET.get("max_day_rent_paid_for_house",900)
+    min_day_rent_paid_for_house=request.GET.get("min_day_rent_paid_for_house",100)
+
+
 
     locas_to_go=list(map(
 
@@ -2252,7 +2273,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             img_length__gte=1
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                     print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
@@ -2270,7 +2291,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -2296,9 +2317,12 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
+                    print("FOUNDDDDD")
+                    print("FOUNDDDDD")
+                    print("FOUNDDDDD")
                     coms_to_show=Commerical.objects.filter(
                         Q(city__in=[int(i) for i in province]) &
                         Q(parent__parent__title=title) &
@@ -2311,7 +2335,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -2335,7 +2359,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                     coms_to_show=Commerical.objects.filter(
@@ -2350,7 +2374,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
     
     elif title in amlakEjareh:
@@ -2379,7 +2403,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             img_length__gte=1
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                     print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
@@ -2398,7 +2422,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -2426,9 +2450,12 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
+                    print("OOOKOKOKOKOKOKOKOKOKO")
+                    print("OOOKOKOKOKOKOKOKOKOKO")
+                    print("OOOKOKOKOKOKOKOKOKOKO")
                     coms_to_show=Commerical.objects.filter(
                         Q(city__in=[int(i) for i in province]) &
                         Q(parent__parent__title=title) &
@@ -2442,7 +2469,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -2467,7 +2494,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                     coms_to_show=Commerical.objects.filter(
@@ -2483,9 +2510,268 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
     
+    elif title == "اجاره کوتاه مدت":
+
+        if province and smallCities:
+          
+                if bool(justImg):
+
+
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) & 
+                        
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))               
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            img_length__gte=1
+                        ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+                else:
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                             Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) & 
+          
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))    
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+
+
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                        Q(city__in=[int(i) for i in province]) &
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                             Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) &  
+          
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))   
+
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+                else:
+                    print("OOOKOKOKOKOKOKOKOKOKO")
+                    print("OOOKOKOKOKOKOKOKOKOKO")
+                    print("OOOKOKOKOKOKOKOKOKOKO")
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) &
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                            Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) & 
+                            
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))   
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+
+
+        elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                             Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) & 
+
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))   
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+                else:
+                    coms_to_show=Commerical.objects.filter(
+                            Q(smallCity__in=[int(i) for i in smallCities])&
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                             Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) &  
+                            
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) &
+                            Q(rooms__gte=int(roomNumber))   
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+    
+
+    elif title == "پروژه‌های ساخت و ساز":
+        
+        if province and smallCities:
+          
+                if bool(justImg):
+
+
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak)             
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            img_length__gte=1
+                        ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+                else:
+                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities]) 
+                        ).filter(
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak)   
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+
+
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                        Q(city__in=[int(i) for i in province]) &
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak)
+
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+                else:
+                    print("OOOKOKOKOKOKOKOKOKOKO")
+                    print("OOOKOKOKOKOKOKOKOKOKO")
+                    print("OOOKOKOKOKOKOKOKOKOKO")
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) &
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(                            
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak)  
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+
+
+        elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                    ).filter(
+                        Q(smallCity__in=[int(i) for i in smallCities])&
+                        Q(parent__parent__title=title) &
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak) 
+                    ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).filter(
+                            img_length__gte=1
+                    ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+                else:
+                    coms_to_show=Commerical.objects.filter(
+                            Q(smallCity__in=[int(i) for i in smallCities])&
+                            Q(parent__parent__title=title) &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                             Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) &  
+                            
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
+                            Q(publisher=publisherForAmlak)   
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+    
+
+
+
+
     elif title in vasayelNaghliehMotor_va_Car:
         ourCom=get_object_or_404(Commerical,title=title)
         first_child=ourCom.children.first()
@@ -2520,7 +2806,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.annotate(
@@ -2541,7 +2827,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         if exchange:
@@ -2563,7 +2849,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -2581,7 +2867,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -2609,7 +2895,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.annotate(
@@ -2630,7 +2916,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         if exchange:
@@ -2652,7 +2938,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             print("FUUUUUNNNNNNNNNN")
@@ -2673,7 +2959,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
         elif province and not smallCities:
@@ -2702,7 +2988,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                         else:
@@ -2723,7 +3009,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         if exchange:
@@ -2741,7 +3027,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -2756,7 +3042,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -2782,7 +3068,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                         else:
@@ -2803,7 +3089,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         if exchange:
@@ -2821,7 +3107,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -2836,7 +3122,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
         elif not province and smallCities:
@@ -2863,7 +3149,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
 
@@ -2883,7 +3169,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -2902,7 +3188,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -2917,7 +3203,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
                 
@@ -2942,7 +3228,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
 
@@ -2962,7 +3248,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -2981,7 +3267,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -2996,7 +3282,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
     elif title in vasayelNaghlieh_Both_and_supplies:
@@ -3026,7 +3312,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             img_length__gte=1
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                     coms_to_show=Commerical.objects.annotate(
@@ -3047,7 +3333,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             img_length__gte=1
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
             else:
                 if exchange:
@@ -3069,7 +3355,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                             coms_to_show=Commerical.objects.filter(
@@ -3087,7 +3373,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
         elif province and not smallCities:
@@ -3115,7 +3401,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
                     else:
@@ -3136,7 +3422,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                 else:
                         if exchange:
@@ -3154,7 +3440,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -3169,7 +3455,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -3195,7 +3481,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
 
@@ -3215,7 +3501,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
             else:
                 if exchange:
@@ -3232,7 +3518,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
                 else:
                             coms_to_show=Commerical.objects.filter(
@@ -3247,7 +3533,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
     elif title in digitalOrKitchenOrPersonalOrEntertaimentOrSupllies:
@@ -3282,7 +3568,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.annotate(
@@ -3301,7 +3587,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         if exchange:
@@ -3321,7 +3607,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -3336,7 +3622,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -3363,7 +3649,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.annotate(
@@ -3382,7 +3668,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         if exchange:
@@ -3401,7 +3687,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -3416,7 +3702,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -3443,7 +3729,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                         else:
@@ -3461,7 +3747,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         if exchange:
@@ -3477,7 +3763,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -3490,7 +3776,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -3513,7 +3799,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                         else:
@@ -3531,7 +3817,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         if exchange:
@@ -3547,7 +3833,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -3560,7 +3846,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
         elif not province and smallCities:
@@ -3585,7 +3871,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
 
@@ -3603,7 +3889,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -3620,7 +3906,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -3633,7 +3919,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
                 
@@ -3657,7 +3943,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
 
@@ -3675,7 +3961,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -3692,7 +3978,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -3705,7 +3991,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
     elif title in services:
@@ -3728,7 +4014,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         img_length__gte=1
                     ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
             else:        
                 coms_to_show=Commerical.objects.filter(
@@ -3740,7 +4026,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
 
         elif province and not smallCities:
@@ -3761,7 +4047,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
                 else:
@@ -3773,7 +4059,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -3793,7 +4079,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
             else:
                 
@@ -3804,7 +4090,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
 
     elif title in social:
@@ -3831,7 +4117,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             img_length__gte=1
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                     coms_to_show=Commerical.objects.annotate(
@@ -3849,7 +4135,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             img_length__gte=1
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
             else:
                 if exchange:
@@ -3869,7 +4155,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
                             coms_to_show=Commerical.objects.filter(
@@ -3883,7 +4169,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
         elif province and not smallCities:
@@ -3907,7 +4193,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
                     else:
@@ -3924,7 +4210,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                                 img_length__gte=1
                         ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                 else:
                         if exchange:
@@ -3939,7 +4225,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -3951,7 +4237,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -3974,7 +4260,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
                 else:
 
@@ -3991,7 +4277,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                             img_length__gte=1
                     ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
             else:
                 if exchange:
@@ -4005,7 +4291,7 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
-                        com_status=instatnceComs
+                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                     ).distinct()
                 else:
                         coms_to_show=Commerical.objects.filter(
@@ -4017,7 +4303,7 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
-                            com_status=instatnceComs
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
 
@@ -4049,7 +4335,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         else:
                             coms_to_show=Commerical.objects.annotate(
@@ -4070,7 +4356,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                     else:
@@ -4093,7 +4379,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         else:
                             coms_to_show=Commerical.objects.annotate(
@@ -4114,7 +4400,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                 else:
@@ -4139,7 +4425,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         else:
                             coms_to_show=Commerical.objects.annotate(
@@ -4160,7 +4446,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                     else:
@@ -4183,7 +4469,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         else:
                             coms_to_show=Commerical.objects.annotate(
@@ -4201,7 +4487,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
             else:
@@ -4224,7 +4510,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -4240,7 +4526,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     else:
                         if insurance:
@@ -4259,7 +4545,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -4275,7 +4561,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
 
@@ -4298,7 +4584,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                             else:
                                 coms_to_show=Commerical.objects.filter(
@@ -4313,7 +4599,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         else:
                             if insurance:
@@ -4330,7 +4616,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                             else:
                                 coms_to_show=Commerical.objects.filter(
@@ -4344,7 +4630,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
 
@@ -4375,7 +4661,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                             
                             else:
@@ -4394,7 +4680,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                             
                         else:
@@ -4417,7 +4703,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                             
                             else:
@@ -4436,7 +4722,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                             
 
@@ -4463,7 +4749,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                             
                             else:
@@ -4482,7 +4768,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                             
                         else:
@@ -4505,7 +4791,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                             
                             else:
@@ -4523,7 +4809,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                             
                 else:
@@ -4544,7 +4830,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
                                 else:
@@ -4560,7 +4846,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
                             else:
@@ -4577,7 +4863,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
                                 else:
@@ -4591,7 +4877,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
 
@@ -4622,7 +4908,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
                                 else:
@@ -4638,7 +4924,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
                             else:
@@ -4655,7 +4941,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
                                 else:
@@ -4669,7 +4955,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
 
@@ -4697,7 +4983,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                         else:
 
@@ -4717,7 +5003,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                     else:
 
@@ -4737,7 +5023,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                         else:
 
@@ -4755,7 +5041,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                 # else FarWork
@@ -4779,7 +5065,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                         else:
 
@@ -4799,7 +5085,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                     else:
 
@@ -4819,7 +5105,7 @@ def handleAmlakFilterSecondLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                         else:
 
@@ -4837,7 +5123,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
 
@@ -4862,7 +5148,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -4876,7 +5162,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
                     else:
@@ -4894,7 +5180,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
@@ -4907,7 +5193,7 @@ def handleAmlakFilterSecondLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
                     # else farWork
@@ -4927,7 +5213,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                             else:
                                 coms_to_show=Commerical.objects.filter(
@@ -4940,7 +5226,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                         else:
@@ -4958,7 +5244,7 @@ def handleAmlakFilterSecondLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                             else:
                                     coms_to_show=Commerical.objects.filter(
@@ -4971,7 +5257,7 @@ def handleAmlakFilterSecondLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
     cat=get_object_or_404(Commerical,title=title)
@@ -5017,6 +5303,8 @@ def handleAmlakFilterSecondLevel(request):
         'roomNumber':int(roomNumber),
         'minYearOfConstruction':int(minYearOfConstruction),
         'maxYearOfConstruction':int(maxYearOfConstruction),
+        'min_day_rent_paid_for_house':int(min_day_rent_paid_for_house),
+        'max_day_rent_paid_for_house':int(max_day_rent_paid_for_house),
 
 
     }
@@ -5053,7 +5341,11 @@ def handleFilterThirdLevel(request):
     maxKarkard=request.GET.get("maxKarkard",400)
     minYearOfConstruction=request.GET.get("minYearOfConstruction",1365)
     maxYearOfConstruction=request.GET.get("maxYearOfConstruction",1402)
-    roomNumber=request.GET.get("roomNumber",1)
+
+    roomNumber=int(request.GET.get("roomNumber")) if request.GET.get("roomNumber") else request.GET.get("roomNumber")
+
+
+
     publisherForAmlak=request.GET.get("publisherForAmlak","همه")
     farWork=request.GET.get("farWork",False)
     soldier=request.GET.get("soldier",False)
@@ -5064,14 +5356,19 @@ def handleFilterThirdLevel(request):
     parking=request.GET.get("parking",False)
     anbari=request.GET.get("anbari",False)
     sanadEdari=request.GET.get("sanadEdari",False)
-    floor=request.GET.get("floor",1)
+
+    floor=int(request.GET.get("floor",1))
+
+
     color=request.GET.get("color","همه")
+
     esalat=request.GET.get("esalat","همه")
     simcartNums=request.GET.get("simcartNums",1)
     simcartType=request.GET.get("simcartType","ایرانسل")
 
 
     title=request.GET.get("title")
+    parent_id=int(request.GET.get("catId"))
  
 
     least_price=request.GET.get("choose_min_price",0)
@@ -5088,6 +5385,15 @@ def handleFilterThirdLevel(request):
     memorySize=request.GET.get("memorySize",4)
     coverSimcart=request.GET.get("coverSimcart","ندارد")
     clothsType=request.GET.get("clothsType","همه")
+    dayRent=request.GET.get("dayRent")
+    print("$$$$$$$$$$$$$$$$$$$$$$")
+    print("$$$$$$$$$$$$$$$$$$$$$$")
+    print("$$$$$$$$$$$$$$$$$$$$$$")
+    # print(roomNumber,type(roomNumber))
+    print("$$$$$$$$$$$$$$$$$$$$$$")
+    print("$$$$$$$$$$$$$$$$$$$$$$")
+    print("$$$$$$$$$$$$$$$$$$$$$$")
+    print("$$$$$$$$$$$$$$$$$$$$$$")
 
 
     locas_to_go=list(map(
@@ -5107,7 +5413,7 @@ def handleFilterThirdLevel(request):
 
         if title in foroshJustForSanadEdari:
 
-            if province and smallCities:
+            if province and smallCities: 
                     if bool(justImg):
 
                         if parking:
@@ -5120,7 +5426,7 @@ def handleFilterThirdLevel(request):
                                                     Q(city__in=[int(i) for i in province]) | 
                                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                     Q(sanad_adari=True)&
@@ -5128,15 +5434,16 @@ def handleFilterThirdLevel(request):
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor)
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
                                                     img_length__gte=1
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadedari
@@ -5147,22 +5454,24 @@ def handleFilterThirdLevel(request):
                                                     Q(city__in=[int(i) for i in province]) | 
                                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                     Q(anbari=True)&
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                 
                                                     Q(floor__gte=floor)
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
                                                     img_length__gte=1
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                             # else for anbari
@@ -5176,22 +5485,24 @@ def handleFilterThirdLevel(request):
                                                     Q(city__in=[int(i) for i in province]) | 
                                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                     Q(sanad_adari=True)& 
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                   
                                                     Q(floor__gte=floor)
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
                                                     img_length__gte=1
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadedari
@@ -5202,21 +5513,23 @@ def handleFilterThirdLevel(request):
                                                     Q(city__in=[int(i) for i in province]) | 
                                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(  
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    
                                                     Q(floor__gte=floor)
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
                                                     img_length__gte=1
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                         # else for parking
@@ -5230,7 +5543,7 @@ def handleFilterThirdLevel(request):
                                                     Q(city__in=[int(i) for i in province]) | 
                                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                     Q(sanad_adari=True)&
@@ -5238,15 +5551,17 @@ def handleFilterThirdLevel(request):
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    
                                                     Q(floor__gte=floor)
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
                                                     img_length__gte=1
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadedari
@@ -5257,22 +5572,24 @@ def handleFilterThirdLevel(request):
                                                     Q(city__in=[int(i) for i in province]) | 
                                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                     Q(anbari=True)&
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                               
                                                     Q(floor__gte=floor)
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
                                                     img_length__gte=1
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                             # else for anbari
@@ -5286,22 +5603,23 @@ def handleFilterThirdLevel(request):
                                                     Q(city__in=[int(i) for i in province]) | 
                                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                     Q(sanad_adari=True)& 
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor)
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
                                                     img_length__gte=1
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadedari
@@ -5312,21 +5630,23 @@ def handleFilterThirdLevel(request):
                                                     Q(city__in=[int(i) for i in province]) | 
                                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(  
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                                    
                                                     Q(floor__gte=floor)
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
                                                     img_length__gte=1
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
 
@@ -5342,7 +5662,7 @@ def handleFilterThirdLevel(request):
                                                 Q(city__in=[int(i) for i in province]) | 
                                                 Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                         Q(sanad_adari=True)&
@@ -5350,13 +5670,14 @@ def handleFilterThirdLevel(request):
                                                         Q(parking=True)&
                                                         Q(price__range=(int(least_price),int(max_price)))&
                                                         Q(rooms__gte=roomNumber)&
-                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                         Q(floor__gte=floor)   
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadedair
@@ -5365,20 +5686,21 @@ def handleFilterThirdLevel(request):
                                                 Q(city__in=[int(i) for i in province]) | 
                                                 Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                         Q(anbari=True)&
                                                         Q(parking=True)&
                                                         Q(price__range=(int(least_price),int(max_price)))&
                                                         Q(rooms__gte=roomNumber)&
-                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                         Q(floor__gte=floor)   
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                             # else for anbari
@@ -5389,20 +5711,21 @@ def handleFilterThirdLevel(request):
                                                 Q(city__in=[int(i) for i in province]) | 
                                                 Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                         Q(sanad_adari=True)&
                                                         Q(parking=True)&
                                                         Q(price__range=(int(least_price),int(max_price)))&
                                                         Q(rooms__gte=roomNumber)&
-                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                         Q(floor__gte=floor)   
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadedair
@@ -5411,19 +5734,20 @@ def handleFilterThirdLevel(request):
                                                 Q(city__in=[int(i) for i in province]) | 
                                                 Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                         Q(parking=True)&
                                                         Q(price__range=(int(least_price),int(max_price)))&
                                                         Q(rooms__gte=roomNumber)&
-                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                         Q(floor__gte=floor)   
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                         # else for parking
@@ -5435,21 +5759,21 @@ def handleFilterThirdLevel(request):
                                                 Q(city__in=[int(i) for i in province]) | 
                                                 Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                         Q(sanad_adari=True)&
                                                         Q(anbari=True)&
-                                                        
                                                         Q(price__range=(int(least_price),int(max_price)))&
                                                         Q(rooms__gte=roomNumber)&
-                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                         Q(floor__gte=floor)   
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadedair
@@ -5458,20 +5782,21 @@ def handleFilterThirdLevel(request):
                                                 Q(city__in=[int(i) for i in province]) | 
                                                 Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                         Q(anbari=True)&
                                                         
                                                         Q(price__range=(int(least_price),int(max_price)))&
                                                         Q(rooms__gte=roomNumber)&
-                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                         Q(floor__gte=floor)   
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                             # else for anbari
@@ -5482,19 +5807,20 @@ def handleFilterThirdLevel(request):
                                                 Q(city__in=[int(i) for i in province]) | 
                                                 Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                         Q(sanad_adari=True)&
                                                         Q(price__range=(int(least_price),int(max_price)))&
                                                         Q(rooms__gte=roomNumber)&
-                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                         Q(floor__gte=floor)   
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadedair
@@ -5503,18 +5829,19 @@ def handleFilterThirdLevel(request):
                                                 Q(city__in=[int(i) for i in province]) | 
                                                 Q(smallCity__in=[int(i) for i in smallCities]) 
                                                 ).filter(
-                                                    Q(parent__title=title) &
+                                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                                     Q(location__in=locas_to_go)
                                                 ).filter(
                                                         Q(price__range=(int(least_price),int(max_price)))&
                                                         Q(rooms__gte=roomNumber)&
-                                                        Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                        Q(publisher=publisherForAmlak)&
+                                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                         Q(floor__gte=floor)   
+                                                ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                                 ).filter(
                                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                                 ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
 
@@ -5533,7 +5860,7 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(sanad_adari=True)&
@@ -5541,15 +5868,16 @@ def handleFilterThirdLevel(request):
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor) 
+                                            ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                             ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadEdari
@@ -5558,22 +5886,23 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(anbari=True)&
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor) 
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
                             # else for anbari
 
@@ -5584,22 +5913,23 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(sanad_adari=True)&    
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor) 
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadEdari
@@ -5608,21 +5938,22 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor) 
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                         # else for parking
@@ -5634,23 +5965,23 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(sanad_adari=True)&
                                                     Q(anbari=True)&
-                                                   
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor) 
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadEdari
@@ -5659,22 +5990,23 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(anbari=True)&
                                                     
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor) 
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
                             # else for anbari
 
@@ -5685,22 +6017,22 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(sanad_adari=True)&    
-                                                   
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor) 
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                                 # else for sanadEdari
@@ -5709,21 +6041,22 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                    
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor) 
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                     
@@ -5738,7 +6071,7 @@ def handleFilterThirdLevel(request):
 
                                     coms_to_show=Commerical.objects.filter(
                                             Q(city__in=[int(i) for i in province]) &
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(sanad_adari=True)&
@@ -5747,18 +6080,19 @@ def handleFilterThirdLevel(request):
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                                 # else for sanadEdari
                                 else:
                                     coms_to_show=Commerical.objects.filter(
                                             Q(city__in=[int(i) for i in province]) &
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(anbari=True)&
@@ -5766,12 +6100,13 @@ def handleFilterThirdLevel(request):
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
                             # else for anbari
@@ -5781,7 +6116,7 @@ def handleFilterThirdLevel(request):
 
                                     coms_to_show=Commerical.objects.filter(
                                             Q(city__in=[int(i) for i in province]) &
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(sanad_adari=True)&
@@ -5789,30 +6124,32 @@ def handleFilterThirdLevel(request):
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                                 # else for sanadEdari
                                 else:
                                     coms_to_show=Commerical.objects.filter(
                                             Q(city__in=[int(i) for i in province]) &
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(parking=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
                         # else for parking
@@ -5824,38 +6161,40 @@ def handleFilterThirdLevel(request):
 
                                     coms_to_show=Commerical.objects.filter(
                                             Q(city__in=[int(i) for i in province]) &
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(sanad_adari=True)&
                                             Q(anbari=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                                 # else for sanadEdari
                                 else:
                                     coms_to_show=Commerical.objects.filter(
                                             Q(city__in=[int(i) for i in province]) &
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(anbari=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
                             # else for anbari
@@ -5865,36 +6204,41 @@ def handleFilterThirdLevel(request):
 
                                     coms_to_show=Commerical.objects.filter(
                                             Q(city__in=[int(i) for i in province]) &
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(sanad_adari=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                                 # else for sanadEdari
                                 else:
+                                    print("BOOOMOOMOMOMOMOMOMO")
+                                    print("BOOOMOOMOMOMOMOMOMO")
+                                    print("BOOOMOOMOMOMOMOMOMO")
                                     coms_to_show=Commerical.objects.filter(
                                             Q(city__in=[int(i) for i in province]) &
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
 
@@ -5912,7 +6256,7 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(sanad_adari=True)&
@@ -5920,15 +6264,16 @@ def handleFilterThirdLevel(request):
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor)   
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                             # else sanadEdari  
@@ -5938,22 +6283,23 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(anbari=True)&
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor)   
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct() 
 
 
@@ -5965,7 +6311,7 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(sanad_adari=True)&
@@ -5973,15 +6319,16 @@ def handleFilterThirdLevel(request):
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor)   
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                             # else sanadEdari  
@@ -5991,22 +6338,23 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                    
                                                     Q(parking=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor)   
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct() 
 
 
@@ -6019,22 +6367,23 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(sanad_adari=True)&
                                                     Q(anbari=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor)   
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                             # else sanadEdari  
@@ -6044,22 +6393,23 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(anbari=True)&
                                                     
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor)   
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct() 
 
 
@@ -6071,21 +6421,22 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(sanad_adari=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor)   
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
                             # else sanadEdari  
@@ -6095,27 +6446,24 @@ def handleFilterThirdLevel(request):
                                                 img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
-                                                    Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
+                                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                                     Q(floor__gte=floor)   
                                             ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct() 
 
                         
-
-
-
-
 
                 # else for image
                 else:
@@ -6125,7 +6473,7 @@ def handleFilterThirdLevel(request):
                             if sanadEdari:
                                     coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(sanad_adari=True)&
@@ -6133,32 +6481,34 @@ def handleFilterThirdLevel(request):
                                             Q(parking=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)    
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                             # else for sanadEdari
                             else :
                                  coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(anbari=True)&
                                             Q(parking=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)    
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                         # else for anbari
@@ -6167,7 +6517,7 @@ def handleFilterThirdLevel(request):
                             if sanadEdari:
                                     coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(sanad_adari=True)&
@@ -6175,31 +6525,33 @@ def handleFilterThirdLevel(request):
                                             Q(parking=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)    
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                             # else for sanadEdari
                             else :
                                  coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(parking=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)    
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                     
@@ -6210,38 +6562,40 @@ def handleFilterThirdLevel(request):
                             if sanadEdari:
                                     coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(sanad_adari=True)&
                                             Q(anbari=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)    
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                             # else for sanadEdari
                             else :
                                  coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(anbari=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)    
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                         # else for anbari
@@ -6250,42 +6604,44 @@ def handleFilterThirdLevel(request):
                             if sanadEdari:
                                     coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(sanad_adari=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)    
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                             # else for sanadEdari
                             else :
                                  coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(leastMeter)))&
-                                            Q(publisher=publisherForAmlak)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
                                             Q(floor__gte=floor)    
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
         # else for aparteman haie ke sanad edari  nadarn
         else:
             
-            if province and smallCities:
+            if province and smallCities: 
           
                 if bool(justImg):
                     
@@ -6298,7 +6654,7 @@ def handleFilterThirdLevel(request):
                                         Q(city__in=[int(i) for i in province]) | 
                                         Q(smallCity__in=[int(i) for i in smallCities]) 
                                     ).filter(
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(anbari=True)&
@@ -6306,14 +6662,15 @@ def handleFilterThirdLevel(request):
                                         Q(price__range=(int(least_price),int(max_price)))&
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)             
                                     ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                         img_length__gte=1
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
                         # else for anbari
@@ -6325,21 +6682,22 @@ def handleFilterThirdLevel(request):
                                         Q(city__in=[int(i) for i in province]) | 
                                         Q(smallCity__in=[int(i) for i in smallCities]) 
                                     ).filter(
-                                        Q(parent__title=title) &
+                                       Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(parking=True)&
                                         Q(price__range=(int(least_price),int(max_price)))&
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)             
                                     ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                         img_length__gte=1
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
                     # else for parking
@@ -6352,21 +6710,22 @@ def handleFilterThirdLevel(request):
                                         Q(city__in=[int(i) for i in province]) | 
                                         Q(smallCity__in=[int(i) for i in smallCities]) 
                                     ).filter(
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(anbari=True)&
                                         Q(price__range=(int(least_price),int(max_price)))&
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)             
                                     ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                         img_length__gte=1
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
                         # else for anbari
@@ -6377,20 +6736,21 @@ def handleFilterThirdLevel(request):
                                         Q(city__in=[int(i) for i in province]) | 
                                         Q(smallCity__in=[int(i) for i in smallCities]) 
                                     ).filter(
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)             
                                     ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                         img_length__gte=1
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
 
@@ -6405,7 +6765,7 @@ def handleFilterThirdLevel(request):
                                         Q(city__in=[int(i) for i in province]) | 
                                             Q(smallCity__in=[int(i) for i in smallCities]) 
                                         ).filter(
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(anbari=True)&
@@ -6413,12 +6773,13 @@ def handleFilterThirdLevel(request):
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)   
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         # else for anbari
                         else:
@@ -6429,19 +6790,20 @@ def handleFilterThirdLevel(request):
                                         Q(city__in=[int(i) for i in province]) | 
                                             Q(smallCity__in=[int(i) for i in smallCities]) 
                                         ).filter(
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(parking=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)   
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                     
                     # else for parking
@@ -6453,19 +6815,20 @@ def handleFilterThirdLevel(request):
                                         Q(city__in=[int(i) for i in province]) | 
                                             Q(smallCity__in=[int(i) for i in smallCities]) 
                                         ).filter(
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(anbari=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)   
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         # else for anbari
                         else:
@@ -6473,18 +6836,19 @@ def handleFilterThirdLevel(request):
                                         Q(city__in=[int(i) for i in province]) | 
                                             Q(smallCity__in=[int(i) for i in smallCities]) 
                                         ).filter(
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)   
                                         ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                     
 
@@ -6501,7 +6865,7 @@ def handleFilterThirdLevel(request):
                                     img_length=Length("commericalimage")
                                         ).filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(anbari=True)&
@@ -6509,15 +6873,16 @@ def handleFilterThirdLevel(request):
                                         Q(price__range=(int(least_price),int(max_price)))&
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)    
 
                                     ).filter(
+                                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                                ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                             # else for anbari
                             else:
@@ -6525,22 +6890,22 @@ def handleFilterThirdLevel(request):
                                     img_length=Length("commericalimage")
                                         ).filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(parking=True)&
                                         Q(price__range=(int(least_price),int(max_price)))&
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)    
-
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         
                         # else for parking
@@ -6551,22 +6916,23 @@ def handleFilterThirdLevel(request):
                                     img_length=Length("commericalimage")
                                         ).filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(anbari=True)&
                                         Q(price__range=(int(least_price),int(max_price)))&
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)    
 
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                             # else for anbari
                             else:
@@ -6574,21 +6940,22 @@ def handleFilterThirdLevel(request):
                                     img_length=Length("commericalimage")
                                         ).filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)    
 
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                     
 
@@ -6599,7 +6966,7 @@ def handleFilterThirdLevel(request):
 
                                 coms_to_show=Commerical.objects.filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(anbari=True)&
@@ -6607,30 +6974,32 @@ def handleFilterThirdLevel(request):
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)   
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                             # else for anbari
                             else:
                                  coms_to_show=Commerical.objects.filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(parking=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)   
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         # else parking
                         else:
@@ -6638,37 +7007,42 @@ def handleFilterThirdLevel(request):
 
                                 coms_to_show=Commerical.objects.filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(anbari=True)&
-                                           
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)   
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                             # else for anbari
                             else:
+                                 print("FUNNN")
+                                 print("FUNNN")
+                                 print("FUNNN")
+                                 print("FUNNN")
                                  coms_to_show=Commerical.objects.filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)   
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
 
@@ -6683,7 +7057,7 @@ def handleFilterThirdLevel(request):
                                         img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(anbari=True)&
@@ -6691,14 +7065,15 @@ def handleFilterThirdLevel(request):
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
                                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
                                                     Q(floor__gte=floor) 
+                                            ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                             ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
                             # else anbari
                             else:
@@ -6706,7 +7081,7 @@ def handleFilterThirdLevel(request):
                                         img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                             
@@ -6714,14 +7089,15 @@ def handleFilterThirdLevel(request):
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
                                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
                                                     Q(floor__gte=floor) 
+                                            ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                             ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
                         # else for parking
                         else:
@@ -6731,21 +7107,22 @@ def handleFilterThirdLevel(request):
                                         img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(anbari=True)&
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
                                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
                                                     Q(floor__gte=floor) 
+                                            ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                             ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
                             # else anbari
                             else:
@@ -6753,20 +7130,21 @@ def handleFilterThirdLevel(request):
                                         img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(smallCity__in=[int(i) for i in smallCities])&
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(    
                                                     Q(price__range=(int(least_price),int(max_price)))&
                                                     Q(rooms__gte=roomNumber)&
                                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
                                                     Q(floor__gte=floor) 
+                                            ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                             ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
                                       
                     # else image
@@ -6777,7 +7155,7 @@ def handleFilterThirdLevel(request):
 
                                     coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                           Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(anbari=True)&
@@ -6785,19 +7163,20 @@ def handleFilterThirdLevel(request):
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                            ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
         
                             # else for anbari
                             else:
                                 coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                           Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                 
@@ -6805,12 +7184,13 @@ def handleFilterThirdLevel(request):
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                            ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                         # else for parking
@@ -6819,39 +7199,305 @@ def handleFilterThirdLevel(request):
 
                                     coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(anbari=True)&
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                            ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
         
                             # else for anbari
                             else:
                                 coms_to_show=Commerical.objects.filter(
                                             Q(smallCity__in=[int(i) for i in smallCities])&
-                                            Q(parent__title=title) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)  
                                         ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                            ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
         
+
+
+    elif title in for_daily_rent:
+        # day_rent_paid
+
+        if province and smallCities: 
+          
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(day_rent_paid__lte=int(dayRent))&
+                                        Q(rooms__gte=roomNumber)&
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)          
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+
+
+                # else for image
+                else:
+
+                    coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) &Q(parent__id=parent_id)&
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(day_rent_paid__lte=int(dayRent))&
+                                Q(rooms__gte=roomNumber)&
+                                Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                Q(publisher=publisherForAmlak) 
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+                    
+
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                            ).filter(
+                        Q(city__in=[int(i) for i in province]) &
+                            Q(parent__title=title) &Q(parent__id=parent_id)&
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(day_rent_paid__lte=int(dayRent))&
+                            Q(rooms__gte=roomNumber)&
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                            Q(publisher=publisherForAmlak)   
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+               
+
+            # else for image
+                else:
+                    print("********************")
+                    print("********************")
+                    coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(parent__title=title) &Q(parent__id=parent_id)&
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                                Q(day_rent_paid__lte=int(dayRent))&
+                                Q(rooms__gte=roomNumber)&
+                                Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                Q(publisher=publisherForAmlak)    
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+
+
+        elif not province and smallCities:
+                    print("C")
+
+                    if bool(justImg):
+                        
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(    
+                                            Q(day_rent_paid__lte=int(dayRent))&
+                                            Q(rooms__gte=roomNumber)&
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)  
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                                      
+                    # else image
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(day_rent_paid__lte=int(dayRent))&
+                                    Q(rooms__gte=roomNumber)&
+                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                    Q(publisher=publisherForAmlak)  
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                ).distinct()
+          
+
+    elif title in mosharekat:
+
+        if province and smallCities: 
+          
+                if bool(justImg):
+                    coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                        Q(publisher=publisherForAmlak)          
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+
+
+                # else for image
+                else:
+
+                    coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) &Q(parent__id=parent_id)&
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                Q(publisher=publisherForAmlak)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+                    
+
+        elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+
+                    coms_to_show=Commerical.objects.annotate(
+                        img_length=Length("commericalimage")
+                            ).filter(
+                        Q(city__in=[int(i) for i in province]) &
+                            Q(parent__title=title) &Q(parent__id=parent_id)&
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                            Q(publisher=publisherForAmlak)  
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+               
+
+            # else for image
+                else:
+                    print("********************")
+                    print("********************")
+                    coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(parent__title=title) &Q(parent__id=parent_id)&
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                                Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                Q(publisher=publisherForAmlak)   
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+
+
+        elif not province and smallCities:
+                    print("C")
+
+                    if bool(justImg):
+                        
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(    
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                            Q(publisher=publisherForAmlak)  
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                                      
+                    # else image
+                    else:
+                        coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
+                                    Q(publisher=publisherForAmlak)  
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                ).distinct()
+          
+        
+
     elif title in ejarehAll:
 
         if province and smallCities:
@@ -6866,7 +7512,7 @@ def handleFilterThirdLevel(request):
                                     Q(city__in=[int(i) for i in province]) | 
                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                 ).filter(
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                     Q(anbari=True)&
@@ -6882,7 +7528,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                         # else for anbari
@@ -6893,7 +7539,7 @@ def handleFilterThirdLevel(request):
                                     Q(city__in=[int(i) for i in province]) | 
                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                 ).filter(
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                     Q(parking=True)&
@@ -6908,7 +7554,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                     # else for parking
@@ -6921,7 +7567,7 @@ def handleFilterThirdLevel(request):
                                     Q(city__in=[int(i) for i in province]) | 
                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                 ).filter(
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                     Q(anbari=True)&
@@ -6937,7 +7583,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                         # else for anbari
@@ -6948,7 +7594,7 @@ def handleFilterThirdLevel(request):
                                     Q(city__in=[int(i) for i in province]) | 
                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                 ).filter(
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                     Q(rooms__gte=roomNumber)&
@@ -6962,7 +7608,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     img_length__gte=1
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                 # else for iamge
@@ -6975,7 +7621,7 @@ def handleFilterThirdLevel(request):
                                     Q(city__in=[int(i) for i in province]) | 
                                         Q(smallCity__in=[int(i) for i in smallCities]) 
                                     ).filter(
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(anbari=True)&
@@ -6989,7 +7635,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         # else for  anbari
                         else:
@@ -6997,7 +7643,7 @@ def handleFilterThirdLevel(request):
                                     Q(city__in=[int(i) for i in province]) | 
                                         Q(smallCity__in=[int(i) for i in smallCities]) 
                                     ).filter(
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(parking=True)&
@@ -7010,7 +7656,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     # else for parking
                     else:
@@ -7020,7 +7666,7 @@ def handleFilterThirdLevel(request):
                                     Q(city__in=[int(i) for i in province]) | 
                                         Q(smallCity__in=[int(i) for i in smallCities]) 
                                     ).filter(
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(anbari=True)&
@@ -7034,7 +7680,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         # else for  anbari
                         else:
@@ -7042,7 +7688,7 @@ def handleFilterThirdLevel(request):
                                     Q(city__in=[int(i) for i in province]) | 
                                         Q(smallCity__in=[int(i) for i in smallCities]) 
                                     ).filter(
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         
@@ -7055,7 +7701,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
          
                 
@@ -7071,7 +7717,7 @@ def handleFilterThirdLevel(request):
                                         img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(anbari=True)&
@@ -7087,7 +7733,7 @@ def handleFilterThirdLevel(request):
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
                         # else for anbari
                         else:
@@ -7095,7 +7741,7 @@ def handleFilterThirdLevel(request):
                                         img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                  
@@ -7111,7 +7757,7 @@ def handleFilterThirdLevel(request):
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
                     # else for parking
                     else:
@@ -7120,7 +7766,7 @@ def handleFilterThirdLevel(request):
                                         img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(anbari=True)&
@@ -7135,7 +7781,7 @@ def handleFilterThirdLevel(request):
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
                         # else for anbari
                         else:
@@ -7143,7 +7789,7 @@ def handleFilterThirdLevel(request):
                                         img_length=Length("commericalimage")
                                             ).filter(
                                                 Q(city__in=[int(i) for i in province]) &
-                                                Q(parent__title=title) &
+                                                Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                     Q(rooms__gte=roomNumber)&
@@ -7157,7 +7803,7 @@ def handleFilterThirdLevel(request):
                                             ).filter(
                                                     img_length__gte=1
                                             ).filter(
-                                                    com_status=instatnceComs
+                                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                                 ).distinct()
 
 
@@ -7169,7 +7815,7 @@ def handleFilterThirdLevel(request):
 
                                 coms_to_show=Commerical.objects.filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(anbari=True)&
@@ -7183,12 +7829,12 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(parking=True)&
@@ -7201,7 +7847,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                     # else for parking
@@ -7210,7 +7856,7 @@ def handleFilterThirdLevel(request):
 
                                 coms_to_show=Commerical.objects.filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(anbari=True)&
@@ -7224,12 +7870,12 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         else:
                             coms_to_show=Commerical.objects.filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__title=title) &
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                     ).filter(
                                            
@@ -7242,7 +7888,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
 
@@ -7258,7 +7904,7 @@ def handleFilterThirdLevel(request):
                                     img_length=Length("commericalimage")
                                     ).filter(
                                         Q(smallCity__in=[int(i) for i in smallCities])&
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(anbari=True)&
@@ -7274,7 +7920,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         # else for anbari
                         else:
@@ -7282,7 +7928,7 @@ def handleFilterThirdLevel(request):
                                     img_length=Length("commericalimage")
                                     ).filter(
                                         Q(smallCity__in=[int(i) for i in smallCities])&
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                            
@@ -7298,7 +7944,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                     # else for parking
@@ -7309,7 +7955,7 @@ def handleFilterThirdLevel(request):
                                     img_length=Length("commericalimage")
                                     ).filter(
                                         Q(smallCity__in=[int(i) for i in smallCities])&
-                                        Q(parent__title=title) &
+                                       Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(anbari=True)&
@@ -7324,7 +7970,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         # else for anbari
                         else:
@@ -7332,7 +7978,7 @@ def handleFilterThirdLevel(request):
                                     img_length=Length("commericalimage")
                                     ).filter(
                                         Q(smallCity__in=[int(i) for i in smallCities])&
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(rooms__gte=roomNumber)&
@@ -7346,7 +7992,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
 
@@ -7358,7 +8004,7 @@ def handleFilterThirdLevel(request):
                         
                                 coms_to_show=Commerical.objects.filter(
                                         Q(smallCity__in=[int(i) for i in smallCities])&
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(anbari=True)&
@@ -7372,13 +8018,13 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         # elsefor parking
                         else:
                              coms_to_show=Commerical.objects.filter(
                                         Q(smallCity__in=[int(i) for i in smallCities])&
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(                                       
                                         Q(parking=True)&
@@ -7391,7 +8037,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     # else for parking'
                     else:
@@ -7399,7 +8045,7 @@ def handleFilterThirdLevel(request):
                         
                                 coms_to_show=Commerical.objects.filter(
                                         Q(smallCity__in=[int(i) for i in smallCities])&
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(anbari=True)&
@@ -7413,13 +8059,13 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         # elsefor parking
                         else:
                              coms_to_show=Commerical.objects.filter(
                                         Q(smallCity__in=[int(i) for i in smallCities])&
-                                        Q(parent__title=title) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(                                       
                                     
@@ -7432,219 +8078,272 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
     
 
+
     elif title in cars:
 
-        if province and smallCities:
-          
-                if bool(justImg):
+        if title ==  "سواری و وانت":
 
-                    if exchange:
+            if province and smallCities:
+            
+                    if bool(justImg):
 
-                        coms_to_show=Commerical.objects.annotate(
-                            img_length=Length("commericalimage")
-                                ).filter(
-                                    Q(city__in=[int(i) for i in province]) | 
-                                    Q(smallCity__in=[int(i) for i in smallCities]) 
-                                ).filter(
-                                    Q(parent__title=title) &
-                                    Q(location__in=locas_to_go)
-                                ).filter(
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(publisherForCar=publisherForCar)&
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &Q(parent__id=parnt_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&                                    
+                                        Q(ready_to_exchange=True)& 
+                                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                        Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                    ).filter(
+                                            Q() if internalOrExternal =="همه" else Q(internal_or_external=internalOrExternal)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+                        
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        
+                                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                        Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                    ).filter(
+                                            Q() if internalOrExternal =="همه" else Q(internal_or_external=internalOrExternal)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+
+
+                    # else for image
+                    else:
+                        print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                        if  exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) &Q(parent__id=parent_id)&
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                
+                                Q(ready_to_exchange=True)&
+                                
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
+                            ).filter(
+                                    Q() if internalOrExternal =="همه" else Q(internal_or_external=internalOrExternal)
+                            ).filter(
+                                Q() if color == "همه" else (Q(color=color))
+                            ).filter(
+                                Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) & Q(parent__id=parent_id)&
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
+                            ).filter(
+                                    Q() if internalOrExternal =="همه" else Q(internal_or_external=internalOrExternal)
+                            ).filter(
+                                Q() if color == "همه" else (Q(color=color))
+                            ).filter(
+                                Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+
+            elif province and not smallCities:
+
+                    print("B")
+
+                    if bool(justImg):
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) & QQ(parent__id=parent_id)&
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(price__range=(int(least_price),int(max_price)))&
+                                               
+                                                Q(ready_to_exchange=True)&
+                                                
+                                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
+                                        ).filter(
+                                            Q() if internalOrExternal =="همه" else Q(internal_or_external=internalOrExternal)
+                                        ).filter(
+                                            Q() if color == "همه" else (Q(color=color))
+                                        ).filter(
+                                            Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                            ).distinct()
+                        
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) & Q(parent__id=parent_id)&
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(price__range=(int(least_price),int(max_price)))&
+                                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
+                                        ).filter(
+                                            Q() if internalOrExternal =="همه" else Q(internal_or_external=internalOrExternal)
+                                        ).filter(
+                                            Q() if color == "همه" else (Q(color=color))
+                                        ).filter(
+                                            Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                            ).distinct()
+
+
+                    # else for image
+
+                    else:
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(ready_to_exchange=True)&
+                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))    
+                                    ).filter(
+                                            Q() if internalOrExternal =="همه" else Q(internal_or_external=internalOrExternal)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                        # else for exchange
+                        else:
+                            print("MIMIMIMIMIMI")
+                            print("MIMIMIMIMIMI")
+                            print("MIMIMIMIMIMI")
+                            coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))    
+                                    ).filter(
+                                            Q() if internalOrExternal =="همه" else Q(internal_or_external=internalOrExternal)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                            
+            elif not province and smallCities:
+                    print("C")
+
+                    if bool(justImg):
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))&
+                                        Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)&
                                     Q(internal_or_external=internalOrExternal)&
                                     Q(color=color)&
                                     Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
-                                ).filter(
-                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                                ).filter(
-                                    img_length__gte=1
-                                ).filter(
-                                    com_status=instatnceComs
-                                ).distinct()
-                    
-                    # else for exchange
-                    else:
-                        coms_to_show=Commerical.objects.annotate(
-                            img_length=Length("commericalimage")
-                                ).filter(
-                                    Q(city__in=[int(i) for i in province]) | 
-                                    Q(smallCity__in=[int(i) for i in smallCities]) 
-                                ).filter(
-                                    Q(parent__title=title) &
-                                    Q(location__in=locas_to_go)
-                                ).filter(
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(internal_or_external=internalOrExternal)&
-                                    Q(color=color)&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
-                                ).filter(
-                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                                ).filter(
-                                    img_length__gte=1
-                                ).filter(
-                                    com_status=instatnceComs
-                                ).distinct()
-
-
-                # else for image
-                else:
-                    print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
-                    if  exchange:
-
-                        coms_to_show=Commerical.objects.filter(
-                        Q(city__in=[int(i) for i in province]) | 
-                            Q(smallCity__in=[int(i) for i in smallCities]) 
-                        ).filter(
-                            Q(parent__title=title) &
-                            Q(location__in=locas_to_go)
-                        ).filter(
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(publisherForCar=publisherForCar)&
-                            Q(ready_to_exchange=True)&
-                            Q(internal_or_external=internalOrExternal)&
-                            Q(color=color)&
-                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
-                        ).filter(
-                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                        ).filter(
-                            com_status=instatnceComs
-                        ).distinct()
-                    else:
-                         coms_to_show=Commerical.objects.filter(
-                        Q(city__in=[int(i) for i in province]) | 
-                            Q(smallCity__in=[int(i) for i in smallCities]) 
-                        ).filter(
-                            Q(parent__title=title) &
-                            Q(location__in=locas_to_go)
-                        ).filter(
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(publisherForCar=publisherForCar)&
-                          
-                            Q(internal_or_external=internalOrExternal)&
-                            Q(color=color)&
-                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
-                        ).filter(
-                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                        ).filter(
-                            com_status=instatnceComs
-                        ).distinct()
-
-        elif province and not smallCities:
-
-                print("B")
-
-                if bool(justImg):
-                    if exchange:
-
-                            coms_to_show=Commerical.objects.annotate(
-                                    img_length=Length("commericalimage")
-                                    ).filter(
-                                        Q(city__in=[int(i) for i in province]) &
-                                        Q(parent__title=title) &
-                                        Q(location__in=locas_to_go)
-                                    ).filter(
-                                            Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(publisherForCar=publisherForCar)&
-                                            Q(ready_to_exchange=True)&
-                                            Q(internal_or_external=internalOrExternal)&
-                                            Q(color=color)&
-                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
-                    
-                    # else for exchange
-                    else:
-                        coms_to_show=Commerical.objects.annotate(
-                                    img_length=Length("commericalimage")
-                                    ).filter(
-                                        Q(city__in=[int(i) for i in province]) &
-                                        Q(parent__title=title) &
-                                        Q(location__in=locas_to_go)
-                                    ).filter(
-                                            Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(publisherForCar=publisherForCar)&
-    
-                                            Q(internal_or_external=internalOrExternal)&
-                                            Q(color=color)&
-                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))   
-                                    ).filter(
-                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                                    ).filter(
-                                            img_length__gte=1
-                                    ).filter(
-                                            com_status=instatnceComs
-                                        ).distinct()
-
-
-                # else for image
-
-                else:
-                    if exchange:
-
-                            coms_to_show=Commerical.objects.filter(
-                                    Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__parent__title=title) &
-                                    Q(location__in=locas_to_go)
-                                ).filter(
-                                        Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(publisherForCar=publisherForCar)&
-                                        Q(ready_to_exchange=True)&
-                                        Q(internal_or_external=internalOrExternal)&
-                                        Q(color=color)&
-                                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                                        Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))    
-                                ).filter(
-                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                                ).filter(
-                                        com_status=instatnceComs
-                                    ).distinct()
-                    # else for exchange
-                    else:
-                        coms_to_show=Commerical.objects.filter(
-                                    Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__parent__title=title) &
-                                    Q(location__in=locas_to_go)
-                                ).filter(
-                                        Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(publisherForCar=publisherForCar)&
-                                  
-                                        Q(internal_or_external=internalOrExternal)&
-                                        Q(color=color)&
-                                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                                        Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))    
-                                ).filter(
-                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                                ).filter(
-                                        com_status=instatnceComs
-                                    ).distinct()
-                        
-
-
-        elif not province and smallCities:
-                print("C")
-
-                if bool(justImg):
-                    if exchange:
-
+                        # else for exchange
+                        else:
                             coms_to_show=Commerical.objects.annotate(
-                                img_length=Length("commericalimage")
+                                    img_length=Length("commericalimage")
                                 ).filter(
                                     Q(smallCity__in=[int(i) for i in smallCities])&
                                     Q(parent__title=title) &
@@ -7652,81 +8351,338 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
                                     Q(publisherForCar=publisherForCar)&
-                                Q(ready_to_exchange=True)&
-                                Q(internal_or_external=internalOrExternal)&
-                                Q(color=color)&
-                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
+                                
+                                    Q(internal_or_external=internalOrExternal)&
+                                    Q(color=color)&
+                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
-                                    ).distinct()
-                    # else for exchange
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct() 
+                        
+                    # else for image
                     else:
-                        coms_to_show=Commerical.objects.annotate(
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                                Q(publisherForCar=publisherForCar)&
+                                                Q(ready_to_exchange=True)&
+                                                Q(internal_or_external=internalOrExternal)&
+                                                Q(color=color)&
+                                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                                Q(publisherForCar=publisherForCar)&
+                                        
+                                                Q(internal_or_external=internalOrExternal)&
+                                                Q(color=color)&
+                                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+
+        elif title == "کلاسیک":
+
+            if province and smallCities:
+            
+                    if bool(justImg):
+
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
                                 img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) & Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        
+                                        Q(ready_to_exchange=True)  
+                                     
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+                        
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+
+
+                    # else for image
+                    else:
+                        print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                        if  exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
                             ).filter(
-                                Q(smallCity__in=[int(i) for i in smallCities])&
-                                Q(parent__title=title) &
+                                Q(parent__title=title) & Q(parent__id=parent_id)&
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                Q(publisherForCar=publisherForCar)&
-                               
-                                Q(internal_or_external=internalOrExternal)&
-                                Q(color=color)&
-                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
+                                Q(price__range=(int(least_price),int(max_price)))&
+                                Q(ready_to_exchange=True)          
+                            ).filter(
+                                Q() if color == "همه" else (Q(color=color))
+                            ).filter(
+                                Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    img_length__gte=1
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
                             ).filter(
-                                    com_status=instatnceComs
-                                ).distinct() 
-                    
-                # else for image
-                else:
-                    if exchange:
+                                Q(parent__title=title) & Q(parent__id=parent_id)&
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if color == "همه" else (Q(color=color))
+                            ).filter(
+                                Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
 
-                        coms_to_show=Commerical.objects.filter(
-                                Q(smallCity__in=[int(i) for i in smallCities])&
-                                    Q(parent__title=title) &
-                                    Q(location__in=locas_to_go)
-                                ).filter(
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(publisherForCar=publisherForCar)&
-                                            Q(ready_to_exchange=True)&
-                                            Q(internal_or_external=internalOrExternal)&
-                                            Q(color=color)&
-                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
-                                ).filter(
-                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                                ).filter(
-                                    com_status=instatnceComs
-                                ).distinct()
+            elif province and not smallCities:
+
+                    print("B")
+
+                    if bool(justImg):
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(price__range=(int(least_price),int(max_price)))&
+                                                Q(ready_to_exchange=True)
+                                        ).filter(
+                                            Q() if color == "همه" else (Q(color=color))
+                                        ).filter(
+                                            Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                            ).distinct()
+                        
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(price__range=(int(least_price),int(max_price))) 
+                                        ).filter(
+                                            Q() if color == "همه" else (Q(color=color))
+                                        ).filter(
+                                            Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                            ).distinct()
+
+
+                    # else for image
+
                     else:
-                        coms_to_show=Commerical.objects.filter(
-                                Q(smallCity__in=[int(i) for i in smallCities])&
-                                    Q(parent__title=title) &
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))& 
+                                            Q(ready_to_exchange=True)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))   
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                            
+            elif not province and smallCities:
+                    print("C")
+
+                    if bool(justImg):
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                           Q(price__range=(int(least_price),int(max_price)))&
+                              
+                                        Q(ready_to_exchange=True)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(publisherForCar=publisherForCar)&
-                                     
-                                            Q(internal_or_external=internalOrExternal)&
-                                            Q(color=color)&
-                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
-                                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction))) 
+                                     Q(price__range=(int(least_price),int(max_price))) 
+                                ).filter(
+                                    Q() if color == "همه" else (Q(color=color))
+                                ).filter(
+                                    Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
-                                ).distinct()
+                                        img_length__gte=1
+                                ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct() 
+                        
+                    # else for image
+                    else:
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))&
+                                        
+                                        Q(ready_to_exchange=True)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                       Q(price__range=(int(least_price),int(max_price))) 
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+
+
+
 
     elif title in tablet_and_mobile:
 
@@ -7758,7 +8714,7 @@ def handleFilterThirdLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         # else for exchange
                         else:
@@ -7783,7 +8739,7 @@ def handleFilterThirdLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
 
@@ -7811,7 +8767,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         
                         # else for exhange
@@ -7833,7 +8789,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         
                 elif province and not smallCities:
@@ -7863,7 +8819,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         
                             # else for exhange
@@ -7887,7 +8843,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         
                         # else for image
@@ -7911,7 +8867,7 @@ def handleFilterThirdLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
 
                             # else for exchange
@@ -7931,7 +8887,7 @@ def handleFilterThirdLevel(request):
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                 elif not province and smallCities:
                     print("C")
@@ -7959,7 +8915,7 @@ def handleFilterThirdLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                         # else for exchange
                         else:
@@ -7982,7 +8938,7 @@ def handleFilterThirdLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                     
                     # else for image
@@ -8005,7 +8961,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
                         # else for exchange
@@ -8025,7 +8981,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
     
         
@@ -8058,7 +9014,7 @@ def handleFilterThirdLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                         
                         # else for exchange
@@ -8083,7 +9039,7 @@ def handleFilterThirdLevel(request):
                                         ).filter(
                                             img_length__gte=1
                                         ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
 
@@ -8110,7 +9066,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         
                         # else for exhange
@@ -8131,7 +9087,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         
             elif province and not smallCities:
@@ -8161,7 +9117,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     
                         # else for exhange
@@ -8184,7 +9140,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     
                     # else for image
@@ -8208,7 +9164,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
 
                         # else for exchange
@@ -8227,7 +9183,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
             elif not province and smallCities:
                 print("C")
@@ -8254,7 +9210,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                     # else for exchange
                     else:
@@ -8276,7 +9232,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                             img_length__gte=1
                                     ).filter(
-                                            com_status=instatnceComs
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                         ).distinct()
                 
                 # else for image
@@ -8298,7 +9254,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                     # else for exchange
@@ -8317,7 +9273,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -8345,7 +9301,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         img_length__gte=1
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     # else for exhange
                     else:
@@ -8365,7 +9321,7 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         img_length__gte=1
                                     ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                 
                 # else for image
@@ -8385,7 +9341,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
                     # else for exchange
                     else:
@@ -8401,7 +9357,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
         elif province and not smallCities:
@@ -8425,7 +9381,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     # else for exchange
                     else:
@@ -8443,7 +9399,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                 else:
@@ -8459,7 +9415,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     # else for exchange
                     else:
@@ -8473,7 +9429,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
         elif not province and smallCities:
@@ -8496,7 +9452,7 @@ def handleFilterThirdLevel(request):
                                         ).filter(
                                                 img_length__gte=1
                                         ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                     # else for exchange
                     else:
@@ -8514,7 +9470,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                         
                 # else for image
@@ -8531,7 +9487,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     
                     else:
@@ -8545,7 +9501,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
     elif title in themSelf:
@@ -8570,7 +9526,7 @@ def handleFilterThirdLevel(request):
                                             ).filter(
                                                 img_length__gte=1
                                             ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                     
                     # else for exchange
@@ -8590,7 +9546,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                 img_length__gte=1
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
                 # else for image
@@ -8609,7 +9565,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         coms_to_show=Commerical.objects.filter(
@@ -8623,7 +9579,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         
 
@@ -8648,7 +9604,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     # else for exchange
                     else:
@@ -8665,7 +9621,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                 
                 # else for image
@@ -8681,7 +9637,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                     else:
@@ -8694,7 +9650,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
         elif not province and smallCities:
@@ -8717,7 +9673,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     else:
                         coms_to_show=Commerical.objects.annotate(
@@ -8733,7 +9689,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -8749,7 +9705,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         coms_to_show=Commerical.objects.filter(
@@ -8761,7 +9717,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -8787,7 +9743,7 @@ def handleFilterThirdLevel(request):
                                             ).filter(
                                                 img_length__gte=1
                                             ).filter(
-                                                com_status=instatnceComs
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                             ).distinct()
                     
                     # else for exchange
@@ -8808,7 +9764,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                 img_length__gte=1
                             ).filter(
-                                com_status=instatnceComs
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
 
                 # else for image
@@ -8828,7 +9784,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         coms_to_show=Commerical.objects.filter(
@@ -8843,7 +9799,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         
 
@@ -8869,7 +9825,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     # else for exchange
                     else:
@@ -8887,7 +9843,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                 
                 # else for image
@@ -8904,7 +9860,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
                     else:
@@ -8918,7 +9874,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
         elif not province and smallCities:
@@ -8942,7 +9898,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                         img_length__gte=1
                                 ).filter(
-                                        com_status=instatnceComs
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
                     else:
                         coms_to_show=Commerical.objects.annotate(
@@ -8960,7 +9916,7 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                     img_length__gte=1
                             ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
@@ -8977,7 +9933,7 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                     else:
                         coms_to_show=Commerical.objects.filter(
@@ -8990,12 +9946,12 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
-                                    com_status=instatnceComs
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
 
 
-    cat=get_object_or_404(Commerical,title=title)
+    cat=get_object_or_404(Commerical,title=title,id=parent_id)
     cat_childs=cat.children.all()
 
     contex={
@@ -9014,6 +9970,7 @@ def handleFilterThirdLevel(request):
         'groupHas_Parking_And_Anbari_And_Floor':groupHas_Parking_And_Anbari_And_Floor,
         'groupHas_sanadEdari':groupHas_sanadEdari,
         'cloths_accessory':cloths_accessory,
+        'justFloor':justFloor,
      
         'justImg':bool(justImg),
         'instatnceComs':instatnceComs,
@@ -9039,21 +9996,22 @@ def handleFilterThirdLevel(request):
         'maxEjareh':int(maxEjareh),
         'leastMeter':int(leastMeter),
         'maxMeter':int(maxMeter),
-        'roomNumber':int(roomNumber),
+        'roomNumber':int(roomNumber) if roomNumber else roomNumber,
         'minYearOfConstruction':int(minYearOfConstruction),
         'maxYearOfConstruction':int(maxYearOfConstruction),
         'clothsType':clothsType,
         'coverSimcart':coverSimcart,
-        'memorySize':memorySize,
+        'memorySize':int(memorySize),
         'simcartType':simcartType,
-        'simcartNums':simcartNums,
+        'simcartNums':int(simcartNums),
         'esalat':esalat,
         'color':color,
         'sanadEdari':sanadEdari,
         'parking':parking,
         'anbari':anbari,
-        'floor':floor,
+        'floor':int(floor),
         'internalOrExternal':internalOrExternal,
+        'dayRent':int(dayRent) if dayRent else dayRent
     }
 
 
@@ -9066,6 +10024,236 @@ class CommericalDetail(View):
     def get(self,request,comId,*args,**kwargs):
 
         com=get_object_or_404(Commerical,id=comId)
+
+        # time_to_go=''
+
+        # to_irani_now=datetime2jalali(timezone.now())
+        # print("OKAYYYY")
+        # print("OKAYYYY")
+        # print("OKAYYYY")
+        # value=com.iranTimeCreated
+        # a=findTimeDiffrence(timezone.now(),value).total_seconds()
+        # print(a)
+       
+
+
+        # if  to_irani_now.year - value.year ==0:
+
+        #     if to_irani_now.month - value.month==0:
+        #         print("ONE MONTH")
+        #         print("ONE MONTH")
+                
+        #         if to_irani_now.day-value.day ==0:
+        #             if 0<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<1:
+        #                 if 0<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=5:
+        #                     time_to_go="لحظاتی پیش"
+        #                 elif 5<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=10:
+        #                     time_to_go="دقایقی پیش"
+
+        #                 elif 10<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=15:
+        #                     time_to_go="یک ربع پیش"
+                        
+        #                 elif 15<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=59:
+        #                     time_to_go="نیم ساعت پیش"
+                            
+        #             if 1<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<2:
+        #                 time_to_go="یک ساعت پیش"
+
+        #             elif 2<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<3:
+        #                 time_to_go="دو ساعت پیش"
+                    
+        #             elif 3<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<4:
+        #                 time_to_go="سه ساعت پیش"
+
+        #             elif 4<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<5:
+        #                 time_to_go="چهار ساعت پیش"
+        #             elif 5<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<6:
+        #                 time_to_go="پنج ساعت پیش"
+                    
+        #             elif 6<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<7:
+        #                 time_to_go="شش ساعت پیش"
+                    
+        #             elif 7<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<8:
+        #                 time_to_go="هفت ساعت پیش"
+                    
+        #             elif 8<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<9:
+        #                 time_to_go="هشت ساعت پیش"
+
+        #             elif 9<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<10:
+        #                 time_to_go="نه ساعت پیش"
+        #             elif 10<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<11:
+        #                 time_to_go="ده ساعت پیش"
+        #             elif 11<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<12:
+        #                 time_to_go="یازده ساعت پیش"
+        #             elif 12<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<13:
+        #                 time_to_go="دوازده ساعت پیش"
+        #             elif 13<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<14:
+        #                 time_to_go="سیزده ساعت پیش"
+                    
+        #             elif 14<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<15:
+        #                 time_to_go="چهارده ساعت پیش"
+                    
+        #             elif 15<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<16:
+        #                 time_to_go="پانزده ساعت پیش"
+                    
+        #             elif 16<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<17:
+        #                 time_to_go="شانزده ساعت پیش"
+                    
+        #             elif 17<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<18:
+        #                 time_to_go="هفده ساعت پیش"
+
+        #             elif 18<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<19:
+        #                 time_to_go="هجده ساعت پیش"
+        #             elif 19<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<20:
+        #                 time_to_go="نوزده ساعت پیش"
+        #             elif 20<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<21:
+        #                 time_to_go="بیست ساعت پیش"
+        #             elif 21<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<22:
+        #                 time_to_go="بیست و یک ساعت پیش"
+        #             elif 22<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<23:
+        #                 time_to_go="بیست و دو ساعت پیش"
+                    
+        #             elif 23<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<24:
+        #                 time_to_go="بیست و سه ساعت پیش"
+        #         elif to_irani_now.day-value.day==1:
+        #             time_to_go ="دیروز"
+
+        #         elif to_irani_now.day-value.day==2:
+        #             time_to_go ="پریروز"
+                
+        #         elif to_irani_now.day-value.day==3:
+        #             time_to_go ="سه روز پیش"
+        #         elif to_irani_now.day-value.day==4:
+        #             time_to_go ="چهار روز پیش"
+                
+        #         elif to_irani_now.day-value.day==5:
+        #             time_to_go ="پنج روز پیش"
+        #         elif to_irani_now.day-value.day==6:
+        #             time_to_go ="شش روز پیش"
+        #         elif 6<to_irani_now.day-value.day<14:
+        #             time_to_go =" یک هفته پیش"
+        #         elif 14<=to_irani_now.day-value.day<20:
+        #             time_to_go =" دو هفته پیش"
+                
+        #         elif 20<=to_irani_now.day-value.day<28:
+        #             time_to_go =" سه هفته پیش"
+                
+        #         elif 28<=to_irani_now.day-value.day<=31:
+        #             time_to_go =" چهار هفته پیش"
+        #     elif to_irani_now.month -value.month ==1:
+        #         time_to_go="یک ماه پیش"
+        # else:
+
+        #     if to_irani_now.month - value.month==0:
+        #         print("ONE MONTH")
+        #         print("ONE MONTH")
+                
+        #         if to_irani_now.day-value.day ==0:
+        #             if 0<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<1:
+        #                 if 0<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=5:
+        #                     time_to_go="لحظاتی پیش"
+        #                 elif 5<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=10:
+        #                     time_to_go="دقایقی پیش"
+
+        #                 elif 10<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=15:
+        #                     time_to_go="یک ربع پیش"
+                        
+        #                 elif 15<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=59:
+        #                     time_to_go="نیم ساعت پیش"
+                            
+        #             if 1<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<2:
+        #                 time_to_go="یک ساعت پیش"
+
+        #             elif 2<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<3:
+        #                 time_to_go="دو ساعت پیش"
+                    
+        #             elif 3<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<4:
+        #                 time_to_go="سه ساعت پیش"
+
+        #             elif 4<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<5:
+        #                 time_to_go="چهار ساعت پیش"
+        #             elif 5<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<6:
+        #                 time_to_go="پنج ساعت پیش"
+                    
+        #             elif 6<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<7:
+        #                 time_to_go="شش ساعت پیش"
+                    
+        #             elif 7<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<8:
+        #                 time_to_go="هفت ساعت پیش"
+                    
+        #             elif 8<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<9:
+        #                 time_to_go="هشت ساعت پیش"
+
+        #             elif 9<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<10:
+        #                 time_to_go="نه ساعت پیش"
+        #             elif 10<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<11:
+        #                 time_to_go="ده ساعت پیش"
+        #             elif 11<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<12:
+        #                 time_to_go="یازده ساعت پیش"
+        #             elif 12<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<13:
+        #                 time_to_go="دوازده ساعت پیش"
+        #             elif 13<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<14:
+        #                 time_to_go="سیزده ساعت پیش"
+                    
+        #             elif 14<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<15:
+        #                 time_to_go="چهارده ساعت پیش"
+                    
+        #             elif 15<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<16:
+        #                 time_to_go="پانزده ساعت پیش"
+                    
+        #             elif 16<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<17:
+        #                 time_to_go="شانزده ساعت پیش"
+                    
+        #             elif 17<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<18:
+        #                 time_to_go="هفده ساعت پیش"
+
+        #             elif 18<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<19:
+        #                 time_to_go="هجده ساعت پیش"
+        #             elif 19<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<20:
+        #                 time_to_go="نوزده ساعت پیش"
+        #             elif 20<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<21:
+        #                 time_to_go="بیست ساعت پیش"
+        #             elif 21<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<22:
+        #                 time_to_go="بیست و یک ساعت پیش"
+        #             elif 22<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<23:
+        #                 time_to_go="بیست و دو ساعت پیش"
+                    
+        #             elif 23<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<24:
+        #                 time_to_go="بیست و سه ساعت پیش"
+        #         elif to_irani_now.day-value.day==1:
+        #             time_to_go ="دیروز"
+
+        #         elif to_irani_now.day-value.day==2:
+        #             time_to_go ="پریروز"
+                
+        #         elif to_irani_now.day-value.day==3:
+        #             time_to_go ="سه روز پیش"
+        #         elif to_irani_now.day-value.day==4:
+        #             time_to_go ="چهار روز پیش"
+                
+        #         elif to_irani_now.day-value.day==5:
+        #             time_to_go ="پنج روز پیش"
+        #         elif to_irani_now.day-value.day==6:
+        #             time_to_go ="شش روز پیش"
+        #         elif 6<to_irani_now.day-value.day<14:
+        #             time_to_go =" یک هفته پیش"
+        #         elif 14<=to_irani_now.day-value.day<20:
+        #             time_to_go =" دو هفته پیش"
+                
+        #         elif 20<=to_irani_now.day-value.day<28:
+        #             time_to_go =" سه هفته پیش"
+                
+        #         elif 28<=to_irani_now.day-value.day<=31:
+        #             time_to_go =" چهار هفته پیش"
+        #     elif to_irani_now.month -value.month ==1 or to_irani_now.month -value.month==-11:
+        #         print("CCCLLAEDD")
+        #         time_to_go="یک ماه پیش"
+
+
+
+
+        # print(time_to_go)  
+
         contex={
             'c':com
         }
@@ -9111,7 +10299,7 @@ def threadView(request,threadId):
 
 
     
-def load_more(request):
+def load_more(request): 
 
     if request.method=="POST":
         offset=int(request.POST.get("offset"))
@@ -9215,7 +10403,7 @@ class MakeCommerical(View):
 
 
 
-class NewCommericalForm(View):
+class NewCommericalForm(Loginrequired,View):
     
     def get(self,request,id=None,parent_id=None,*args,**kwargs):
         coms_to_show=None
@@ -9273,45 +10461,697 @@ class NewCommericalForm(View):
 
         
         frosh=["فروش مسکونی","فروش اداری و تجاری"]
+        ej=["اجاره مسکونی","اجاره اداری و تجاری"]
 
         new_com=None
         if self.request.POST.get("parent_parent_title"):
-
+ 
             parent_parent_title=self.request.POST.get("parent_parent_title")
             com_id=self.request.POST.get("self_id_three_level")
             print(com_id,"TTITLTITLTITL")
 
             com_self=get_object_or_404(Commerical,id=com_id) 
-
+  
             match parent_parent_title:
 
                 case "املاک":
-                    price=self.request.POST.get("price")
+                    
                     meter=self.request.POST.get("meter")
-                    vadieh=self.request.POST.get("vadieh")
-                    ejareh=self.request.POST.get("ejareh") 
+                    
                     rooms=self.request.POST.get("rooms")
-                    floor=self.request.POST.get("floor")
+                   
                     parking=self.request.POST.get("parking")
                     anbari=self.request.POST.get("anbari")
                     publisher=self.request.POST.get("publisher")
+                    
 
                     if com_self.parent.title in frosh:
+                        price=self.request.POST.get("price")
 
                         if com_self.parent.title == "فروش اداری و تجاری":
-                            sandEdari=self.request.POST.get("sandEdari")
-
+                            floor=self.request.POST.get("floor")
+                            sandEdari=self.request.POST.get("sandEdari",False)
+                            price_each_meter=self.request.POST.get("price_each_meter")
+                            constuction_melk=self.request.POST.get("constuction_melk")
                             new_com=Commerical(
                                 sanad_adari=sandEdari,
                                 floor=floor,rooms=rooms,parking=True if parking else False,
                                 anbari=True if anbari else False,meter=meter,price=price,city=city,
-                                location=location,title=title,detail=detail,publisher=publisher
+                                location=location,title=title,detail=detail,publisher=publisher,
+                                user=self.request.user,parent=com_self,price_each_meter=price_each_meter,year_of_construction=constuction_melk
+                            )
+                            new_com.save()
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+  
+                        else:
+                            if com_self.title=="آپارتمان فروش":
+                                floor=self.request.POST.get("floor")
+                                constuction_melk=self.request.POST.get("constuction_melk")
+                                price_each_meter=self.request.POST.get("price_each_meter")
+                                new_com=Commerical(year_of_construction=constuction_melk,
+                                    floor=floor,rooms=rooms,parking=True if parking else False,
+                                    anbari=True if anbari else False,meter=meter,price=price,city=city,
+                                    location=location,title=title,detail=detail,publisher=publisher,
+                                    user=self.request.user,parent=com_self,price_each_meter=price_each_meter
+                                )
+                                new_com.save()
+                                if images:
+                                    for img in images:
+                                        i=CommericalImage(image=img,commerical=new_com)
+                                        i.save()
+                                new_com.save()
+
+                            else:
+                                constuction_melk=self.request.POST.get("constuction_melk")
+
+                                price_each_meter=self.request.POST.get("price_each_meter")
+                                new_com=Commerical(year_of_construction=constuction_melk,
+                                 rooms=rooms,parking=True if parking else False,
+                                    anbari=True if anbari else False,meter=meter,price=price,city=city,
+                                    location=location,title=title,detail=detail,publisher=publisher,
+                                    user=self.request.user,parent=com_self,price_each_meter=price_each_meter
+                                )
+                                new_com.save()
+                                if images:
+                                    for img in images:
+                                        i=CommericalImage(image=img,commerical=new_com)
+                                        i.save()
+                                new_com.save()
+
+                    elif com_self.parent.title in ej:
+                        vadieh=self.request.POST.get("vadieh")
+                        ejareh=self.request.POST.get("ejareh") 
+                        constuction_melk=self.request.POST.get("constuction_melk")
+                        floor=self.request.POST.get("floor")
+
+                        if com_self.parent.title == "اجاره اداری و تجاری":
+                            sandEdari=self.request.POST.get("sandEdari",False)
+
+                            new_com=Commerical(
+                                sanad_adari=sandEdari,year_of_construction=constuction_melk,
+                                floor=floor,rooms=rooms,parking=True if parking else False,
+                                anbari=True if anbari else False,meter=meter,city=city,
+                                location=location,title=title,detail=detail,publisher=publisher,
+                                user=self.request.user,vadieh=vadieh,rent=ejareh,parent=com_self
+                            )
+                            new_com.save()
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+
+                        else:
+                            if com_self.title == "آپارتمان اجاره":
+                                floor=self.request.POST.get("floor")
+                                constuction_melk=self.request.POST.get("constuction_melk")
+
+                                new_com=Commerical(year_of_construction=constuction_melk,
+                                    floor=floor,rooms=rooms,parking=True if parking else False,
+                                    anbari=True if anbari else False,meter=meter,city=city,
+                                    location=location,title=title,detail=detail,publisher=publisher,
+                                    user=self.request.user,vadieh=vadieh,rent=ejareh,parent=com_self
+                                )
+                                new_com.save()
+                                if images:
+                                    for img in images:
+                                        i=CommericalImage(image=img,commerical=new_com)
+                                        i.save()
+                                new_com.save()
+                            else:
+                                constuction_melk=self.request.POST.get("constuction_melk")
+                                new_com=Commerical(year_of_construction=constuction_melk,
+                                    rooms=rooms,parking=True if parking else False,
+                                    anbari=True if anbari else False,meter=meter,city=city,
+                                    location=location,title=title,detail=detail,publisher=publisher,
+                                    user=self.request.user,vadieh=vadieh,rent=ejareh,parent=com_self
+                                )
+                                new_com.save()
+                                if images:
+                                    for img in images:
+                                        i=CommericalImage(image=img,commerical=new_com)
+                                        i.save()
+                                new_com.save()
+                        
+                    elif com_self.title == "اجاره کوتاه مدت":
+                        day_rent_paid=self.request.POST.get("day_rent")
+                        new_com=Commerical(
+                                    rooms=rooms,
+                                    meter=meter,city=city,
+                                    location=location,title=title,detail=detail,publisher=publisher,
+                                    user=self.request.user,day_rent_paid=day_rent_paid,parent=com_self
+                                )
+                        new_com.save()
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()
+                    else:
+                        new_com=Commerical(
+                                   meter=meter,city=city,
+                                    location=location,title=title,detail=detail,publisher=publisher,
+                                    user=self.request.user,parent=com_self
+                                )
+                        new_com.save()
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()              
+                
+                case "وسایل نقلیه":
+
+                    price_for_car=self.request.POST.get("price")
+                    
+
+                    if com_self.parent.title == "خودرو":
+
+                        if com_self.title=="سواری و وانت":
+
+                            production_year=self.request.POST.get("yearOfConstruction")
+                            brand=self.request.POST.get("brand")
+                            body_status=self.request.POST.get("body_status")
+                            engin_type=self.request.POST.get("engin_type")
+                            shasti_type=self.request.POST.get("shasti_type")
+                            insurance_time=self.request.POST.get("insurance_time")
+                            girbox=self.request.POST.get("girbox")
+                            color=self.request.POST.get("color")
+                            exchange=self.request.POST.get("exchange",False)
+                            publisherForCar=self.request.POST.get("publisherForCar")
+                            inter_or_exter=self.request.POST.get("inter_or_exter")
+                            karkard=self.request.POST.get("karkard")
+                            fuel_type=self.request.POST.get("fuel_type")
+
+                            new_com=Commerical(
+                                    price=price_for_car,city=city,production_year=production_year,brand_or_tip=brand,insurance_time=insurance_time,
+                                    internal_or_external=inter_or_exter,karkard_mashin=karkard,ready_to_exchange=bool(exchange),fuel_type=fuel_type,
+                                    location=location,title=title,detail=detail,publisherForCar=publisherForCar,body_type=body_status,
+                                    user=self.request.user,girbox=girbox,color=color,engin_type=engin_type,shasti_type=shasti_type,parent=com_self
+                                )
+                            new_com.save()
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+        
+                        elif com_self.title == "سنگین":
+                            karkard=self.request.POST.get("karkard")
+                            exchange=self.request.POST.get("exchange",False)
+                            publisherForCar=self.request.POST.get("publisherForCar")
+                            color=self.request.POST.get("color")
+                            
+
+                            new_com=Commerical(
+                                    price=price_for_car,city=city,color=color,
+                                    karkard_mashin=karkard,ready_to_exchange=bool(exchange),
+                                    location=location,title=title,detail=detail,publisherForCar=publisherForCar,
+                                    user=self.request.user,parent=com_self
+                                )
+                            new_com.save()
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+
+                        elif  com_self.title=="کلاسیک":
+                            exchange=self.request.POST.get("exchange",False)
+                            publisherForCar=self.request.POST.get("publisherForCar")
+                            color=self.request.POST.get("color")
+
+                            new_com=Commerical(
+                                    price=price_for_car,city=city,ready_to_exchange=bool(exchange),
+                                    location=location,title=title,detail=detail,publisherForCar=publisherForCar,
+                                    user=self.request.user,parent=com_self,color=color
+                                )
+                            new_com.save()
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+
+                        elif com_self.title=="اجاره ای":
+                            exchange=self.request.POST.get("exchange",False)
+                            publisherForCar=self.request.POST.get("publisherForCar")
+                            color=self.request.POST.get("color")
+
+                            new_com=Commerical(
+                                    day_rent_paid=price_for_car,city=city,exchange=bool(exchange),
+                                    location=location,title=title,detail=detail,publisherForCar=publisherForCar,
+                                    user=self.request.user,parent=com_self,color=color
+                                )
+                            new_com.save()
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+
+                case "کالای دیجیتال":
+
+                    price_for_digital=self.request.POST.get("price")
+
+                    if com_self.parent.title =="موبایل و تبلت":
+                        
+                        if com_self.title =="موبایل":
+
+                            simCartNums=self.request.POST.get("simCartNums")
+                            esalet=self.request.POST.get("esalet")
+                            phone_brand=self.request.POST.get("phone_brand")
+                            memory_size=self.request.POST.get("memory_size")
+                            ram_size=self.request.POST.get("ram_size")
+                            color=self.request.POST.get("color")
+                            phone_status=self.request.POST.get("phone_status")
+                            exchange=self.request.POST.get("exchange",False)
+
+                            new_com=Commerical(
+                                    price=price_for_digital,city=city,color=color,phone_status=phone_status,
+                                    ready_to_exchange=bool(exchange),memory_size=memory_size,
+                                    location=location,title=title,detail=detail,esalat=esalet,ram_size=ram_size,
+                                    user=self.request.user,sim_cart_number=simCartNums,brand_or_tip=phone_brand,parent=com_self
+                                )
+
+                            new_com.save()
+
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+
+                        elif com_self.title =="تبلت":
+
+                            window_size=self.request.POST.get("window_size")
+                            esalet=self.request.POST.get("esalet")
+                            phone_brand=self.request.POST.get("phone_brand")
+                            memory_size=self.request.POST.get("memory_size")
+                            ram_size=self.request.POST.get("ram_size")
+                            color=self.request.POST.get("color")
+                            phone_status=self.request.POST.get("phone_status")
+                            os_type=self.request.POST.get("os_type")
+                            cover_simcart=self.request.POST.get("cover_simcart")
+                            exchange=self.request.POST.get("exchange",False)
+
+
+                            new_com=Commerical(
+                                    price=price_for_digital,city=city,color=color,phone_status=phone_status,window_size=window_size,
+                                    ready_to_exchange=bool(exchange),memory_size=memory_size,
+                                    location=location,title=title,detail=detail,esalat=esalet,ram_size=ram_size,
+                                    user=self.request.user,brand_or_tip=phone_brand,os_typpe=os_type,cover_simcart=cover_simcart,parent=com_self
+                                )
+
+                            new_com.save()
+
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+
+                        elif com_self.title == "سیم کارت":
+
+                            simcart_type=self.request.POST.get('simcart_type')
+                            phone_status=self.request.POST.get("phone_status")
+                            exchange=self.request.POST.get("exchange",False)
+
+                            new_com=Commerical(
+                                    price=price_for_digital,city=city,phone_status=phone_status,
+                                    ready_to_exchange=bool(exchange),
+                                    location=location,title=title,detail=detail,
+                                    user=self.request.user,simcartType=simcart_type,parent=com_self
+                                )
+
+                            new_com.save()
+
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+                        
+                        else:
+                            phone_status=self.request.POST.get("phone_status")
+                            exchange=self.request.POST.get("exchange",False)
+
+                            new_com=Commerical(
+                                    price=price_for_digital,city=city,phone_status=phone_status,
+                                    ready_to_exchange=bool(exchange),
+                                    location=location,title=title,detail=detail,
+                                    user=self.request.user,parent=com_self
+                                )
+
+                            new_com.save()
+
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+                        
+                    elif com_self.parent.title=="رایانه":
+
+                        if com_self.title == "رایانه همراه" or com_self.title == "رایانه رومیزی":
+
+                            window_size=self.request.POST.get("window_size")
+                            esalet=self.request.POST.get("esalet")
+                            phone_brand=self.request.POST.get("phone_brand")
+                            memory_size=self.request.POST.get("memory_size")
+                            ram_size=self.request.POST.get("ram_size")
+                            color=self.request.POST.get("color")
+                            phone_status=self.request.POST.get("phone_status")
+                            os_type=self.request.POST.get("os_type")
+                            cover_simcart=self.request.POST.get("cover_simcart")
+                            exchange=self.request.POST.get("exchange",False)
+
+
+                            new_com=Commerical(
+                                    price=price_for_digital,city=city,color=color,phone_status=phone_status,window_size=window_size,
+                                    ready_to_exchange=bool(exchange),memory_size=memory_size,
+                                    location=location,title=title,detail=detail,esalat=esalet,ram_size=ram_size,
+                                    user=self.request.user,brand_or_tip=phone_brand,os_typpe=os_type,cover_simcart=cover_simcart,parent=com_self
+                                )
+
+                            new_com.save()
+
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+
+                        else:
+                            
+                            phone_status=self.request.POST.get("phone_status")
+                            exchange=self.request.POST.get("exchange",False)
+                            new_com=Commerical(
+                                    price=price_for_digital,city=city,phone_status=phone_status,
+                                    ready_to_exchange=bool(exchange),
+                                    location=location,title=title,detail=detail,
+                                    user=self.request.user,parent=com_self
+                                )
+
+                            new_com.save()
+
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+                    
+                    elif com_self.parent.title == "صوتی و تصویری":
+                            phone_status=self.request.POST.get("phone_status")
+                            exchange=self.request.POST.get("exchange",False)
+                            new_com=Commerical(
+                                    price=price_for_digital,city=city,phone_status=phone_status,
+                                    ready_to_exchange=bool(exchange),
+                                    location=location,title=title,detail=detail,
+                                    user=self.request.user,parent=com_self
+                                )
+
+                            new_com.save()
+
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+
+                case "خانه و آشپزخانه":
+                    phone_status=self.request.POST.get("phone_status")
+                    exchange=self.request.POST.get("exchange",False)
+                    price_for_kitchen=self.request.POST.get("price")
+
+                    new_com=Commerical(
+                                    price=price_for_kitchen,city=city,phone_status=phone_status,
+                                    ready_to_exchange=bool(exchange),
+                                    location=location,title=title,detail=detail,
+                                    user=self.request.user,parent=com_self
+                                )
+
+                    new_com.save()
+                    if images:
+                        for img in images:
+                            i=CommericalImage(image=img,commerical=new_com)
+                            i.save()
+                    new_com.save()
+
+                case "وسایل شخصی":
+
+                    if com_self.parent.title=="کیف، کفش و لباس" or com_self.parent.title == "زیورآلات و اکسسوری":
+
+                        phone_status=self.request.POST.get("phone_status")
+                        exchange=self.request.POST.get("exchange",False)
+                        price_for_personal=self.request.POST.get("price")
+                        male_or_female=self.request.POST.get("male_or_female")
+
+                        new_com=Commerical(
+                                        price=price_for_personal,city=city,phone_status=phone_status,
+                                        ready_to_exchange=bool(exchange),
+                                        location=location,title=title,detail=detail,
+                                        user=self.request.user,parent=com_self,cloths_type=male_or_female
+                                    )
+
+                        new_com.save()
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()
+
+                    elif com_self.parent.title == "وسایل بچه و اسباب بازی":
+
+                        phone_status=self.request.POST.get("phone_status")
+                        exchange=self.request.POST.get("exchange",False)
+                        price_for_personal=self.request.POST.get("price")
+                      
+
+                        new_com=Commerical(
+                                        price=price_for_personal,city=city,phone_status=phone_status,
+                                        ready_to_exchange=bool(exchange),
+                                        location=location,title=title,detail=detail,
+                                        user=self.request.user,parent=com_self
+                                    )
+
+                        new_com.save()
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()
+                
+                case "سرگرمی و فراغت" | "اجتماعی" | "تجهیزات و صنعتی":
+   
+                        exchange=self.request.POST.get("exchange",False)
+                        price_for_entertaiment=self.request.POST.get("price")
+    
+                        new_com=Commerical(
+                                        price=price_for_entertaiment,city=city,
+                                        ready_to_exchange=bool(exchange),
+                                        location=location,title=title,detail=detail,
+                                        user=self.request.user,parent=com_self,
+                                    )
+
+                        new_com.save()
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()
+
+  
+
+
+        else:
+
+            parent_title_second_level=self.request.POST.get("parent_title")
+            com_id_two_level=self.request.POST.get("self_id")
+            
+            com_self_two_level=get_object_or_404(Commerical,id=com_id_two_level)
+
+
+            match parent_title_second_level:
+                case "وسایل نقلیه":
+                    price_for_second_transportation=self.request.POST.get("price")
+
+                    if com_self_two_level.title == "موتور سیکلت":
+
+                            production_year=self.request.POST.get("yearOfConstruction")
+                            brand=self.request.POST.get("brand")
+                            exchange=self.request.POST.get("exchange",False)
+                            publisherForCar=self.request.POST.get("publisherForCar")
+                            karkard=self.request.POST.get("karkard")
+
+                            new_com=Commerical(
+                                    price=price_for_second_transportation,city=city,production_year=production_year,brand_or_tip=brand,
+                                    karkard_mashin=karkard,ready_to_exchange=bool(exchange),
+                                    location=location,title=title,detail=detail,publisherForCar=publisherForCar,
+                                    user=self.request.user,parent=com_self_two_level
+                                )
+                            new_com.save()
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+                    else:
+                        exchange=self.request.POST.get("exchange",False)
+                        publisherForCar=self.request.POST.get("publisherForCar")
+
+                        new_com=Commerical(
+                                    price=price_for_second_transportation,city=city
+                                    ,ready_to_exchange=bool(exchange),publisherForCar=publisherForCar,
+                                    location=location,title=title,detail=detail,
+                                    user=self.request.user,parent=com_self_two_level
+                                )
+                        new_com.save()
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()
+                case "کالای دیجیتال":
+                    
+                    price_for_digital=self.request.POST.get("price")
+
+                    if com_self_two_level.title == "کنسول" or com_self_two_level.title == "تلفن رومیزی":
+
+                            phone_status=self.request.POST.get("phone_status")
+                            exchange=self.request.POST.get("exchange",False)
+
+                            new_com=Commerical(
+                                    price=price_for_digital,city=city,phone_status=phone_status,
+                                    ready_to_exchange=Tbool(exchange),
+                                    location=location,title=title,detail=detail,
+                                    user=self.request.user,parent=com_self_two_level
+                                )
+
+                            new_com.save()
+
+                            if images:
+                                for img in images:
+                                    i=CommericalImage(image=img,commerical=new_com)
+                                    i.save()
+                            new_com.save()
+
+                    
+                case "خانه و آشپزخانه":
+
+                        price_for_kitchen=self.request.POST.get("price")
+                        phone_status=self.request.POST.get("phone_status")
+                        exchange=self.request.POST.get("exchange",False)
+
+                        new_com=Commerical(
+                                price=price_for_kitchen,city=city,phone_status=phone_status,
+                                ready_to_exchange=bool(exchange),
+                                location=location,title=title,detail=detail,
+                                user=self.request.user,parent=com_self_two_level
                             )
 
+                        new_com.save()
+
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()
+
+                case "خدمات":
+
+                        new_com=Commerical(
+                              city=city,
+                                location=location,title=title,detail=detail,
+                                user=self.request.user,parent=com_self_two_level
+                            )
+
+                        new_com.save()
+
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()
+                
+
+                case "وسایل شخصی":
+
+                    if com_id_two_level.title == "آرایشی، بهداشتی و درمانی" or com_id_two_level.title=="لوازم التحریر":
                         
-            
-              
-                    
+                        price_for_personal=self.request.POST.get("price")
+                        phone_status=self.request.POST.get("phone_status")
+                        exchange=self.request.POST.get("exchange",False)
+
+                        new_com=Commerical(
+                                city=city,price=price_for_personal,phone_status=phone_status,
+                                location=location,title=title,detail=detail,ready_to_exchange=bool(exchange),
+                                user=self.request.user,parent=com_self_two_level
+                            )
+
+                        new_com.save()
+
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()
+
+                case "سرگرمی و فراغت" | "تجهیزات و صنعتی":
+
+                        price_for_entertaiment=self.request.POST.get("price")
+                        exchange=self.request.POST.get("exchange",False)
+
+                        new_com=Commerical(
+                                city=city,price=price_for_entertaiment,
+                                location=location,title=title,detail=detail,ready_to_exchange=bool(exchange),
+                                user=self.request.user,parent=com_self_two_level
+                            )
+
+                        new_com.save()
+
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()
+
+                case "استخدام و کاریابی":
+                        insurance=self.request.POST.get("insurance",False)
+                        pendding_type=self.request.POST.get("pendding_type")
+                        work_type=self.request.POST.get("work_type")
+                        sabegheh=self.request.POST.get("sabegheh")
+                        soldier=self.request.POST.get("soldier",False)
+                        farWork=self.request.POST.get("farWork",False)
+                        salary=self.request.POST.get("salary",False)
+                        print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
+                        print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
+                        print(insurance,bool(insurance),)
+                        print(soldier)
+                        print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
+                        print("$$$$$$$$$$$$$$$$$$$$$$$$$$")
+                  
+
+                        new_com=Commerical(
+                                city=city,
+                                location=location,title=title,detail=detail,insurance=bool(insurance) ,salary=salary,
+                                how_we_pay=pendding_type,how_college_are=work_type,price_for_work=sabegheh,
+                                soldier=bool(soldier),farWork=bool(farWork),
+                                user=self.request.user,parent=com_self_two_level
+                            )
+
+                        new_com.save()
+
+                        if images:
+                            for img in images:
+                                i=CommericalImage(image=img,commerical=new_com)
+                                i.save()
+                        new_com.save()
+
 
         return JsonResponse({
             'yes':True

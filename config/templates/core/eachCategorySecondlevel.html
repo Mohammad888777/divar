@@ -175,20 +175,24 @@
                                     <p>نوع اگهی </p>
                                     <select name="" id="publisherForAmlak">
                                         <option value="همه" selected="selected">همه</option>
+                                        <option value="همه" >همه</option>
                                         <option value="شخخصی">شخخصی</option>
                                         <option value="املاک">املاک</option>
                                     </select>
                                     <br>
                                     <br>
                                     <br>
+                                    {% if not catMain.title == "پروژه‌های ساخت و ساز" %}
                                     <p>تعداد اتاق </p>
                                     <select name="" id="roomNumber">
                                         <option value="1" selected="selected">1</option>
+                                        <option value="1" >1</option>
                                         <option value="2">2</option>
                                         <option value="3">3</option>
                                         <option value="4">4</option>
                                         <option value="5">5</option>
                                     </select>
+                                    {% endif %}
                                 {% endif %}
 
 <hr>
@@ -477,7 +481,7 @@
 <hr>
 <hr>
                             <!--  ودیعه  -->
-                            {% if catMain.title == "اجاره مسکونی" %}
+                            {% if catMain.title == "اجاره مسکونی" or catMain.title == "اجاره اداری و تجاری" %}
                                 <div style="margin-top:20px" class="form-row">
                                                                                             
                                     <p> ودیعه</p>
@@ -542,7 +546,7 @@
 <hr>
 <hr>
                                 <!--  اجاره ههه هههه -->
-                            {% if catMain.title == "اجاره مسکونی" %}
+                            {% if catMain.title == "اجاره مسکونی" or catMain.title == "اجاره اداری و تجاری"   %}
                                 <div style="margin-top:20px" class="form-row">
                                                                                             
                                     <p> اجاره</p>
@@ -603,6 +607,51 @@
                                     </div>
                                 </div> 
                             {% endif %}
+                            <br><br><br>
+                            {% if  catMain.title == "اجاره کوتاه مدت" %}
+                                        <div style="margin-top:20px" class="form-row">
+                                                                                                        
+                                                <p> اجاره کوتاه مدت</p>
+                                                <br>
+                                                <br>
+                                                <br>
+                                                <div class="form-group col-md-6">
+                                                <br>
+                                                <br>
+                                                
+                                                <label>حداقل</label>
+                                                <!-- <input class="form-control" placeholder="$0" type="number"> -->
+                                                <select class="mr-2 form-control" id="min_day_rent_paid_for_house" name="minEjareh">
+                                                        <option value="100" selected="selected"></option>
+                                                        <option value="100" >100 هزار تومان</option>
+                                                        <option value="200" >200 هزار تومان</option>
+                                                        <option value="300" >300 هزار تومان</option>
+                                                        <option value="400" >400 هزار تومان</option>
+                                                        <option value="500" >500 هزار تومان</option>
+                                                        <option value="600" >600 هزار تومان</option>
+                                                        <option value="700" >700 هزار تومان</option>
+                                                        <option value="800" >800 هزار تومان</option>
+                                                        <option value="900" >900 هزار تومان</option>
+
+                                                </select>
+                                                </div>
+                                                <div class="form-group text-right col-md-6">
+                                                <label>حداکثر</label>
+                                                <select class="mr-2 form-control" id="max_day_rent_paid_for_house" name="maxEjareh">
+                                                        <option value="900" selected="selected"></option>
+                                                        <option value="100" >100 هزار تومان</option>
+                                                        <option value="200" >200 هزار تومان</option>
+                                                        <option value="300" >300 هزار تومان</option>
+                                                        <option value="400" >400 هزار تومان</option>
+                                                        <option value="500" >500 هزار تومان</option>
+                                                        <option value="600" >600 هزار تومان</option>
+                                                        <option value="700" >700 هزار تومان</option>
+                                                        <option value="800" >800 هزار تومان</option>
+                                                        <option value="900" >900 هزار تومان</option>
+                                                </select>
+                                                </div>
+                                        </div> 
+                            {% endif %}
 <hr>
 <hr >
                                 <br>
@@ -627,17 +676,19 @@
                                     <script type="text/javascript" >
                                         
 
-                                        $("#maxEjareh,#justImg,#maxmeter,#justIm,#leastMeter,#minEjareh,#minVadieh,#choose_min_price,#choose_max_price,#maxVadieh,#exchange,#farWork,#soldier,#insurance,#choose_min_price_for_work,#choose_max_price_for_work,#publisherForCar,#phoneStatus,#maxKarkard,#minKarkard,#minYearOfConstruction,#maxYearOfConstruction,#roomNumber,#publisherForAmlak").change(function(){
+                                        $("#maxEjareh,#min_day_rent_paid_for_house,#max_day_rent_paid_for_house,#justImg,#maxmeter,#justIm,#leastMeter,#minEjareh,#minVadieh,#choose_min_price,#choose_max_price,#maxVadieh,#exchange,#farWork,#soldier,#insurance,#choose_min_price_for_work,#choose_max_price_for_work,#publisherForCar,#phoneStatus,#maxKarkard,#minKarkard,#minYearOfConstruction,#maxYearOfConstruction,#roomNumber,#publisherForAmlak").change(function(){
 
                                                 let r7=$("#chooseLocation")
                                                 let choose_min_price=$("#choose_min_price").val()
                                                 let choose_max_price=$("#choose_max_price").val()
                                                 let leastMeter=$("#leastMeter").val();
                                                 let maxMeter=$("#maxmeter").val();
+
                                                 let maxVadieh=$("#maxVadieh").val();
                                                 let maxEjareh=$("#maxEjareh").val();
                                                 let minEjareh=$("#minEjareh").val();
                                                 let minVadieh=$("#minVadieh").val();
+
                                                 let publisherForAmlak=$("#publisherForAmlak").val();
                                                 let roomNumber=$("#roomNumber").val();
                                                 let minYearOfConstruction=$("#minYearOfConstruction").val();
@@ -648,6 +699,8 @@
                                                 let phoneStatus=$("#phoneStatus").val();
                                                 let choose_min_price_for_work=$("#choose_min_price_for_work").val()
                                                 let choose_max_price_for_work=$("#choose_max_price_for_work").val()
+                                                var min_day_rent_paid_for_house=$("#min_day_rent_paid_for_house").val();
+                                                var max_day_rent_paid_for_house=$("#max_day_rent_paid_for_house").val();
                                  
                                                 var catTtitle="{{catMain.title}}"
 
@@ -668,7 +721,7 @@
                                                 })
 
                                             var amlakFrosh=["فروش مسکونی","فروش اداری و تجاری"]
-                                            var amlakEjareh=['اجاره مسکونی', "اجاره اداری و تجاری",'اجاره کوتاه مدت']
+                                            var amlakEjareh=['اجاره مسکونی', "اجاره اداری و تجاری",'اجاره کوتاه مدت',]
                                             var vasayelNaghliehMotor_va_Car=["موتور سیکلت","خودرو"]
                                             var vasayelNaghlieh_Both_and_supplies=["قطعات یدکی و لوازم جانبی","قایق و سایر وسایل نقلیه"]
                                             var digitalOrKitchenOrPersonalOrEntertaimentOrSupllies=["موبایل و تبلت","رایانه","کنسول","صوتی و تصویری","تلفن رومیزی",
@@ -712,9 +765,19 @@
                                                                             window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&max_price=${choose_max_price}&least_price=${choose_min_price}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}`
 
                                                                         }
+                                                                        else if(catTtitle==="پروژه‌های ساخت و ساز"){
+                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}`
+                                                                        }
                                                                         else if(amlakEjareh.includes(catTtitle)){
 
-                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                                if(catTtitle !== 'اجاره کوتاه مدت'){
+
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                                }else{
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}&min_day_rent_paid_for_house=${min_day_rent_paid_for_house}&max_day_rent_paid_for_house=${max_day_rent_paid_for_house}`
+
+                                                                                }
+
 
                                                                         }
                                                                         else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
@@ -854,10 +917,20 @@
 
                                                                         window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&max_price=${choose_max_price}&least_price=${choose_min_price}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}`
 
-                                                                    }else if(amlakEjareh.includes(catTtitle)){
+                                                                    }
+                                                                    else if(amlakEjareh.includes(catTtitle)){
 
-                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                        if(catTtitle!=="اجاره کوتاه مدت"){
 
+                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                        }else{
+                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}&min_day_rent_paid_for_house=${min_day_rent_paid_for_house}&max_day_rent_paid_for_house=${max_day_rent_paid_for_house}`
+                                                                                
+                                                                        }
+
+                                                                    }
+                                                                    else if(catTtitle==="پروژه‌های ساخت و ساز"){
+                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}`
                                                                     }
                                                                     else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
 
@@ -1000,9 +1073,20 @@
 
                                                                                 }else if(amlakEjareh.includes(catTtitle)){
 
-                                                                                    window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                                     if(catTtitle!=="اجاره کوتاه مدت")   {
+                                                                                             window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
 
-                                                                                }else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
+                                                                                     }else{
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}&min_day_rent_paid_for_house=${min_day_rent_paid_for_house}&max_day_rent_paid_for_house=${max_day_rent_paid_for_house}`
+
+                                                                                     }
+
+
+                                                                                }
+                                                                                else if(catTtitle==="پروژه‌های ساخت و ساز"){
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}`
+                                                                                }
+                                                                                else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
 
                                                                                             if(exchange.is(":checked")){
                                                                                                 
@@ -1126,10 +1210,20 @@
                                                                                 window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&max_price=${choose_max_price}&least_price=${choose_min_price}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}`
 
                                                                             }else if(amlakEjareh.includes(catTtitle)){
+                                                                                        if(catTtitle!=="اجاره کوتاه مدت"){
+                                                                                                
+                                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                                        }else{
+                                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}&min_day_rent_paid_for_house=${min_day_rent_paid_for_house}&max_day_rent_paid_for_house=${max_day_rent_paid_for_house}`
 
-                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                                        }
 
-                                                                            }else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
+
+                                                                            }
+                                                                            else if(catTtitle==="پروژه‌های ساخت و ساز"){
+                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}`
+                                                                            }
+                                                                            else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
 
                                                                                         if(exchange.is(":checked")){
                                                                                             
@@ -1281,6 +1375,9 @@
                                             let phoneStatus=$("#phoneStatus").val();
                                             let choose_min_price_for_work=$("#choose_min_price_for_work").val()
                                             let choose_max_price_for_work=$("#choose_max_price_for_work").val()
+
+                                            var min_day_rent_paid_for_house=$("#min_day_rent_paid_for_house").val();
+                                            var max_day_rent_paid_for_house=$("#max_day_rent_paid_for_house").val();
                              
                                             var catTtitle="{{catMain.title}}"
 
@@ -1348,11 +1445,23 @@
 
                                                                     window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&max_price=${choose_max_price}&least_price=${choose_min_price}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}`
 
-                                                                }else if(amlakEjareh.includes(catTtitle)){
+                                                                }
+                                                                else if(amlakEjareh.includes(catTtitle)){
 
-                                                                    window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                        if(catTtitle!=="اجاره کوتاه مدت"){
 
-                                                                }else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
+                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                        }else{
+                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}&min_day_rent_paid_for_house=${min_day_rent_paid_for_house}&max_day_rent_paid_for_house=${max_day_rent_paid_for_house}`
+
+                                                                        }
+
+
+                                                                }
+                                                                else if(catTtitle==="پروژه‌های ساخت و ساز"){
+                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}`
+                                                                }
+                                                                else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
 
                                                                             if(exchange.is(":checked")){
                                                                                 
@@ -1477,9 +1586,21 @@
 
                                                             }else if(amlakEjareh.includes(catTtitle)){
 
-                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                if(catTtitle!=="اجاره کوتاه مدت"){
 
-                                                            }else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
+                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                }else{
+                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}&min_day_rent_paid_for_house=${min_day_rent_paid_for_house}&max_day_rent_paid_for_house=${max_day_rent_paid_for_house}`
+
+                                                                }
+
+
+                                                            }
+                                                            else if(catTtitle==="پروژه‌های ساخت و ساز"){
+                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}`
+                                                            }
+
+                                                            else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
 
                                                                         if(exchange.is(":checked")){
                                                                             
@@ -1618,10 +1739,20 @@
                                                                             window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&max_price=${choose_max_price}&least_price=${choose_min_price}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}`
 
                                                                         }else if(amlakEjareh.includes(catTtitle)){
+                                                                                if(catTtitle!=="اجاره کوتاه مدت"){
 
-                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                                }else{
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}&min_day_rent_paid_for_house=${min_day_rent_paid_for_house}&max_day_rent_paid_for_house=${max_day_rent_paid_for_house}`
 
-                                                                        }else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
+                                                                                }
+
+
+                                                                        }
+                                                                        else if(catTtitle==="پروژه‌های ساخت و ساز"){
+                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}`
+                                                                        }
+                                                                        else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
 
                                                                                     if(exchange.is(":checked")){
                                                                                         
@@ -1745,10 +1876,21 @@
                                                                         window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&max_price=${choose_max_price}&least_price=${choose_min_price}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}`
 
                                                                     }else if(amlakEjareh.includes(catTtitle)){
+                                                                        
+                                                                                if(catTtitle!=="اجاره کوتاه مدت"){
 
-                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&maxVadieh=${maxVadieh}&minVadieh=${minVadieh}&maxEjareh=${maxEjareh}&minEjareh=${minEjareh}&roomNumber=${roomNumber}`
+                                                                                }else{
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}&roomNumber=${roomNumber}&min_day_rent_paid_for_house=${min_day_rent_paid_for_house}&max_day_rent_paid_for_house=${max_day_rent_paid_for_house}`
 
-                                                                    }else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
+                                                                                }
+
+
+                                                                    }
+                                                                    else if(catTtitle==="پروژه‌های ساخت و ساز"){
+                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}`
+                                                                    }
+                                                                    else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
 
                                                                                 if(exchange.is(":checked")){
                                                                                     
@@ -1907,6 +2049,9 @@
                     {% for c in coms_to_show %}
 
                         <div class="col-md-4">
+                            {% if c.com_status == "فوری" %}
+                                <span class="badge badge-danger" >فوری </span>
+                            {% endif %}
                             <figure class="card card-product-grid" >
                                 <div class="img-wrap"> 
                                     {% if c.commericalimage_set.all %}
@@ -1942,6 +2087,7 @@
                                                                                         <br>
                                                                                         <span class="price">{{c.iranTimeCreated|findTime}}</span>
                                                                                 {% elif c.parent.parent.title == "پروژه‌های ساخت و ساز" %}
+                                                                                
                                                                                         <span class="price">{{c.iranTimeCreated|findTime}}</span>
                                                                                 {% endif %}
                                                                         </div>

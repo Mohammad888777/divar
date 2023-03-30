@@ -103,7 +103,7 @@
                                                     <label>حداقل</label>
                                                     <!-- <input class="form-control" placeholder="$0" type="number"> -->
                                                         <select class="mr-2 form-control" id="choose_min_price" name="least_price">
-                                                            <option selected="selected" value="0"></option>
+                                                            <option selected="selected" value="5"></option>
 
                                                             <option value="5">5 میلیون</option>
                                                             <option value="10">10 میلیون</option>
@@ -117,7 +117,7 @@
                                                     <div class="form-group text-right col-md-6">
                                                     <label>حداکثر</label>
                                                         <select class="mr-2 form-control" id="choose_max_price" name="max_price">
-                                                            <option selected="selected" value="400000000"></option>
+                                                            <option selected="selected" value="200"></option>
                                                             <option value="5">5 میلیون</option>
                                                             <option value="10">10 میلیون</option>
                                                             <option value="20">20 میلیون</option>
@@ -141,8 +141,11 @@
 
                                             <!-- نوع اگهی املاک -->
                                             {% if cat.title == "املاک" %}
+                                                <p>نوع اگهی</p>
+
                                                 <select name="" id="publisherForAmlak">
-                                                    <option value="">همه</option>
+                                                    <option value="همه" selected="selected"></option>
+                                                    <option value="همه">همه</option>
                                                     <option value="شخخصی">شخخصی</option>
                                                     <option value="املاک">املاک</option>
 
@@ -151,7 +154,9 @@
                                             <!-- نوع اگهی وسایل نقلیه -->
                                             <br><br><br>
                                             {% if cat.title == "وسایل نقلیه" %}
+                                                <p>نوع اگهی</p>
                                                 <select name="" id="publisherForCar">
+                                                    <option value="همه" selected="selected"></option>
                                                     <option value="همه" selected="selected">همه</option>
                                                     <option value="درخواست">درخواست</option>
                                                     <option value="فروشی">فروشی</option>
@@ -165,6 +170,7 @@
                                             {% if cat.title == "کالای دیجیتال" %}
 
                                                 <select name="" id="phoneStatus">
+                                                    <option value="همه" selected="selected"></option>
                                                     <option value="همه" selected="selected">همه</option>
                                                     <option value="نو">نو</option>
                                                     <option value="در حد نو">در حد نو</option>
@@ -981,6 +987,9 @@
                     {% for c in coms_to_show %}
 
                         <div class="col-md-4" >
+                            {% if c.com_status == "فوری" %}
+                                <span class="badge badge-danger" >فوری </span>
+                            {% endif %}
                             <figure class="card card-product-grid" >
                                 <div class="img-wrap"> 
                                     {% if c.commericalimage_set.all %}

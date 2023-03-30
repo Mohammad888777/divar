@@ -98,27 +98,78 @@
                                                             <label>حداقل</label>
                                                             <!-- <input class="form-control" placeholder="$0" type="number"> -->
                                                                 <select class="mr-2 form-control" id="choose_min_price" name="least_price">
-                                                                    <option selected="selected" value="0"></option>
 
-                                                                    <option value="5">5 میلیون</option>
-                                                                    <option value="10">10 میلیون</option>
-                                                                    <option value="20">20 میلیون</option>
-                                                                    <option value="50">50 میلیون</option>
-                                                                    <option value="100">100 میلیون</option>
-                                                                    <option value="200">200 میلیون</option>
+                                                                    {% if least_price == 5 %}
+                                                                        <option selected="selected" value="5">5 میلیون</option>
+                                                                    {% else %}
+                                                                        <option value="5">5 میلیون</option>
+                                                                    {% endif %}
+                                                                    {% if least_price == 10 %}
+                                                                        <option selected="selected" value="10">10 میلیون</option>
+                                                                    {% else %}
+                                                                        <option value="10">10 میلیون</option>
+                                                                    {% endif %}
+                                                                    {% if least_price == 20 %}
+                                                                        <option selected="selected" value="20">20 میلیون</option>
+                                                                    {% else %}
+                                                                        <option value="20">20 میلیون</option>
+                                                                    {% endif %}
+                                                                    {% if least_price == 50 %}
+                                                                        <option selected="selected" value="50">50 میلیون</option>
+                                                                    {% else %}
+                                                                        <option value="50">50 میلیون</option>
+                                                                    {% endif %}
+                                                                    {% if least_price == 100 %}
+                                                                        <option selected="selected" value="100">100 میلیون</option>
+                                                                    {% else %}
+                                                                        <option value="100">100 میلیون</option>
+                                                                    {% endif %}
+
+                                                                    {% if least_price == 200 %}
+                                                                        <option selected="selected" value="200">200 میلیون</option>
+                                                                    {% else %}
+                                                                        <option value="200">200 میلیون</option>
+                                                                    {% endif %}
+
+                                                    
                                                         
                                                                 </select>
                                                             </div>
                                                             <div class="form-group text-right col-md-6">
                                                             <label>حداکثر</label>
                                                                 <select class="mr-2 form-control" id="choose_max_price" name="max_price">
-                                                                    <option selected="selected" value="400000000"></option>
-                                                                    <option value="5">5 میلیون</option>
-                                                                    <option value="10">10 میلیون</option>
-                                                                    <option value="20">20 میلیون</option>
-                                                                    <option value="50">50 میلیون</option>
-                                                                    <option value="100">100 میلیون</option>
-                                                                    <option value="200">200 میلیون</option>
+                                                                        {% if max_price == 5 %}
+                                                                            <option selected="selected" value="5">5 میلیون</option>
+                                                                        {% else %}
+                                                                            <option value="5">5 میلیون</option>
+                                                                        {% endif %}
+                                                                        {% if max_price == 10 %}
+                                                                            <option selected="selected" value="10">10 میلیون</option>
+                                                                        {% else %}
+                                                                            <option value="10">10 میلیون</option>
+                                                                        {% endif %}
+                                                                        {% if max_price == 20 %}
+                                                                            <option selected="selected" value="20">20 میلیون</option>
+                                                                        {% else %}
+                                                                            <option value="20">20 میلیون</option>
+                                                                        {% endif %}
+                                                                        {% if max_price == 50 %}
+                                                                            <option selected="selected" value="50">50 میلیون</option>
+                                                                        {% else %}
+                                                                            <option value="50">50 میلیون</option>
+                                                                        {% endif %}
+                                                                        {% if max_price == 100 %}
+                                                                            <option selected="selected" value="100">100 میلیون</option>
+                                                                        {% else %}
+                                                                            <option value="100">100 میلیون</option>
+                                                                        {% endif %}
+
+                                                                        {% if max_price == 200 %}
+                                                                            <option selected="selected" value="200">200 میلیون</option>
+                                                                        {% else %}
+                                                                            <option value="200">200 میلیون</option>
+                                                                        {% endif %}
+                                                                    
                                                                 </select>
                                                             </div>
                                                         </div> 
@@ -1033,6 +1084,9 @@
                     {% for c in coms_to_show %}
 
                         <div class="col-md-4">
+                            {% if c.com_status == "فوری" %}
+                                <span class="badge badge-danger" >فوری </span>
+                            {% endif %}
                             <figure class="card card-product-grid" >
                                 <div class="img-wrap"> 
                                     {% if c.commericalimage_set.all %}

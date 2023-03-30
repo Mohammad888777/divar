@@ -104,18 +104,18 @@ class Commerical(models.Model):
 
     meter=models.IntegerField(null=True,blank=True)
     year_of_construction=models.IntegerField(null=True,blank=True)
-    rooms=models.IntegerField(null=True,blank=True) 
+    rooms=models.IntegerField(null=True,blank=True,default=1) 
     price=models.IntegerField(null=True,blank=True)
     price_each_meter=models.IntegerField(null=True,blank=True)
     vadieh=models.IntegerField(null=True,blank=True)
     rent=models.IntegerField(null=True,blank=True)
     
-    publisher=models.CharField(max_length=200,null=True,blank=True,choices=PUBLISHER_CHOICES,default="شخصی")
-    floor=models.IntegerField(null=True,blank=True)
+    publisher=models.CharField(max_length=200,null=True,blank=True,choices=PUBLISHER_CHOICES,default="همه")
+    floor=models.IntegerField(null=True,blank=True,default=1)
     detail=models.TextField(max_length=450,null=True,blank=True)
     parking=models.BooleanField(default=False)
     anbari=models.BooleanField(default=False)
-    sanad_adari=models.CharField(max_length=200,null=True,blank=True,choices=COVERSIMCART,default="ندارد")
+    sanad_adari=models.BooleanField(default=False)
 
     # وسایل نقلیه
     karkard_mashin=models.IntegerField(null=True,blank=True)
@@ -155,8 +155,12 @@ class Commerical(models.Model):
 
     #استخدام و کاریابی
     price_for_work=models.IntegerField(null=True,blank=True,default=0)
-    # kindCollobrating=models.CharField(max_length=100,null=True,blank=True)
-    # pendding_type=models.CharField(max_length=100,null=True,blank=True)
+    salary=models.IntegerField(null=True,blank=True,default=0)
+  
+
+    how_we_pay=models.CharField(max_length=100,null=True,blank=True)
+    how_college_are=models.CharField(max_length=100,null=True,blank=True)
+
     farWork=models.BooleanField(default=False)
     soldier=models.BooleanField(default=False)
     insurance=models.BooleanField(default=False)
@@ -227,6 +231,31 @@ class Commerical(models.Model):
     # @property
     # def pink_for_digital(self):
     #     if self.parent:
+    @property
+    def par(self):
+        if self.parent.parent:
+            return self.parent.parent.title
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+           
             
 
 def comImagesPath(instance,filename):
@@ -235,7 +264,7 @@ def comImagesPath(instance,filename):
 
 class CommericalImage(models.Model):
 
-    image=models.ImageField(upload_to=comImagesPath,null=True,blank=True,validators=[FileExtensionValidator(allowed_extensions=["png","jpg","jpeg"])])
+    image=models.ImageField(upload_to="images",null=True,blank=True,validators=[FileExtensionValidator(allowed_extensions=["png","jpg","jpeg"])])
     commerical=models.ForeignKey(Commerical,on_delete=models.CASCADE)
 
 

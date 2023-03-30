@@ -431,8 +431,12 @@
         
                 <div class="row">
                     {% for c in coms %}
+                    
 
                         <div class="col-md-4 getComs">
+                            {% if c.com_status == "فوری" %}
+                                <span class="badge badge-danger" >فوری </span>
+                            {% endif %}
                             <figure class="card card-product-grid" >
                                 <div class="img-wrap"> 
                                     {% if c.commericalimage_set.all %}
