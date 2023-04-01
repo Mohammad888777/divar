@@ -266,7 +266,7 @@
                                 <br>
                                 <!-- سال ساخت و کارکرد و نوع آگهی برای وسیله نقلیه -->
                 
-                                {% if  catMain.title in GroupHasYearOfConstruction %}
+                                {% if  catMain.title in GroupHasYearOfConstruction  %}
 
                                     <!-- سال ساخت -->
                                     <div style="margin-top:20px" class="form-row">
@@ -390,6 +390,19 @@
 
                                 {% endif %}
 
+                                {% if catMain.title == "قطعات یدکی و لوازم جانبی" or catMain.title == "قایق و سایر وسایل نقلیه" %}
+                                        <p>نوع اگهی</p>
+
+                                        <select name="" id="publisherForCar">
+                                        <option value="همه" selected="selected"></option>
+                                        <option value="همه" >همه</option>
+                                        <option value="درخواست">درخواست</option>
+                                        <option value="فروشی">فروشی</option>
+
+                                        </select>
+                                {% endif %}
+
+
                                 <br>
                                 <br>
                                 <br>
@@ -473,7 +486,7 @@
                                         <!--  بیمه دارد یا نه-->
 
                                         <a href="#" style="color:black;text-decoration:none">بیمه </a>
-                                        <input  type="checkbox"  id="insurance" >
+                                        <input  type="checkbox"  id="insurance" {% if insurance %} checked="checked" {% endif %} >
                                         <br>
                                 {% endif %}
                             
@@ -768,6 +781,7 @@
                                                                         else if(catTtitle==="پروژه‌های ساخت و ساز"){
                                                                             window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&leastMeter=${leastMeter}&maxMeter=${maxMeter}&publisher=${publisherForAmlak}`
                                                                         }
+
                                                                         else if(amlakEjareh.includes(catTtitle)){
 
                                                                                 if(catTtitle !== 'اجاره کوتاه مدت'){
@@ -780,6 +794,7 @@
 
 
                                                                         }
+
                                                                         else if(vasayelNaghliehMotor_va_Car.includes(catTtitle)){
  
                                                                                     if(exchange.is(":checked")){
@@ -794,20 +809,23 @@
                                                                                     }
 
                                                                         }
+
                                                                         else if(vasayelNaghlieh_Both_and_supplies.includes(catTtitle)){
 
                                                                                 if(exchange.is(":checked")){
                                                                                         
-                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                                 }
 
                                                                                 else{
-                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                                 }
 
                                                                         }
+
+
                                                                         else if(digitalOrKitchenOrPersonalOrEntertaimentOrSupllies.includes(catTtitle)){
 
                                                                                     if(exchange.is(":checked")){
@@ -947,10 +965,10 @@
 
                                                                             if(exchange.is(":checked")){
                                                                                     
-                                                                                    window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                    window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                             }else{
-                                                                                    window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                    window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                             }
 
@@ -983,7 +1001,8 @@
                                                                             }
                                                                         
 
-                                                                    }else if(employment.includes(catTtitle)){
+                                                                    }
+                                                                    else if(employment.includes(catTtitle)){
 
 
                                                                     
@@ -1101,14 +1120,15 @@
 
                                                                                         if(exchange.is(":checked")){
                                                                                                 
-                                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                                         }else{
-                                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                                         }
 
-                                                                                }else if(digitalOrKitchenOrPersonalOrEntertaimentOrSupllies.includes(catTtitle)){
+                                                                                }
+                                                                                else if(digitalOrKitchenOrPersonalOrEntertaimentOrSupllies.includes(catTtitle)){
 
                                                                                             if(exchange.is(":checked")){
                                                                                                     
@@ -1136,7 +1156,8 @@
                                                                                         }
                                                                                     
 
-                                                                                }else if(employment.includes(catTtitle)){
+                                                                                }
+                                                                                else if(employment.includes(catTtitle)){
 
 
                                                                                 
@@ -1238,10 +1259,10 @@
 
                                                                                     if(exchange.is(":checked")){
                                                                                             
-                                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                                     }else{
-                                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                                     }
 
@@ -1476,10 +1497,10 @@
 
                                                                         if(exchange.is(":checked")){
                                                                                 
-                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                         }else{
-                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                         }
 
@@ -1615,10 +1636,10 @@
 
                                                                     if(exchange.is(":checked")){
                                                                             
-                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                     }else{
-                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                            window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                     }
 
@@ -1767,10 +1788,10 @@
 
                                                                                 if(exchange.is(":checked")){
                                                                                         
-                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                                 }else{
-                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                        window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                                 }
 
@@ -1905,10 +1926,10 @@
 
                                                                             if(exchange.is(":checked")){
                                                                                     
-                                                                                    window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                    window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&exchange=True&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                             }else{
-                                                                                    window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}`
+                                                                                    window.location.href=`http://127.0.0.1:8000/handleAmlakFilterSecondLevel/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&title=${catTtitle}&exchange=&max_price=${choose_max_price}&least_price=${choose_min_price}&publisherForCar=${publisherForCar}`
 
                                                                             }
 

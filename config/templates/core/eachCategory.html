@@ -191,7 +191,7 @@
                                                 <label>حداقل</label>
                                                 <!-- <input class="form-control" placeholder="$0" type="number"> -->
                                                     <select class="mr-2 form-control" id="choose_min_price_for_work" name="least_price">
-                                                        <option selected="selected" value="0"></option>
+                                                        <option selected="selected" value="1"></option>
 
                                                         <option value="1">1 سال سبقه کار</option>
                                                         <option value="2">2 سال سبقه کار</option>
@@ -205,7 +205,7 @@
                                                 <div class="form-group text-right col-md-6">
                                                 <label>حداکثر</label>
                                                     <select class="mr-2 form-control" id="choose_max_price_for_work" name="max_price">
-                                                        <option selected="selected" value="0"></option>
+                                                        <option selected="selected" value="7"></option>
                                                         <option value="1">1 سال سبقه کار</option>
                                                         <option value="2">2 سال سبقه کار</option>
                                                         <option value="3">3 سال سبقه کار</option>
@@ -252,714 +252,843 @@
                                                     
                                                 
                                             
-                                            <script type="text/javascript" >
-
-                                                $("#justImg,#justIm,#choose_min_price,#soldier,#choose_max_price,#choose_max_price_for_work,#choose_min_price_for_work,#farWork,#phoneStatus,#publisherForCar,#publisherForAmlak,#exchange ").change(function(){
-
-                                                        let r7=$("#chooseLocation")
-                                                        let min_price_value=$("#choose_min_price").val()
-                                                        let max_price_value=$("#choose_max_price").val()
-                                                        let ch= r7.children("input").filter("input[type=checkbox]:checked")
-                                                        let ids=[]
+                                                    <script type="text/javascript" >
                                                         var catTitle="{{cat.title}}"
-                                                        var exchangePossiable=$("input[type=checkbox][id=exchange]")
-
-                                                       var publisherForAmlak=$("#publisherForAmlak").val()
-                                                       var  publisherForCar=$("#publisherForCar").val()
-                                                       var  phoneStatus=$("#phoneStatus").val()
-
-                                                       var farWork=$("input[type=checkbox][id=farWork]")
-                                                       var soldier=$("input[type=checkbox][id=soldier]")
-
-                                                       var choose_min_price_for_work=$("#choose_min_price_for_work").val()
-                                                       var choose_max_price_for_work=$("#choose_max_price_for_work").val()
-
-
-
-
-                                                        ch.each(function(index,el){
-                                                            ids.push($(el).attr("value"))
+                                                        console.log(catTitle,"$$$$$$$$$$$$$$$$")
+            
+                                                        $("#justImg,#justIm,#choose_min_price,#soldier,#choose_max_price,#choose_max_price_for_work,#choose_min_price_for_work,#farWork,#phoneStatus,#publisherForCar,#publisherForAmlak,#exchange ").change(function(){
+            
+                                                                let r7=$("#chooseLocation")
+                                                                let min_price_value=$("#choose_min_price").val()
+                                                                let max_price_value=$("#choose_max_price").val()
+                                                                let ch= r7.children("input").filter("input[type=checkbox]:checked")
+                                                                let ids=[]
+                                                                var catTitle="{{cat.title}}"
+                                                                var exchangePossiable=$("input[type=checkbox][id=exchange]")
+            
+                                                               var publisherForAmlak=$("#publisherForAmlak").val()
+                                                               var  publisherForCar=$("#publisherForCar").val()
+                                                               var  phoneStatus=$("#phoneStatus").val()
+            
+                                                               var farWork=$("input[type=checkbox][id=farWork]")
+                                                               var soldier=$("input[type=checkbox][id=soldier]")
+            
+                                                               var choose_min_price_for_work=$("#choose_min_price_for_work").val()
+                                                               var choose_max_price_for_work=$("#choose_max_price_for_work").val()
+            
+            
+            
+            
+                                                                ch.each(function(index,el){
+                                                                    ids.push($(el).attr("value"))
+                                                                })
+                                                            
+                                                            var instanceStatus=$("input[type=checkbox][id=justIm]")
+                                                            var justImg=$("input[type=checkbox][id=justImg]")
+            
+                                                            var lists=["سرگرمی و فراغت","خانه و آشپزخانه","تجهیزات و صنعتی"]
+            
+                                                            
+                                                            if ( justImg.is(":checked")){
+            
+                                                                if(instanceStatus.is(":checked")){
+            
+                                                                        if(catTitle === "املاک"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&publisher=${publisherForAmlak}`
+            
+                                                                        }
+                                                                        else if(catTitle==="وسایل نقلیه" ){
+            
+            
+                                                                                if(exchangePossiable.is(":checked")){
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                                }else{
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                                }
+            
+            
+                                                                        
+                                                                        }
+                                                                        else if(catTitle==="وسایل شخصی"){
+            
+                                                                            if(exchangePossiable.is(":checked")){
+                                                                                
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=True&catTitle=${catTitle}`
+                                                                            }else{
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=&catTitle=${catTitle}`
+                                                                            }
+            
+                                                                        }
+                                                                        
+                                                                        else if(catTitle ==="کالای دیجیتال"){
+            
+            
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(lists.includes(catTitle)){
+            
+                                                                                if(exchangePossiable.is(":checked")){
+            
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&exchange=True`
+            
+                                                                                }else{
+                                                                                    
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&exchange=`
+                                                                                }
+            
+                                                                        }else if(catTitle === "خدمات"){
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(catTitle === "اجتماعی"){
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(catTitle === "استخدام و کاریابی"){
+            
+                                                                                if(farWork.is(":checked")){
+            
+                                                                                        if(soldier.is(":checked")){
+            
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
+            
+                                                                                        }else{
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
+            
+                                                                                        }
+            
+                                                                                }else{
+            
+                                                                                    if(soldier.is(":checked")){
+            
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
+            
+                                                                                    }else{
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
+            
+                                                                                    }
+            
+                                                                                }
+            
+            
+                                                                        }
+            
+            
+                                                                    
+                                                                    
+            
+                                                                }
+                                                                else{
+            
+                                                                            if(catTitle === "املاک"){
+            
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&publisher=${publisherForAmlak}`
+            
+                                                                            }else if(catTitle==="وسایل نقلیه" ){
+            
+            
+                                                                                    if(exchangePossiable.is(":checked")){
+                                                                                        console.log("AAA")
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                                    }else{
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                                        console.log("BBB")
+                                                                                    }
+            
+            
+            
+                                                                            }
+            
+                                                                            else if(catTitle==="وسایل شخصی"){
+            
+                                                                                if(exchangePossiable.is(":checked")){
+                                                                                    
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=True&catTitle=${catTitle}`
+                                                                                }else{
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=&catTitle=${catTitle}`
+                                                                                }
+            
+                                                                            }
+            
+                                                                            else if(catTitle ==="کالای دیجیتال"){
+            
+            
+                                                                                console.log("CCC")
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
+            
+                                                                            }else if(lists.includes(catTitle)){
+            
+                                                                                    if(exchangePossiable.is(":checked")){
+            
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&exchange=True`
+                                                                                        console.log("DDD")
+                                                                                    }else{
+                                                                                        
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&exchange=`
+                                                                                        console.log("EEE")
+                                                                                    }
+            
+                                                                            }
+                                                                            else if(catTitle === "خدمات"){
+                                                                                console.log("FFFF")
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}`
+            
+                                                                            }
+                                                                            else if(catTitle === "اجتماعی"){
+                                                                                console.log("GGGG")
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}`
+            
+                                                                            }else if(catTitle === "استخدام و کاریابی"){
+            
+                                                                                    if(farWork.is(":checked")){
+            
+                                                                                            if(soldier.is(":checked")){
+            
+                                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
+            
+                                                                                            }else{
+                                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
+            
+                                                                                            }
+            
+                                                                                    }else{
+            
+                                                                                        if(soldier.is(":checked")){
+            
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
+            
+                                                                                        }else{
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
+            
+                                                                                        }
+            
+                                                                                    }
+            
+            
+                                                                            }
+                                                                }
+                                                                
+                                                                
+            
+            
+                                                            }
+                                                            else{
+                                                                
+                                                                if(instanceStatus.is(":checked")){
+            
+            
+            
+                                                                        if(catTitle === "املاک"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&publisher=${publisherForAmlak}`
+            
+                                                                        }
+                                                                        else if(catTitle==="وسایل نقلیه" ){
+            
+            
+                                                                                if(exchangePossiable.is(":checked")){
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                                }else{
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                                }
+            
+            
+            
+                                                                        }
+                                                                        else if(catTitle==="وسایل شخصی"){
+            
+                                                                            if(exchangePossiable.is(":checked")){
+                                                                                
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=True&catTitle=${catTitle}`
+                                                                            }else{
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=&catTitle=${catTitle}`
+                                                                            }
+            
+                                                                        }
+                                                                        
+                                                                        else if(catTitle ==="کالای دیجیتال"){
+            
+            
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(lists.includes(catTitle)){
+            
+                                                                                if(exchangePossiable.is(":checked")){
+            
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&exchange=True`
+            
+                                                                                }else{
+                                                                                    
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&exchange=`
+                                                                                }
+            
+                                                                        }
+                                                                        else if(catTitle === "خدمات"){
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(catTitle === "اجتماعی"){
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(catTitle === "استخدام و کاریابی"){
+            
+                                                                                if(farWork.is(":checked")){
+            
+                                                                                        if(soldier.is(":checked")){
+            
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
+            
+                                                                                        }else{
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
+            
+                                                                                        }
+            
+                                                                                }else{
+            
+                                                                                    if(soldier.is(":checked")){
+            
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
+            
+                                                                                    }else{
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
+            
+                                                                                    }
+            
+                                                                                }
+            
+            
+                                                                        }
+            
+                                                                    
+                                                                    
+            
+            
+                                                                }
+                                                                else{
+            
+            
+            
+                                                                            if(catTitle === "املاک"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&publisher=${publisherForAmlak}`
+            
+                                                                            }
+                                                                            else if(catTitle==="وسایل نقلیه" ){
+            
+            
+                                                                                    if(exchangePossiable.is(":checked")){
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                                    }else{
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                                    }
+            
+            
+            
+                                                                            }
+                                                                            else if(catTitle==="وسایل شخصی"){
+            
+                                                                                if(exchangePossiable.is(":checked")){
+                                                                                    
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=True&catTitle=${catTitle}`
+                                                                                }else{
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=&catTitle=${catTitle}`
+                                                                                }
+            
+                                                                            }
+                                                                            else if(catTitle ==="کالای دیجیتال"){
+            
+            
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
+            
+                                                                            }
+                                                                            else if(lists.includes(catTitle)){
+            
+                                                                                    if(exchangePossiable.is(":checked")){
+            
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&exchange=True`
+            
+                                                                                    }else{
+                                                                                        
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&exchange=`
+                                                                                    }
+            
+                                                                            }
+                                                                            else if(catTitle === "خدمات"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}`
+            
+                                                                            }
+                                                                            else if(catTitle === "اجتماعی"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}`
+            
+                                                                            }
+                                                                            else if(catTitle === "استخدام و کاریابی"){
+            
+                                                                                    if(farWork.is(":checked")){
+            
+                                                                                            if(soldier.is(":checked")){
+            
+                                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
+            
+                                                                                            }else{
+                                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
+            
+                                                                                            }
+            
+                                                                                    }else{
+            
+                                                                                        if(soldier.is(":checked")){
+            
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
+            
+                                                                                        }else{
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
+            
+                                                                                        }
+            
+                                                                                    }
+            
+            
+                                                                            }
+                                                                    
+                                                                    
+            
+                                                                }
+                                                                
+                                                            } 
+                                                         
+            
+                                                            
+            
                                                         })
-                                                    
-                                                    var instanceStatus=$("input[type=checkbox][id=justIm]")
-                                                    var justImg=$("input[type=checkbox][id=justImg]")
-
-                                                    var lists=["سرگرمی و فراغت","خانه و آشپزخانه","تجهیزات و صنعتی"]
-
-                                                    
-                                                    if ( $(justImg).is(":checked")){
-
-                                                        if(instanceStatus.is(":checked")){
-
-                                                                if(catTitle === "املاک"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&publisher=${publisherForAmlak}`
-
-                                                                }else if(catTitle==="وسایل نقلیه" ){
-
-
-                                                                        if(exchangePossiable.is(":checked")){
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                        }else{
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+            
+            
+                                                        $("#chooseLocation").submit(function(e){
+            
+                                                            e.preventDefault();
+                                                            const form=new FormData(this)
+                                                            let min_price_value=$("#choose_min_price").val()
+                                                            let max_price_value=$("#choose_max_price").val()
+            
+                                                            let locationIds=[]
+            
+                                                            for(let i of form){
+                                                        
+                                                                locationIds.push(i[1])
+                                                            }
+            
+                                                            let locsIdsToInt=locationIds.map(item=>Number(item))
+            
+                                                            var catTitle="{{cat.title}}"
+                                                            var exchangePossiable=$("input[type=checkbox][id=exchange]")
+            
+                                                            var publisherForAmlak=$("#publisherForAmlak").val()
+                                                            var  publisherForCar=$("#publisherForCar").val()
+                                                            var  phoneStatus=$("#phoneStatus").val()
+            
+                                                            var farWork=$("input[type=checkbox][id=farWork]")
+                                                            var soldier=$("input[type=checkbox][id=soldier]")
+            
+                                                            var choose_min_price_for_work=$("#choose_min_price_for_work").val()
+                                                            var choose_max_price_for_work=$("#choose_max_price_for_work").val()
+                                                            var instanceStatus=$("input[type=checkbox][id=justIm]")
+                                                            var justImg=$("input[type=checkbox][id=justImg]")
+            
+                                                            var lists=["سرگرمی و فراغت","خانه و آشپزخانه","تجهیزات و صنعتی"]
+            
+                                                            if ( justImg.is(":checked")){
+            
+                                                                if(instanceStatus.is(":checked")){
+            
+                                                                        if(catTitle === "املاک"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&publisher=${publisherForAmlak}`
+            
                                                                         }
-
-
-
-                                                                }else if(catTitle ==="کالای دیجیتال"){
-
-
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
-
-                                                                }else if(lists.indexOf(catTitle)){
-
-                                                                        if(exchangePossiable.is(":checked")){
-
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&exchange=True`
-
-                                                                        }else{
-                                                                            
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&exchange=`
-                                                                        }
-
-                                                                }else if(catTitle === "خدمات"){
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}`
-
-                                                                }else if(catTitle === "اجتماعی"){
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}`
-
-                                                                }else if(catTitle === "استخدام و کاریابی"){
-
-                                                                        if(farWork.is(":checked")){
-
-                                                                                if(soldier.is(":checked")){
-
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
-
+                                                                        else if(catTitle==="وسایل نقلیه" ){
+            
+            
+                                                                                if(exchangePossiable.is(":checked")){
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
                                                                                 }else{
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
-
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
                                                                                 }
-
-                                                                        }else{
-
-                                                                            if(soldier.is(":checked")){
-
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
-
-                                                                            }else{
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
-
-                                                                            }
-
+            
+            
+            
                                                                         }
-
-
-                                                                }
-
-
-                                                            
-                                                            
-
-                                                        }else{
-
-                                                                    if(catTitle === "املاک"){
-
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&publisher=${publisherForAmlak}`
-
-                                                                    }else if(catTitle==="وسایل نقلیه" ){
-
-
+                                                                        else if(catTitle==="وسایل شخصی"){
+            
                                                                             if(exchangePossiable.is(":checked")){
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                            }else{
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                            }
-
-
-
-                                                                    }else if(catTitle ==="کالای دیجیتال"){
-
-
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
-
-                                                                    }else if(lists.indexOf(catTitle)){
-
-                                                                            if(exchangePossiable.is(":checked")){
-
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&exchange=True`
-
-                                                                            }else{
                                                                                 
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&exchange=`
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=True&catTitle=${catTitle}`
+                                                                            }else{
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=&catTitle=${catTitle}`
                                                                             }
-
-                                                                    }else if(catTitle === "خدمات"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}`
-
-                                                                    }else if(catTitle === "اجتماعی"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}`
-
-                                                                    }else if(catTitle === "استخدام و کاریابی"){
-
-                                                                            if(farWork.is(":checked")){
-
+            
+                                                                        }
+                                                                        else if(catTitle ==="کالای دیجیتال"){
+            
+            
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(lists.includes(catTitle)){
+            
+                                                                                if(exchangePossiable.is(":checked")){
+            
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&exchange=True`
+            
+                                                                                }else{
+                                                                                    
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&exchange=`
+                                                                                }
+            
+                                                                        }else if(catTitle === "خدمات"){
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(catTitle === "اجتماعی"){
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(catTitle === "استخدام و کاریابی"){
+            
+                                                                                if(farWork.is(":checked")){
+            
+                                                                                        if(soldier.is(":checked")){
+            
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
+            
+                                                                                        }else{
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
+            
+                                                                                        }
+            
+                                                                                }else{
+            
                                                                                     if(soldier.is(":checked")){
-
-                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
-
+            
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
+            
                                                                                     }else{
-                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
-
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
+            
                                                                                     }
-
-                                                                            }else{
-
-                                                                                if(soldier.is(":checked")){
-
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
-
-                                                                                }else{
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
-
+            
                                                                                 }
-
-                                                                            }
-
-
-                                                                    }
-                                                        }
-                                                        
-                                                        
-
-
-                                                    }else{
-                                                        
-                                                        if(instanceStatus.is(":checked")){
-
-
-
-                                                                if(catTitle === "املاک"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&publisher=${publisherForAmlak}`
-
-                                                                }else if(catTitle==="وسایل نقلیه" ){
-
-
-                                                                        if(exchangePossiable.is(":checked")){
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                        }else{
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+            
+            
                                                                         }
-
-
-
-                                                                }else if(catTitle ==="کالای دیجیتال"){
-
-
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
-
-                                                                }else if(lists.indexOf(catTitle)){
-
-                                                                        if(exchangePossiable.is(":checked")){
-
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&exchange=True`
-
-                                                                        }else{
-                                                                            
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&exchange=`
-                                                                        }
-
-                                                                }else if(catTitle === "خدمات"){
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}`
-
-                                                                }else if(catTitle === "اجتماعی"){
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}`
-
-                                                                }else if(catTitle === "استخدام و کاریابی"){
-
-                                                                        if(farWork.is(":checked")){
-
-                                                                                if(soldier.is(":checked")){
-
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
-
-                                                                                }else{
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
-
-                                                                                }
-
-                                                                        }else{
-
-                                                                            if(soldier.is(":checked")){
-
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
-
-                                                                            }else{
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
-
-                                                                            }
-
-                                                                        }
-
-
+            
+            
+                                                                    
+                                                                    
+            
                                                                 }
-
-                                                            
-                                                            
-
-
-                                                        }else{
-
-
-
-                                                                    if(catTitle === "املاک"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&publisher=${publisherForAmlak}`
-
-                                                                    }else if(catTitle==="وسایل نقلیه" ){
-
-
-                                                                            if(exchangePossiable.is(":checked")){
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                            }else{
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                            }
-
-
-
-                                                                    }else if(catTitle ==="کالای دیجیتال"){
-
-
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
-
-                                                                    }else if(lists.indexOf(catTitle)){
-
-                                                                            if(exchangePossiable.is(":checked")){
-
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&exchange=True`
-
-                                                                            }else{
-                                                                                
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&exchange=`
-                                                                            }
-
-                                                                    }else if(catTitle === "خدمات"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}`
-
-                                                                    }else if(catTitle === "اجتماعی"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}`
-
-                                                                    }else if(catTitle === "استخدام و کاریابی"){
-
-                                                                            if(farWork.is(":checked")){
-
-                                                                                    if(soldier.is(":checked")){
-
-                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
-
+                                                                else{
+            
+                                                                            if(catTitle === "املاک"){
+            
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&publisher=${publisherForAmlak}`
+            
+                                                                            }else if(catTitle==="وسایل نقلیه" ){
+            
+            
+                                                                                    if(exchangePossiable.is(":checked")){
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
                                                                                     }else{
-                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
-
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
                                                                                     }
-
-                                                                            }else{
-
-                                                                                if(soldier.is(":checked")){
-
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
-
-                                                                                }else{
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${ids.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
-
-                                                                                }
-
+            
+            
+            
                                                                             }
-
-
-                                                                    }
-                                                            
-                                                            
-
-                                                        }
-                                                        
-                                                    }
-                                                    
-
-                                                    
-
-                                                })
-
-
-                                                $("#chooseLocation").submit(function(e){
-
-                                                    e.preventDefault();
-                                                    const form=new FormData(this)
-                                                    let min_price_value=$("#choose_min_price").val()
-                                                    let max_price_value=$("#choose_max_price").val()
-
-                                                    let locationIds=[]
-
-                                                    for(let i of form){
-                                                
-                                                        locationIds.push(i[1])
-                                                    }
-
-                                                    let locsIdsToInt=locationIds.map(item=>Number(item))
-
-                                                    var catTitle="{{cat.title}}"
-                                                    var exchangePossiable=$("input[type=checkbox][id=exchange]")
-
-                                                    var publisherForAmlak=$("#publisherForAmlak").val()
-                                                    var  publisherForCar=$("#publisherForCar").val()
-                                                    var  phoneStatus=$("#phoneStatus").val()
-
-                                                    var farWork=$("input[type=checkbox][id=farWork]")
-                                                    var soldier=$("input[type=checkbox][id=soldier]")
-
-                                                    var choose_min_price_for_work=$("#choose_min_price_for_work").val()
-                                                    var choose_max_price_for_work=$("#choose_max_price_for_work").val()
-                                                    var instanceStatus=$("input[type=checkbox][id=justIm]")
-                                                    var justImg=$("input[type=checkbox][id=justImg]")
-
-                                                    var lists=["سرگرمی و فراغت","خانه و آشپزخانه","تجهیزات و صنعتی"]
-
-                                                    if ( $(justImg).is(":checked")){
-
-                                                        if(instanceStatus.is(":checked")){
-
-                                                                if(catTitle === "املاک"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&publisher=${publisherForAmlak}`
-
-                                                                }else if(catTitle==="وسایل نقلیه" ){
-
-
-                                                                        if(exchangePossiable.is(":checked")){
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                        }else{
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                        }
-
-
-
-                                                                }else if(catTitle ==="کالای دیجیتال"){
-
-
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
-
-                                                                }else if(lists.indexOf(catTitle)){
-
-                                                                        if(exchangePossiable.is(":checked")){
-
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&exchange=True`
-
-                                                                        }else{
-                                                                            
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&exchange=`
-                                                                        }
-
-                                                                }else if(catTitle === "خدمات"){
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}`
-
-                                                                }else if(catTitle === "اجتماعی"){
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}`
-
-                                                                }else if(catTitle === "استخدام و کاریابی"){
-
-                                                                        if(farWork.is(":checked")){
-
-                                                                                if(soldier.is(":checked")){
-
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
-
+                                                                            else if(catTitle==="وسایل شخصی"){
+            
+                                                                                if(exchangePossiable.is(":checked")){
+                                                                                    
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=True&catTitle=${catTitle}`
                                                                                 }else{
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
-
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=&catTitle=${catTitle}`
                                                                                 }
-
-                                                                        }else{
-
-                                                                            if(soldier.is(":checked")){
-
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
-
-                                                                            }else{
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
-
+            
                                                                             }
-
-                                                                        }
-
-
+                                                                            else if(catTitle ==="کالای دیجیتال"){
+            
+            
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
+            
+                                                                            }else if(lists.includes(catTitle)){
+            
+                                                                                    if(exchangePossiable.is(":checked")){
+            
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&exchange=True`
+            
+                                                                                    }else{
+                                                                                        
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&exchange=`
+                                                                                    }
+            
+                                                                            }
+                                                                            else if(catTitle === "خدمات"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}`
+            
+                                                                            }
+                                                                            else if(catTitle === "اجتماعی"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}`
+            
+                                                                            }else if(catTitle === "استخدام و کاریابی"){
+            
+                                                                                    if(farWork.is(":checked")){
+            
+                                                                                            if(soldier.is(":checked")){
+            
+                                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
+            
+                                                                                            }else{
+                                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
+            
+                                                                                            }
+            
+                                                                                    }else{
+            
+                                                                                        if(soldier.is(":checked")){
+            
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
+            
+                                                                                        }else{
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
+            
+                                                                                        }
+            
+                                                                                    }
+            
+            
+                                                                            }
                                                                 }
-
-
-                                                            
-                                                            
-
-                                                        }else{
-
-                                                                    if(catTitle === "املاک"){
-
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&publisher=${publisherForAmlak}`
-
-                                                                    }else if(catTitle==="وسایل نقلیه" ){
-
-
+                                                                
+                                                                
+            
+            
+                                                            }
+                                                            else{
+                                                                
+                                                                if(instanceStatus.is(":checked")){
+            
+            
+            
+                                                                        if(catTitle === "املاک"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&publisher=${publisherForAmlak}`
+            
+                                                                        }
+                                                                        else if(catTitle==="وسایل نقلیه" ){
+            
+            
+                                                                                if(exchangePossiable.is(":checked")){
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                                }else{
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                                }
+            
+            
+            
+                                                                        }
+                                                                        else if(catTitle==="وسایل شخصی"){
+            
                                                                             if(exchangePossiable.is(":checked")){
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                            }else{
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                            }
-
-
-
-                                                                    }else if(catTitle ==="کالای دیجیتال"){
-
-
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
-
-                                                                    }else if(lists.indexOf(catTitle)){
-
-                                                                            if(exchangePossiable.is(":checked")){
-
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&exchange=True`
-
-                                                                            }else{
                                                                                 
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&exchange=`
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=True&catTitle=${catTitle}`
+                                                                            }else{
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=&catTitle=${catTitle}`
                                                                             }
-
-                                                                    }else if(catTitle === "خدمات"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}`
-
-                                                                    }else if(catTitle === "اجتماعی"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}`
-
-                                                                    }else if(catTitle === "استخدام و کاریابی"){
-
-                                                                            if(farWork.is(":checked")){
-
+            
+                                                                        }
+                                                                        
+                                                                        else if(catTitle ==="کالای دیجیتال"){
+            
+            
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(lists.includes(catTitle)){
+            
+                                                                                if(exchangePossiable.is(":checked")){
+            
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&exchange=True`
+            
+                                                                                }else{
+                                                                                    
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&exchange=`
+                                                                                }
+            
+                                                                        }
+                                                                        else if(catTitle === "خدمات"){
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(catTitle === "اجتماعی"){
+            
+                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}`
+            
+                                                                        }
+                                                                        else if(catTitle === "استخدام و کاریابی"){
+            
+                                                                                if(farWork.is(":checked")){
+            
+                                                                                        if(soldier.is(":checked")){
+            
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
+            
+                                                                                        }else{
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
+            
+                                                                                        }
+            
+                                                                                }else{
+            
                                                                                     if(soldier.is(":checked")){
-
-                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
-
+            
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
+            
                                                                                     }else{
-                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
-
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
+            
                                                                                     }
-
-                                                                            }else{
-
-                                                                                if(soldier.is(":checked")){
-
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
-
-                                                                                }else{
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=True&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
-
+            
                                                                                 }
-
-                                                                            }
-
-
-                                                                    }
-                                                        }
-                                                        
-                                                        
-
-
-                                                    }else{
-                                                        
-                                                        if(instanceStatus.is(":checked")){
-
-
-
-                                                                if(catTitle === "املاک"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&publisher=${publisherForAmlak}`
-
-                                                                }else if(catTitle==="وسایل نقلیه" ){
-
-
-                                                                        if(exchangePossiable.is(":checked")){
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                        }else{
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+            
+            
                                                                         }
-
-
-
-                                                                }else if(catTitle ==="کالای دیجیتال"){
-
-
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
-
-                                                                }else if(lists.indexOf(catTitle)){
-
-                                                                        if(exchangePossiable.is(":checked")){
-
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&exchange=True`
-
-                                                                        }else{
-                                                                            
-                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&exchange=`
-                                                                        }
-
-                                                                }else if(catTitle === "خدمات"){
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}`
-
-                                                                }else if(catTitle === "اجتماعی"){
-
-                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=فوری&catTitle=${catTitle}`
-
-                                                                }else if(catTitle === "استخدام و کاریابی"){
-
-                                                                        if(farWork.is(":checked")){
-
-                                                                                if(soldier.is(":checked")){
-
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
-
-                                                                                }else{
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
-
-                                                                                }
-
-                                                                        }else{
-
-                                                                            if(soldier.is(":checked")){
-
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
-
-                                                                            }else{
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=فوری&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
-
-                                                                            }
-
-                                                                        }
-
-
+            
+                                                                    
+                                                                    
+            
+            
                                                                 }
-
-                                                            
-                                                            
-
-
-                                                        }else{
-
-
-
-                                                                    if(catTitle === "املاک"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&publisher=${publisherForAmlak}`
-
-                                                                    }else if(catTitle==="وسایل نقلیه" ){
-
-
-                                                                            if(exchangePossiable.is(":checked")){
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
-                                                                            }else{
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
+                                                                else{
+            
+            
+            
+                                                                            if(catTitle === "املاک"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&publisher=${publisherForAmlak}`
+            
                                                                             }
-
-
-
-                                                                    }else if(catTitle ==="کالای دیجیتال"){
-
-
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
-
-                                                                    }else if(lists.indexOf(catTitle)){
-
-                                                                            if(exchangePossiable.is(":checked")){
-
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&exchange=True`
-
-                                                                            }else{
-                                                                                
-                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&exchange=`
-                                                                            }
-
-                                                                    }else if(catTitle === "خدمات"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}`
-
-                                                                    }else if(catTitle === "اجتماعی"){
-
-                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}`
-
-                                                                    }else if(catTitle === "استخدام و کاریابی"){
-
-                                                                            if(farWork.is(":checked")){
-
-                                                                                    if(soldier.is(":checked")){
-
-                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
-
+                                                                            else if(catTitle==="وسایل نقلیه" ){
+            
+            
+                                                                                    if(exchangePossiable.is(":checked")){
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=True&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
                                                                                     }else{
-                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
-
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=&catTitle=${catTitle}&publisherForCar=${publisherForCar}`
                                                                                     }
-
-                                                                            }else{
-
-                                                                                if(soldier.is(":checked")){
-
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
-
-                                                                                }else{
-                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
-
-                                                                                }
-
+            
+            
+            
                                                                             }
-
-
-                                                                    }
+                                                                            else if(catTitle==="وسایل شخصی"){
+            
+                                                                                if(exchangePossiable.is(":checked")){
+                                                                                    
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=True&catTitle=${catTitle}`
+                                                                                }else{
+                                                                                    window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&exchange=&catTitle=${catTitle}`
+                                                                                }
+            
+                                                                            }
+                                                                            else if(catTitle ==="کالای دیجیتال"){
+            
+            
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&phoneStatus=${phoneStatus}&catTitle=${catTitle}`
+            
+                                                                            }
+                                                                            else if(lists.includes(catTitle)){
+            
+                                                                                    if(exchangePossiable.is(":checked")){
+            
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&exchange=True`
+            
+                                                                                    }else{
+                                                                                        
+                                                                                        window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&exchange=`
+                                                                                    }
+            
+                                                                            }
+                                                                            else if(catTitle === "خدمات"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}`
+            
+                                                                            }
+                                                                            else if(catTitle === "اجتماعی"){
+            
+                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&least_price=${min_price_value}&max_price=${max_price_value}&justImg=&instatnceComs=عادی&catTitle=${catTitle}`
+            
+                                                                            }
+                                                                            else if(catTitle === "استخدام و کاریابی"){
+            
+                                                                                    if(farWork.is(":checked")){
+            
+                                                                                            if(soldier.is(":checked")){
+            
+                                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=True`
+            
+                                                                                            }else{
+                                                                                                window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=True&soldier=`
+            
+                                                                                            }
+            
+                                                                                    }else{
+            
+                                                                                        if(soldier.is(":checked")){
+            
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=True`
+            
+                                                                                        }else{
+                                                                                            window.location.href=`http://127.0.0.1:8000/amlakFilter/?ids=${locationIds.join(',')}&justImg=&instatnceComs=عادی&catTitle=${catTitle}&choose_min_price_for_work=${choose_min_price_for_work}&choose_max_price_for_work=${choose_max_price_for_work}&farWork=&soldier=`
+            
+                                                                                        }
+            
+                                                                                    }
+            
+            
+                                                                            }
+                                                                    
+                                                                    
+            
+                                                                }
+                                                                
+                                                            } 
+                                                         
+            
+              
                                                             
-                                                            
-
-                                                        }
-                                                        
-                                                    }
-                                                    
-
-
-                                                   
-
-
-
-
-                                                    
-                                                    
-                                                    
-                                                });
-
-
-                                            </script>
+                                                        });
+            
+            
+                                                    </script>
 
                                 
                             

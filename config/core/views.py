@@ -509,8 +509,6 @@ def eachCategorySecondlevel(request,categoryId):
             coms_to_show=Commerical.objects.filter(
                 Q(city__in=[int(i) for i in province]) | 
                 Q(smallCity__in=[int(i) for i in smallCities]) 
-                
-
             ).filter(
                 Q(parent__parent__parent__title=cat.parent.title) & Q(parent__parent__title=cat.title)
             ).filter(
@@ -585,6 +583,8 @@ def eachCategorySecondlevel(request,categoryId):
     else:
         print("THIRS TOHHECCC")
         first_chat_child=cat.children.first()
+
+
         if first_chat_child.children.all():
 
                 if province and smallCities:
@@ -592,16 +592,18 @@ def eachCategorySecondlevel(request,categoryId):
                     coms_to_show=Commerical.objects.filter(
                         Q(city__in=[int(i) for i in province]) | 
                         Q(smallCity__in=[int(i) for i in smallCities]) 
-                        
-
-                    ).filter(
-                        Q(parent__parent__parent__title=cat.parent.title) &
-                        Q(parent__parent__title=cat.title)
-                    ).filter(
-                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
-                ).distinct()
+                        ).filter(
+                            Q(parent__parent__parent__title=cat.parent.title) &
+                            Q(parent__parent__title=cat.title)
+                        ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                    ).distinct()
                     
                 elif province and not smallCities:
+                    print("?????")
+                    print("?????")
+                    print("?????")
+                    print("?????")
 
                     coms_to_show=Commerical.objects.filter(
                         Q(city__in=[int(i) for i in province]) 
@@ -855,7 +857,9 @@ def handleAmlakFilter(request):
 
     least_price=request.GET.get("least_price",0)
     max_price=request.GET.get("max_price",400000000)
+
     title=request.GET.get("catTitle")
+    
     publisher=request.GET.get("publisher","همه")
     exchange=request.GET.get("exchange",False)
     publisherForCar=request.GET.get("publisherForCar","همه")
@@ -891,13 +895,11 @@ def handleAmlakFilter(request):
                     ).filter(
                             Q(city__in=[int(i) for i in province]) | 
                             Q(smallCity__in=[int(i) for i in smallCities]) 
-                                
-
                         ).filter(
                             Q(parent__parent__parent__title="املاک") &
-                            Q(location__in=locas_to_go)&
-                            Q(publisher=publisher)
-
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            Q() if publisher == "همه" else  Q(publisher=publisher)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -912,8 +914,9 @@ def handleAmlakFilter(request):
                         Q(smallCity__in=[int(i) for i in smallCities])         
                     ).filter(
                         Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)&
-                        Q(publisher=publisher)
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q() if publisher == "همه" else  Q(publisher=publisher)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -931,8 +934,9 @@ def handleAmlakFilter(request):
                     ).filter(
                         Q(city__in=[int(i) for i in province]) &
                         Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)&
-                        Q(publisher=publisher)
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q() if publisher == "همه" else  Q(publisher=publisher)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -944,8 +948,9 @@ def handleAmlakFilter(request):
                     coms_to_show=Commerical.objects.filter(
                     Q(city__in=[int(i) for i in province]) &
                         Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)&
-                        Q(publisher=publisher)
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q() if publisher == "همه" else  Q(publisher=publisher)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -962,8 +967,9 @@ def handleAmlakFilter(request):
                     ).filter(
                         Q(smallCity__in=[int(i) for i in smallCities])&
                         Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)&
-                        Q(publisher=publisher)
+                        Q(location__in=locas_to_go)
+                    ).filter(
+                        Q() if publisher == "همه" else  Q(publisher=publisher)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -975,8 +981,9 @@ def handleAmlakFilter(request):
                     coms_to_show=Commerical.objects.filter(
                         Q(smallCity__in=[int(i) for i in smallCities])&
                         Q(parent__parent__parent__title="املاک") &
-                        Q(location__in=locas_to_go)&
-                        Q(publisher=publisher)
+                        Q(location__in=locas_to_go)
+                        ).filter(
+                            Q() if publisher == "همه" else  Q(publisher=publisher)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -999,11 +1006,12 @@ def handleAmlakFilter(request):
                                 ).filter(
                                     Q(location__in=locas_to_go)&
                                     Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)
                                 ).filter(
                                      Q(parent__parent__parent__title="وسایل نقلیه")|
                                      Q(parent__parent__title="وسایل نقلیه")
+                                ).filter(
+                                    Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -1020,8 +1028,9 @@ def handleAmlakFilter(request):
                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                 ).filter(
                                     Q(location__in=locas_to_go)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(publisherForCar=publisherForCar)
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     Q(parent__parent__parent__title="وسایل نقلیه")|
                                     Q(parent__parent__title="وسایل نقلیه")
@@ -1041,9 +1050,10 @@ def handleAmlakFilter(request):
                             ).filter(
                             Q(location__in=locas_to_go)&
                             Q(price__range=(int(least_price),int(max_price)))&
-                            Q(publisherForCar=publisherForCar)&
                             Q(ready_to_exchange=True)
                             ).filter(
+                                    Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
+                                ).filter(
                                 Q(parent__parent__parent__title="وسایل نقلیه")|
                                 Q(parent__parent__title="وسایل نقلیه")
                             ).filter(
@@ -1058,8 +1068,9 @@ def handleAmlakFilter(request):
                                 Q(smallCity__in=[int(i) for i in smallCities])         
                             ).filter(
                                 Q(location__in=locas_to_go)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(publisherForCar=publisherForCar)
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                             ).filter(
                                 Q(parent__parent__parent__title="وسایل نقلیه")|
                                 Q(parent__parent__title="وسایل نقلیه")
@@ -1082,8 +1093,9 @@ def handleAmlakFilter(request):
                             Q(city__in=[int(i) for i in province]) &
                             Q(location__in=locas_to_go)&
                             Q(price__range=(int(least_price),int(max_price)))&
-                            Q(publisherForCar=publisherForCar)&
                             Q(ready_to_exchange=True)
+                        ).filter(
+                            Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                         ).filter(
                             Q(parent__parent__parent__title="وسایل نقلیه")|
                             Q(parent__parent__title="وسایل نقلیه")
@@ -1100,9 +1112,9 @@ def handleAmlakFilter(request):
                         ).filter(
                             Q(city__in=[int(i) for i in province]) &
                             Q(location__in=locas_to_go)&
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(publisherForCar=publisherForCar)
-                          
+                            Q(price__range=(int(least_price),int(max_price)))                          
+                        ).filter(
+                            Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                         ).filter(
                             Q(parent__parent__parent__title="وسایل نقلیه")|
                             Q(parent__parent__title="وسایل نقلیه")
@@ -1121,8 +1133,9 @@ def handleAmlakFilter(request):
                             
                                 Q(location__in=locas_to_go)&
                                 Q(price__range=(int(least_price),int(max_price)))&
-                                Q(publisherForCar=publisherForCar)&
                                 Q(ready_to_exchange=True)
+                            ).filter(
+                                Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                             ).filter(
                                 Q(parent__parent__parent__title="وسایل نقلیه")|
                                 Q(parent__parent__title="وسایل نقلیه")
@@ -1135,8 +1148,9 @@ def handleAmlakFilter(request):
                         coms_to_show=Commerical.objects.filter(
                                 Q(city__in=[int(i) for i in province]) &   
                                 Q(location__in=locas_to_go)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(publisherForCar=publisherForCar)
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                             ).filter(
                                 Q(parent__parent__parent__title="وسایل نقلیه")|
                                 Q(parent__parent__title="وسایل نقلیه")
@@ -1160,8 +1174,9 @@ def handleAmlakFilter(request):
                                 Q(smallCity__in=[int(i) for i in smallCities])&
                                 Q(location__in=locas_to_go)&
                                 Q(price__range=(int(least_price),int(max_price)))&
-                                Q(publisherForCar=publisherForCar)&
                                 Q(ready_to_exchange=True)
+                            ).filter(
+                                Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                             ).filter(
                                 Q(parent__parent__parent__title="وسایل نقلیه")|
                                 Q(parent__parent__title="وسایل نقلیه")
@@ -1178,8 +1193,9 @@ def handleAmlakFilter(request):
                             ).filter(
                                 Q(smallCity__in=[int(i) for i in smallCities])&
                                 Q(location__in=locas_to_go)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(publisherForCar=publisherForCar)
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                             ).filter(
                                 Q(parent__parent__parent__title="وسایل نقلیه")|
                                 Q(parent__parent__title="وسایل نقلیه")
@@ -1197,8 +1213,9 @@ def handleAmlakFilter(request):
                                 Q(smallCity__in=[int(i) for i in smallCities])&
                                 Q(location__in=locas_to_go)&
                                 Q(price__range=(int(least_price),int(max_price)))&
-                                Q(publisherForCar=publisherForCar)&
                                 Q(ready_to_exchange=True)
+                            ).filter(
+                                Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                             ).filter(
                                 Q(parent__parent__parent__title="وسایل نقلیه")|
                                 Q(parent__parent__title="وسایل نقلیه")
@@ -1212,8 +1229,9 @@ def handleAmlakFilter(request):
                                 Q(smallCity__in=[int(i) for i in smallCities])&
                                 
                                 Q(location__in=locas_to_go)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(publisherForCar=publisherForCar)
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if publisherForCar == "همه" else  Q(publisherForCar=publisherForCar)
                             ).filter(
                                 Q(parent__parent__parent__title="وسایل نقلیه")|
                                 Q(parent__parent__title="وسایل نقلیه")
@@ -1236,9 +1254,9 @@ def handleAmlakFilter(request):
                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                 ).filter(
                                     Q(location__in=locas_to_go)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(phone_status=phoneStatus)
-                                    
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q() if phoneStatus == "همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                      Q(parent__parent__parent__title="کالای دیجیتال")|
                                      Q(parent__parent__title="کالای دیجیتال")
@@ -1256,8 +1274,9 @@ def handleAmlakFilter(request):
                             Q(smallCity__in=[int(i) for i in smallCities])         
                         ).filter(
                             Q(location__in=locas_to_go)&
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(phone_status=phoneStatus)
+                            Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            Q() if phoneStatus == "همه" else Q(phone_status=phoneStatus)
                         ).filter(
                              Q(parent__parent__parent__title="کالای دیجیتال")|
                              Q(parent__parent__title="کالای دیجیتال")
@@ -1279,8 +1298,9 @@ def handleAmlakFilter(request):
                         ).filter(
                             Q(city__in=[int(i) for i in province]) &
                             Q(location__in=locas_to_go)&
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(phone_status=phoneStatus)
+                            Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            Q() if phoneStatus == "همه" else Q(phone_status=phoneStatus)
                         ).filter(
                              Q(parent__parent__parent__title="کالای دیجیتال")|
                              Q(parent__parent__title="کالای دیجیتال")
@@ -1297,8 +1317,9 @@ def handleAmlakFilter(request):
                     coms_to_show=Commerical.objects.filter(
                             Q(city__in=[int(i) for i in province]) &
                             Q(location__in=locas_to_go)&
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(phone_status=phoneStatus)
+                            Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            Q() if phoneStatus == "همه" else Q(phone_status=phoneStatus)
                         ).filter(
                              Q(parent__parent__parent__title="کالای دیجیتال")|
                              Q(parent__parent__title="کالای دیجیتال")
@@ -1314,17 +1335,15 @@ def handleAmlakFilter(request):
                 print("C")
 
                 if bool(justImg):
-                    
-
 
                         coms_to_show=Commerical.objects.annotate(
                                 img_length=Length("commericalimage")
                             ).filter(
                                 Q(smallCity__in=[int(i) for i in smallCities])&
                                 Q(location__in=locas_to_go)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(phone_status=phoneStatus)
-
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if phoneStatus == "همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                  Q(parent__parent__parent__title="کالای دیجیتال")|
                                  Q(parent__parent__title="کالای دیجیتال")
@@ -1340,8 +1359,9 @@ def handleAmlakFilter(request):
                     coms_to_show=Commerical.objects.filter(
                             Q(smallCity__in=[int(i) for i in smallCities])&
                             Q(location__in=locas_to_go)&
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(phone_status=phoneStatus)
+                            Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            Q() if phoneStatus == "همه" else Q(phone_status=phoneStatus)
                         ).filter(
                              Q(parent__parent__parent__title="کالای دیجیتال")|
                              Q(parent__parent__title="کالای دیجیتال")
@@ -1352,7 +1372,7 @@ def handleAmlakFilter(request):
                         ).distinct()
 
 
-        case "تجهیزات و صنعتی" | "سرگرمی و فراغت" | "خانه و آشپزخانه" :
+        case "تجهیزات و صنعتی" | "سرگرمی و فراغت" | "خانه و آشپزخانه" | "وسایل شخصی":
             if province and smallCities:
                 print("A")
                 if bool(justImg):
@@ -1367,7 +1387,6 @@ def handleAmlakFilter(request):
                                     Q(location__in=locas_to_go)&
                                     Q(price__range=(int(least_price),int(max_price)))&
                                     Q(ready_to_exchange=True)
-                                    
                                 ).filter(
                                     Q(parent__parent__parent__title=title)|
                                     Q(parent__parent__title=title)
@@ -1598,7 +1617,6 @@ def handleAmlakFilter(request):
                                     Q(parent__parent__parent__title="اجتماعی") &
                                     Q(location__in=locas_to_go)&
                                     Q(price__range=(int(least_price),int(max_price)))
-
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -1697,6 +1715,109 @@ def handleAmlakFilter(request):
                             Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
 
+        case "خدمات":
+            
+            if province and smallCities:
+                print("A")
+                if bool(justImg):
+ 
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(city__in=[int(i) for i in province]) | 
+                                    Q(smallCity__in=[int(i) for i in smallCities]) 
+                                ).filter(
+                                    Q(parent__parent__title="خدمات") &
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                    img_length__gte=1
+                                ).filter(
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                ).distinct()
+                else:
+                    print("ELELLELELLSSSSSEEe")
+                    coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                            Q(smallCity__in=[int(i) for i in smallCities])         
+                        ).filter(
+                            Q(parent__parent__title="خدمات") &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+
+
+            elif province and not smallCities:
+
+                print("B")
+
+                if bool(justImg):
+                   
+                        coms_to_show=Commerical.objects.annotate(
+                            img_length=Length("commericalimage")
+                        ).filter(
+                            Q(city__in=[int(i) for i in province]) &
+                            Q(parent__parent__title="خدمات") &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                img_length__gte=1
+                        ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+     
+                else:
+
+                    coms_to_show=Commerical.objects.filter(
+                        Q(city__in=[int(i) for i in province]) &
+                            Q(parent__parent__title="خدمات") &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+                    
+
+
+            elif not province and smallCities:
+                print("C")
+
+                if bool(justImg):
+                    
+
+
+                        coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                            ).filter(
+                                Q(smallCity__in=[int(i) for i in smallCities])&
+                                Q(parent__parent__title="خدمات") &
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                    img_length__gte=1
+                            ).filter(
+                                    Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                ).distinct()
+  
+                else:
+                    coms_to_show=Commerical.objects.filter(
+                            Q(smallCity__in=[int(i) for i in smallCities])&
+                            Q(parent__parent__parent__title="خدمات") &
+                            Q(location__in=locas_to_go)
+                        ).filter(
+                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                        ).filter(
+                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                        ).distinct()
+
+     
 
         case "استخدام و کاریابی":
 
@@ -2168,8 +2289,9 @@ def handleAmlakFilter(request):
         'soldier':soldier,
         'publisher':publisher,
         'publisherForCar':publisherForCar,
-        'phoneStatus':phoneStatus
-        # 'choose_min_price_for_work':choose_min_price_for_work,
+        'phoneStatus':phoneStatus,
+        'choose_min_price_for_work':int(choose_min_price_for_work),
+        'choose_max_price_for_work':int(choose_max_price_for_work),
 
         
     }
@@ -2266,8 +2388,9 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             Q(price__range=(int(least_price),int(max_price))) & 
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak)&
                             Q(rooms__gte=int(roomNumber))                  
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -2286,8 +2409,9 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             Q(price__range=(int(least_price),int(max_price))) & 
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber)) 
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -2309,9 +2433,9 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         Q(price__range=(int(least_price),int(max_price))) & 
                         Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                        Q(publisher=publisherForAmlak)&
                         Q(rooms__gte=int(roomNumber))   
-
+                    ).filter(
+                        Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -2330,8 +2454,9 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         Q(price__range=(int(least_price),int(max_price))) & 
                         Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                        Q(publisher=publisherForAmlak)&
                         Q(rooms__gte=int(roomNumber))  
+                    ).filter(
+                        Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -2352,8 +2477,9 @@ def handleAmlakFilterSecondLevel(request):
                     ).filter(
                         Q(price__range=(int(least_price),int(max_price))) & 
                         Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                        Q(publisher=publisherForAmlak)&
                             Q(rooms__gte=int(roomNumber))  
+                    ).filter(
+                        Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -2369,14 +2495,16 @@ def handleAmlakFilterSecondLevel(request):
                         ).filter(
                             Q(price__range=(int(least_price),int(max_price))) & 
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber)) 
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
                             Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
-    
+
+
     elif title in amlakEjareh:
 
         if province and smallCities:
@@ -2396,8 +2524,9 @@ def handleAmlakFilterSecondLevel(request):
                             Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
                             Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))               
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -2417,8 +2546,9 @@ def handleAmlakFilterSecondLevel(request):
                             Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
                             Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))    
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -2442,9 +2572,9 @@ def handleAmlakFilterSecondLevel(request):
                             Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
                             Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))   
-
+                    ).filter(
+                        Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -2464,8 +2594,9 @@ def handleAmlakFilterSecondLevel(request):
                             Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
                             Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))   
+                    ).filter(
+                        Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -2487,8 +2618,9 @@ def handleAmlakFilterSecondLevel(request):
                             Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
                             Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))   
+                    ).filter(
+                        Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -2505,8 +2637,9 @@ def handleAmlakFilterSecondLevel(request):
                             Q(vadieh__range=(int(minVadieh),int(maxVadieh))) & 
                             Q(rent__range=(int(minEjareh),int(maxEjareh))) & 
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))   
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -2529,11 +2662,11 @@ def handleAmlakFilterSecondLevel(request):
                             Q(parent__parent__title=title) &
                             Q(location__in=locas_to_go)
                         ).filter(
-                            Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) & 
-                        
+                            Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) &                         
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))               
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -2550,11 +2683,11 @@ def handleAmlakFilterSecondLevel(request):
                             Q(parent__parent__title=title) &
                             Q(location__in=locas_to_go)
                         ).filter(
-                             Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) & 
-          
+                             Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) &           
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))    
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -2575,11 +2708,10 @@ def handleAmlakFilterSecondLevel(request):
                         Q(location__in=locas_to_go)
                     ).filter(
                              Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) &  
-          
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))   
-
+                    ).filter(
+                        Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -2597,10 +2729,10 @@ def handleAmlakFilterSecondLevel(request):
                         Q(location__in=locas_to_go)
                     ).filter(
                             Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) & 
-                            
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))   
+                    ).filter(
+                        Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -2620,10 +2752,10 @@ def handleAmlakFilterSecondLevel(request):
                         Q(location__in=locas_to_go)
                     ).filter(
                              Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) & 
-
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))   
+                    ).filter(
+                        Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -2638,10 +2770,10 @@ def handleAmlakFilterSecondLevel(request):
                             Q(location__in=locas_to_go)
                         ).filter(
                              Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) &  
-                            
                             Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) &
                             Q(rooms__gte=int(roomNumber))   
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -2665,8 +2797,9 @@ def handleAmlakFilterSecondLevel(request):
                             Q(parent__parent__title=title) &
                             Q(location__in=locas_to_go)
                         ).filter(
-                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak)             
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -2683,8 +2816,9 @@ def handleAmlakFilterSecondLevel(request):
                             Q(parent__parent__title=title) &
                             Q(location__in=locas_to_go)
                         ).filter(
-                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak)   
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -2704,10 +2838,10 @@ def handleAmlakFilterSecondLevel(request):
                         Q(parent__parent__title=title) &
                         Q(location__in=locas_to_go)
                     ).filter(
-                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak)
-
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  
                     ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
+                        ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
                             img_length__gte=1
@@ -2723,9 +2857,10 @@ def handleAmlakFilterSecondLevel(request):
                         Q(parent__parent__title=title) &
                         Q(location__in=locas_to_go)
                     ).filter(                            
-                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak)  
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  
                     ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
+                        ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
                             Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
@@ -2743,9 +2878,10 @@ def handleAmlakFilterSecondLevel(request):
                         Q(parent__parent__title=title) &
                         Q(location__in=locas_to_go)
                     ).filter(
-                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak) 
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  
                     ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
+                        ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
                             img_length__gte=1
@@ -2759,18 +2895,15 @@ def handleAmlakFilterSecondLevel(request):
                             Q(location__in=locas_to_go)
                         ).filter(
                              Q(day_rent_paid__range=(int(min_day_rent_paid_for_house),int(max_day_rent_paid_for_house))) &  
-                            
-                            Q(meter__range=(int(leastMeter),int(maxMeter)))  &
-                            Q(publisher=publisherForAmlak)   
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  
+                        ).filter(
+                            Q() if publisherForAmlak == "همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
                             Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                         ).distinct()
     
-
-
-
 
     elif title in vasayelNaghliehMotor_va_Car:
         ourCom=get_object_or_404(Commerical,title=title)
@@ -2794,13 +2927,14 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(location__in=locas_to_go)&
                                     Q(parent__parent__title=title)
                                 ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                    Q(price__range=(int(least_price),int(max_price)))
                                 ).filter(
-                                    Q()
+                                    Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                ).filter(
+                                    Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -2818,10 +2952,13 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(location__in=locas_to_go)&
                                     Q(parent__parent__title=title)
                                 ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                ).filter(
+                                    Q(karkard_mashin=None)| Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -2840,18 +2977,23 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&  
                                     Q(ready_to_exchange=True)
-
+                                ).filter(
+                                    Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                ).filter(
+                                    Q(karkard_mashin=None)| Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                                ).filter(
+                                    Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
                                     Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
+                            print("BBEEEEBBB")
+                            print("BBEEEEBBB")
+                            print("BBEEEEBBB")
                             coms_to_show=Commerical.objects.filter(
                                 Q(city__in=[int(i) for i in province]) | 
                                     Q(smallCity__in=[int(i) for i in smallCities]) 
@@ -2859,11 +3001,13 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
-
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                ).filter(
+                                    Q(karkard_mashin=None)| Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -2885,11 +3029,14 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(location__in=locas_to_go)&
                                     Q(parent__title=title)
                                 ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                ).filter(
+                                    Q(karkard_mashin=None)| Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -2907,10 +3054,13 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(location__in=locas_to_go)&
                                     Q(parent__title=title)
                                 ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                ).filter(
+                                    Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -2929,12 +3079,14 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&  
                                     Q(ready_to_exchange=True)
-
+                                ).filter(
+                                    Q(karkard_mashin=None)| Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                ).filter(
+                                    Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -2945,17 +3097,19 @@ def handleAmlakFilterSecondLevel(request):
                             print("FUUUUUNNNNNNNNNN")
                             print("FUUUUUNNNNNNNNNN")
                             coms_to_show=Commerical.objects.filter(
-                                Q(city__in=[int(i) for i in province]) | 
+                                    Q(city__in=[int(i) for i in province]) | 
                                     Q(smallCity__in=[int(i) for i in smallCities]) 
                                 ).filter(
                                     Q(parent__title=title) &
                                     Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
-
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                                ).filter(
+                                    Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -2977,19 +3131,21 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
-
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                    Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
                                     img_length__gte=1
                             ).filter(
                                     Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
-                                ).distinct()
+                            ).distinct()
 
                         else:
                             coms_to_show=Commerical.objects.annotate(
@@ -2999,11 +3155,13 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
-
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)| Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                            ).filter(
+                                    Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3019,26 +3177,35 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)| Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
                                     Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
+                            print("sELELLELELELELLFLFLFL")
+                            print("sELELLELELELELLFLFLFL")
+                            print("sELELLELELELELLFLFLFL")
                             coms_to_show=Commerical.objects.filter(
                                 Q(city__in=[int(i) for i in province]) &
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                                    Q(price__range=(int(least_price),int(max_price)))                    
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3057,12 +3224,14 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
-
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3079,11 +3248,13 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
-
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)| Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3099,11 +3270,14 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)| Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)| Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3115,19 +3289,22 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
                                     Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
+
         elif not province and smallCities:
                 if first_child.children.all():
-
 
                     if bool(justImg):
                         if exchange:
@@ -3139,11 +3316,14 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None) |Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3160,10 +3340,13 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3172,7 +3355,6 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
 
-
                     else:
                         if exchange:
                             coms_to_show=Commerical.objects.filter(
@@ -3180,11 +3362,14 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(publisherForCar=publisherForCar)&
                                 Q(ready_to_exchange=True)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3196,10 +3381,13 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(publisherForCar=publisherForCar)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3210,7 +3398,6 @@ def handleAmlakFilterSecondLevel(request):
                 else:
                     if bool(justImg):
                         if exchange:
-
                             coms_to_show=Commerical.objects.annotate(
                             img_length=Length("commericalimage")
                             ).filter(
@@ -3218,11 +3405,14 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)| Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3231,7 +3421,6 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
-
                             coms_to_show=Commerical.objects.annotate(
                             img_length=Length("commericalimage")
                             ).filter(
@@ -3239,10 +3428,13 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3259,11 +3451,14 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(publisherForCar=publisherForCar)&
                                 Q(ready_to_exchange=True)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3275,15 +3470,20 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(publisherForCar=publisherForCar)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q(production_year=None)|Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))
+                            ).filter(
+                                Q(karkard_mashin=None)|Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            ).filter(
+                                Q() if publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
                                 Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
+
+
 
     elif title in vasayelNaghlieh_Both_and_supplies:
 
@@ -3302,11 +3502,10 @@ def handleAmlakFilterSecondLevel(request):
                             Q(location__in=locas_to_go)&
                             Q(parent__title=title)
                         ).filter(
-                            Q(publisherForCar=publisherForCar)&
                             Q(ready_to_exchange=True)&
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                            Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -3324,10 +3523,9 @@ def handleAmlakFilterSecondLevel(request):
                             Q(location__in=locas_to_go)&
                             Q(parent__title=title)
                         ).filter(
-                            Q(publisherForCar=publisherForCar)&
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                            Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -3346,12 +3544,10 @@ def handleAmlakFilterSecondLevel(request):
                         Q(parent__title=title) &
                         Q(location__in=locas_to_go)
                         ).filter(
-                            Q(publisherForCar=publisherForCar)&
                             Q(price__range=(int(least_price),int(max_price)))&
-                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&  
                             Q(ready_to_exchange=True)
-
+                        ).filter(
+                            Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -3365,11 +3561,9 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
-
+                                    Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -3390,12 +3584,10 @@ def handleAmlakFilterSecondLevel(request):
                             Q(parent__title=title) &
                             Q(location__in=locas_to_go)
                         ).filter(
-                                Q(publisherForCar=publisherForCar)&
                                 Q(ready_to_exchange=True)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
-
+                                Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -3412,11 +3604,9 @@ def handleAmlakFilterSecondLevel(request):
                             Q(parent__title=title) &
                             Q(location__in=locas_to_go)
                         ).filter(
-                                Q(publisherForCar=publisherForCar)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
-
+                                Q(price__range=(int(least_price),int(max_price)))
+                        ).filter(
+                            Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -3432,11 +3622,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
                                     Q(ready_to_exchange=True)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3448,10 +3637,9 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(publisherForCar=publisherForCar)&
-                                    Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                    Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))  
+                                    Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3471,11 +3659,10 @@ def handleAmlakFilterSecondLevel(request):
                         Q(parent__title=title) &
                         Q(location__in=locas_to_go)
                     ).filter(
-                            Q(publisherForCar=publisherForCar)&
                             Q(ready_to_exchange=True)&
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            Q(price__range=(int(least_price),int(max_price)))
+                    ).filter(
+                        Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -3492,10 +3679,9 @@ def handleAmlakFilterSecondLevel(request):
                         Q(parent__title=title) &
                         Q(location__in=locas_to_go)
                     ).filter(
-                            Q(publisherForCar=publisherForCar)&
-                            Q(price__range=(int(least_price),int(max_price)))&
-                            Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                            Q(price__range=(int(least_price),int(max_price)))
+                    ).filter(
+                        Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -3510,11 +3696,10 @@ def handleAmlakFilterSecondLevel(request):
                         Q(parent__title=title) &
                         Q(location__in=locas_to_go)
                     ).filter(
-                        Q(publisherForCar=publisherForCar)&
                         Q(ready_to_exchange=True)&
-                        Q(price__range=(int(least_price),int(max_price)))&
-                        Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                        Q(price__range=(int(least_price),int(max_price)))
+                    ).filter(
+                        Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                     ).filter(
                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                     ).filter(
@@ -3526,15 +3711,15 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(publisherForCar=publisherForCar)&
-                                Q(price__range=(int(least_price),int(max_price)))&
-                                Q(production_year__range=(int(minYearOfConstruction),int(maxYearOfConstruction)))&
-                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                                Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  publisherForCar == "همه" else Q(publisherForCar=publisherForCar)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
                                 Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
+
 
     elif title in digitalOrKitchenOrPersonalOrEntertaimentOrSupllies:
 
@@ -3559,10 +3744,10 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(location__in=locas_to_go)&
                                     Q(parent__parent__title=title)
                                 ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(ready_to_exchange=True)&
                                     Q(price__range=(int(least_price),int(max_price)))
-                                  
+                                ).filter(
+                                    Q() if  phoneStatus == "همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -3580,8 +3765,9 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(location__in=locas_to_go)&
                                     Q(parent__parent__title=title)
                                 ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -3591,7 +3777,6 @@ def handleAmlakFilterSecondLevel(request):
                                 ).distinct()
                     else:
                         if exchange:
-
                             print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
                             coms_to_show=Commerical.objects.filter(
                                 Q(city__in=[int(i) for i in province]) | 
@@ -3600,10 +3785,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))&
                                     Q(ready_to_exchange=True)
-
+                                ).filter(
+                                    Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -3617,8 +3802,9 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -3640,10 +3826,10 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(location__in=locas_to_go)&
                                     Q(parent__title=title)
                                 ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(ready_to_exchange=True)&
                                     Q(price__range=(int(least_price),int(max_price)))
-                                   
+                                ).filter(
+                                    Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -3661,8 +3847,9 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(location__in=locas_to_go)&
                                     Q(parent__title=title)
                                 ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -3681,9 +3868,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))&
                                     Q(ready_to_exchange=True)
+                                ).filter(
+                                    Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -3697,8 +3885,9 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                                ).filter(
+                                    Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -3721,9 +3910,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(ready_to_exchange=True)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3733,6 +3923,9 @@ def handleAmlakFilterSecondLevel(request):
                                 ).distinct()
 
                         else:
+                            print("CLICKCKKCKC")
+                            print("CLICKCKKCKC")
+                            print("CLICKCKKCKC")
                             coms_to_show=Commerical.objects.annotate(
                                 img_length=Length("commericalimage")
                             ).filter(
@@ -3740,9 +3933,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))
                             ).filter(
+                                    Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
+                                ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
                                     img_length__gte=1
@@ -3757,22 +3951,25 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(ready_to_exchange=True)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
                                     Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
+                            
                             coms_to_show=Commerical.objects.filter(
                                 Q(city__in=[int(i) for i in province]) &
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price))) 
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3791,9 +3988,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(ready_to_exchange=True)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3810,8 +4008,9 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3827,9 +4026,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(ready_to_exchange=True)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3841,8 +4041,9 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3863,9 +4064,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(ready_to_exchange=True)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3882,8 +4084,9 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3900,9 +4103,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(phone_status=phoneStatus)&
                                 Q(ready_to_exchange=True)&
                                 Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3914,8 +4118,9 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(phone_status=phoneStatus)&
                                 Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3935,9 +4140,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(ready_to_exchange=True)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3954,8 +4160,9 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(phone_status=phoneStatus)&
                                     Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3972,9 +4179,10 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(phone_status=phoneStatus)&
                                 Q(ready_to_exchange=True)&
                                 Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -3986,13 +4194,15 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(phone_status=phoneStatus)&
                                 Q(price__range=(int(least_price),int(max_price)))
+                            ).filter(
+                                Q() if  phoneStatus=="همه" else Q(phone_status=phoneStatus)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
                                 Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                             ).distinct()
+
 
     elif title in services:
 
@@ -5305,6 +5515,7 @@ def handleAmlakFilterSecondLevel(request):
         'maxYearOfConstruction':int(maxYearOfConstruction),
         'min_day_rent_paid_for_house':int(min_day_rent_paid_for_house),
         'max_day_rent_paid_for_house':int(max_day_rent_paid_for_house),
+        'insurance':insurance
 
 
     }
@@ -5357,7 +5568,7 @@ def handleFilterThirdLevel(request):
     anbari=request.GET.get("anbari",False)
     sanadEdari=request.GET.get("sanadEdari",False)
 
-    floor=int(request.GET.get("floor",1))
+    floor=int(request.GET.get("floor",1)) if request.GET.get("floor") else request.GET.get("floor")
 
 
     color=request.GET.get("color","همه")
@@ -5386,14 +5597,7 @@ def handleFilterThirdLevel(request):
     coverSimcart=request.GET.get("coverSimcart","ندارد")
     clothsType=request.GET.get("clothsType","همه")
     dayRent=request.GET.get("dayRent")
-    print("$$$$$$$$$$$$$$$$$$$$$$")
-    print("$$$$$$$$$$$$$$$$$$$$$$")
-    print("$$$$$$$$$$$$$$$$$$$$$$")
-    # print(roomNumber,type(roomNumber))
-    print("$$$$$$$$$$$$$$$$$$$$$$")
-    print("$$$$$$$$$$$$$$$$$$$$$$")
-    print("$$$$$$$$$$$$$$$$$$$$$$")
-    print("$$$$$$$$$$$$$$$$$$$$$$")
+
 
 
     locas_to_go=list(map(
@@ -7253,8 +7457,9 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         Q(day_rent_paid__lte=int(dayRent))&
                                         Q(rooms__gte=roomNumber)&
-                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)          
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))         
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7276,8 +7481,9 @@ def handleFilterThirdLevel(request):
                             ).filter(
                                 Q(day_rent_paid__lte=int(dayRent))&
                                 Q(rooms__gte=roomNumber)&
-                                Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                Q(publisher=publisherForAmlak) 
+                                Q(meter__range=(int(leastMeter),int(maxMeter)))
+                            ).filter(
+                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -7300,8 +7506,9 @@ def handleFilterThirdLevel(request):
                         ).filter(
                             Q(day_rent_paid__lte=int(dayRent))&
                             Q(rooms__gte=roomNumber)&
-                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                            Q(publisher=publisherForAmlak)   
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))
+                        ).filter(
+                            Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -7322,8 +7529,9 @@ def handleFilterThirdLevel(request):
                         ).filter(
                                 Q(day_rent_paid__lte=int(dayRent))&
                                 Q(rooms__gte=roomNumber)&
-                                Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                Q(publisher=publisherForAmlak)    
+                                Q(meter__range=(int(leastMeter),int(maxMeter))) 
+                        ).filter(
+                            Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -7345,8 +7553,9 @@ def handleFilterThirdLevel(request):
                                     ).filter(    
                                             Q(day_rent_paid__lte=int(dayRent))&
                                             Q(rooms__gte=roomNumber)&
-                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)  
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))  
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7364,8 +7573,9 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     Q(day_rent_paid__lte=int(dayRent))&
                                     Q(rooms__gte=roomNumber)&
-                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                    Q(publisher=publisherForAmlak)  
+                                    Q(meter__range=(int(leastMeter),int(maxMeter)))  
+                                ).filter(
+                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -7387,8 +7597,9 @@ def handleFilterThirdLevel(request):
                                         Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
-                                        Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)          
+                                        Q(meter__range=(int(leastMeter),int(maxMeter)))       
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7408,8 +7619,9 @@ def handleFilterThirdLevel(request):
                                 Q(parent__title=title) &Q(parent__id=parent_id)&
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                Q(publisher=publisherForAmlak)
+                                Q(meter__range=(int(leastMeter),int(maxMeter)))
+                            ).filter(
+                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -7430,8 +7642,9 @@ def handleFilterThirdLevel(request):
                             Q(parent__title=title) &Q(parent__id=parent_id)&
                             Q(location__in=locas_to_go)
                         ).filter(
-                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                            Q(publisher=publisherForAmlak)  
+                            Q(meter__range=(int(leastMeter),int(maxMeter)))  
+                        ).filter(
+                            Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -7450,8 +7663,9 @@ def handleFilterThirdLevel(request):
                             Q(parent__title=title) &Q(parent__id=parent_id)&
                             Q(location__in=locas_to_go)
                         ).filter(
-                                Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                Q(publisher=publisherForAmlak)   
+                                Q(meter__range=(int(leastMeter),int(maxMeter)))  
+                        ).filter(
+                            Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                         ).filter(
                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                         ).filter(
@@ -7471,8 +7685,9 @@ def handleFilterThirdLevel(request):
                                         Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(    
-                                            Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)  
+                                            Q(meter__range=(int(leastMeter),int(maxMeter)))
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7488,8 +7703,9 @@ def handleFilterThirdLevel(request):
                                     Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                    Q(publisher=publisherForAmlak)  
+                                    Q(meter__range=(int(leastMeter),int(maxMeter))) 
+                                ).filter(
+                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -7519,10 +7735,11 @@ def handleFilterThirdLevel(request):
                                     Q(parking=True)&
                                     Q(rooms__gte=roomNumber)&
                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                    Q(publisher=publisherForAmlak)&
                                     Q(floor__gte=floor)&
                                     Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                     Q(rent__range=(int(minEjareh),int(maxEjareh)))
+                                ).filter(
+                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -7545,10 +7762,11 @@ def handleFilterThirdLevel(request):
                                     Q(parking=True)&
                                     Q(rooms__gte=roomNumber)&
                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                    Q(publisher=publisherForAmlak)&
                                     Q(floor__gte=floor)&
                                     Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                     Q(rent__range=(int(minEjareh),int(maxEjareh)))
+                                ).filter(
+                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -7571,13 +7789,13 @@ def handleFilterThirdLevel(request):
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                     Q(anbari=True)&
-                                  
                                     Q(rooms__gte=roomNumber)&
                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                    Q(publisher=publisherForAmlak)&
                                     Q(floor__gte=floor)&
                                     Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                     Q(rent__range=(int(minEjareh),int(maxEjareh)))
+                                ).filter(
+                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -7599,10 +7817,11 @@ def handleFilterThirdLevel(request):
                                 ).filter(
                                     Q(rooms__gte=roomNumber)&
                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                    Q(publisher=publisherForAmlak)&
                                     Q(floor__gte=floor)&
                                     Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                     Q(rent__range=(int(minEjareh),int(maxEjareh)))
+                                ).filter(
+                                    Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -7690,14 +7909,14 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                         Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
-                                    ).filter(
-                                        
+                                    ).filter( 
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)&
                                         Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                         Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7724,10 +7943,11 @@ def handleFilterThirdLevel(request):
                                                     Q(parking=True)&
                                                     Q(rooms__gte=roomNumber)&
                                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
                                                     Q(floor__gte=floor)&
                                                     Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                                     Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                            ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                             ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
@@ -7744,14 +7964,14 @@ def handleFilterThirdLevel(request):
                                                 Q(parent__title=title) &Q(parent__id=parent_id)&
                                                 Q(location__in=locas_to_go)
                                             ).filter(
-                                                 
                                                     Q(parking=True)&
                                                     Q(rooms__gte=roomNumber)&
                                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
                                                     Q(floor__gte=floor)&
                                                     Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                                     Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                            ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                             ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
@@ -7772,10 +7992,11 @@ def handleFilterThirdLevel(request):
                                                     Q(anbari=True)&
                                                     Q(rooms__gte=roomNumber)&
                                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
                                                     Q(floor__gte=floor)&
                                                     Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                                     Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                            ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                             ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
@@ -7794,10 +8015,11 @@ def handleFilterThirdLevel(request):
                                             ).filter(
                                                     Q(rooms__gte=roomNumber)&
                                                     Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                                    Q(publisher=publisherForAmlak)&
                                                     Q(floor__gte=floor)&
                                                     Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                                     Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                            ).filter(
+                                                Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                             ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
@@ -7822,10 +8044,11 @@ def handleFilterThirdLevel(request):
                                             Q(parking=True)&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)&
                                             Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                             Q(rent__range=(int(minEjareh),int(maxEjareh))) 
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7840,10 +8063,11 @@ def handleFilterThirdLevel(request):
                                             Q(parking=True)&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)&
                                             Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                             Q(rent__range=(int(minEjareh),int(maxEjareh))) 
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7860,13 +8084,13 @@ def handleFilterThirdLevel(request):
                                     Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(anbari=True)&
-                                        
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)&
                                             Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                             Q(rent__range=(int(minEjareh),int(maxEjareh))) 
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7878,13 +8102,13 @@ def handleFilterThirdLevel(request):
                                     Q(parent__title=title) &Q(parent__id=parent_id)&
                                     Q(location__in=locas_to_go)
                                     ).filter(
-                                           
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)&
                                             Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                             Q(rent__range=(int(minEjareh),int(maxEjareh))) 
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7911,10 +8135,11 @@ def handleFilterThirdLevel(request):
                                             Q(parking=True)&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)&
                                             Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                             Q(rent__range=(int(minEjareh),int(maxEjareh)))  
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7931,14 +8156,14 @@ def handleFilterThirdLevel(request):
                                         Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(
-                                           
                                             Q(parking=True)&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)&
                                             Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                             Q(rent__range=(int(minEjareh),int(maxEjareh)))  
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7961,10 +8186,11 @@ def handleFilterThirdLevel(request):
                                             Q(anbari=True)&
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)&
                                             Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                             Q(rent__range=(int(minEjareh),int(maxEjareh)))  
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -7983,10 +8209,11 @@ def handleFilterThirdLevel(request):
                                     ).filter(
                                             Q(rooms__gte=roomNumber)&
                                             Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                            Q(publisher=publisherForAmlak)&
                                             Q(floor__gte=floor)&
                                             Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                             Q(rent__range=(int(minEjareh),int(maxEjareh)))  
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -8011,10 +8238,11 @@ def handleFilterThirdLevel(request):
                                         Q(parking=True)&
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)&
                                         Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                         Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -8030,10 +8258,11 @@ def handleFilterThirdLevel(request):
                                         Q(parking=True)&
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)&
                                         Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                         Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -8049,15 +8278,15 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(anbari=True)&
-                                       
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)&
                                         Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                         Q(rent__range=(int(minEjareh),int(maxEjareh)))   
                                     ).filter(
-                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
+                                    ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                         Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
@@ -8068,13 +8297,13 @@ def handleFilterThirdLevel(request):
                                         Q(parent__title=title) &Q(parent__id=parent_id)&
                                         Q(location__in=locas_to_go)
                                     ).filter(                                       
-                                    
                                         Q(rooms__gte=roomNumber)&
                                         Q(meter__range=(int(leastMeter),int(maxMeter)))&
-                                        Q(publisher=publisherForAmlak)&
                                         Q(floor__gte=floor)&
                                         Q(vadieh__range=(int(minVadieh),int(maxVadieh)))&
                                         Q(rent__range=(int(minEjareh),int(maxEjareh)))   
+                                    ).filter(
+                                        Q() if publisherForAmlak=="همه" else Q(publisher=publisherForAmlak)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -8578,6 +8807,9 @@ def handleFilterThirdLevel(request):
                                         ).distinct()
                         # else for exchange
                         else:
+                            print("EBIIII")
+                            print("EBIIII")
+                            print("EBIIII")
                             coms_to_show=Commerical.objects.filter(
                                         Q(city__in=[int(i) for i in province]) &
                                         Q(parent__title=title) &Q(parent__id=parent_id)&
@@ -8681,7 +8913,561 @@ def handleFilterThirdLevel(request):
                                         Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                     ).distinct()
 
+        elif title == "اجاره‌ای":
+            if province and smallCities:
+            
+                    if bool(justImg):
 
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) & Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(day_rent_paid__lte=dayRent)&             
+                                        Q(ready_to_exchange=True)  
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+                        
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(day_rent_paid__lte=dayRent)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+
+
+                    # else for image
+                    else:
+                        print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                        if  exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) & Q(parent__id=parent_id)&
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(day_rent_paid__lte=dayRent)& 
+                                Q(ready_to_exchange=True)          
+                            ).filter(
+                                Q() if color == "همه" else (Q(color=color))
+                            ).filter(
+                                Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) & Q(parent__id=parent_id)&
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(day_rent_paid__lte=dayRent)
+                            ).filter(
+                                Q() if color == "همه" else (Q(color=color))
+                            ).filter(
+                                Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+
+            elif province and not smallCities:
+
+                    print("B")
+
+                    if bool(justImg):
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(day_rent_paid__lte=dayRent)& 
+                                                Q(ready_to_exchange=True)
+                                        ).filter(
+                                            Q() if color == "همه" else (Q(color=color))
+                                        ).filter(
+                                            Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                            ).distinct()
+                        
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(day_rent_paid__lte=dayRent) 
+                                        ).filter(
+                                            Q() if color == "همه" else (Q(color=color))
+                                        ).filter(
+                                            Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                            ).distinct()
+
+
+                    # else for image
+
+                    else:
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(day_rent_paid__lte=dayRent)& 
+                                            Q(ready_to_exchange=True)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(day_rent_paid__lte=dayRent)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                            
+            elif not province and smallCities:
+                    print("C")
+
+                    if bool(justImg):
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                           Q(day_rent_paid__lte=dayRent)& 
+                                        Q(ready_to_exchange=True)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                     Q(day_rent_paid__lte=dayRent)
+                                ).filter(
+                                    Q() if color == "همه" else (Q(color=color))
+                                ).filter(
+                                    Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct() 
+                        
+                    # else for image
+                    else:
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(day_rent_paid__lte=dayRent)& 
+                                        Q(ready_to_exchange=True)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                       Q(day_rent_paid__lte=dayRent)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+
+        elif title == "سنگین":
+            if province and smallCities:
+            
+                    if bool(justImg):
+
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) & Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))& 
+                                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&            
+                                        Q(ready_to_exchange=True)  
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+                        
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(city__in=[int(i) for i in province]) | 
+                                        Q(smallCity__in=[int(i) for i in smallCities]) 
+                                    ).filter(
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))& 
+                                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        img_length__gte=1
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+
+
+                    # else for image
+                    else:
+                        print("ELLLLLLLLLLLSSSSSSSSSSSSSSSSSSSSSS")
+                        if  exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) & Q(parent__id=parent_id)&
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(price__range=(int(least_price),int(max_price)))& 
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                Q(ready_to_exchange=True)          
+                            ).filter(
+                                Q() if color == "همه" else (Q(color=color))
+                            ).filter(
+                                Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                            Q(city__in=[int(i) for i in province]) | 
+                                Q(smallCity__in=[int(i) for i in smallCities]) 
+                            ).filter(
+                                Q(parent__title=title) & Q(parent__id=parent_id)&
+                                Q(location__in=locas_to_go)
+                            ).filter(
+                                Q(price__range=(int(least_price),int(max_price)))& 
+                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                            ).filter(
+                                Q() if color == "همه" else (Q(color=color))
+                            ).filter(
+                                Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                            ).filter(
+                                ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                            ).filter(
+                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                            ).distinct()
+
+            elif province and not smallCities:
+
+                    print("B")
+
+                    if bool(justImg):
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(price__range=(int(least_price),int(max_price)))& 
+                                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                                Q(ready_to_exchange=True)
+                                        ).filter(
+                                            Q() if color == "همه" else (Q(color=color))
+                                        ).filter(
+                                            Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                            ).distinct()
+                        
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                        img_length=Length("commericalimage")
+                                        ).filter(
+                                            Q(city__in=[int(i) for i in province]) &
+                                            Q(parent__title=title) &Q(parent__id=parent_id)&
+                                            Q(location__in=locas_to_go)
+                                        ).filter(
+                                                Q(price__range=(int(least_price),int(max_price)))& 
+                                                Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard))) 
+                                        ).filter(
+                                            Q() if color == "همه" else (Q(color=color))
+                                        ).filter(
+                                            Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                        ).filter(
+                                            ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                        ).filter(
+                                                img_length__gte=1
+                                        ).filter(
+                                                Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                            ).distinct()
+
+
+                    # else for image
+
+                    else:
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))& 
+                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))&
+                                            Q(ready_to_exchange=True)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                        Q(city__in=[int(i) for i in province]) &
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                            Q(price__range=(int(least_price),int(max_price)))& 
+                                            Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                            
+            elif not province and smallCities:
+                    print("C")
+
+                    if bool(justImg):
+                        if exchange:
+
+                                coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                    ).filter(
+                                        Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))& 
+                                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))& 
+                                        Q(ready_to_exchange=True)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                            img_length__gte=1
+                                    ).filter(
+                                            Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                        ).distinct()
+                        # else for exchange
+                        else:
+                            coms_to_show=Commerical.objects.annotate(
+                                    img_length=Length("commericalimage")
+                                ).filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                    Q(parent__title=title) &Q(parent__id=parent_id)&
+                                    Q(location__in=locas_to_go)
+                                ).filter(
+                                     Q(price__range=(int(least_price),int(max_price)))& 
+                                     Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                ).filter(
+                                    Q() if color == "همه" else (Q(color=color))
+                                ).filter(
+                                    Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                ).filter(
+                                    ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                ).filter(
+                                        img_length__gte=1
+                                ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct() 
+                        
+                    # else for image
+                    else:
+                        if exchange:
+
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                        Q(price__range=(int(least_price),int(max_price)))& 
+                                        Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))& 
+                                        Q(ready_to_exchange=True)
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
+                        else:
+                            coms_to_show=Commerical.objects.filter(
+                                    Q(smallCity__in=[int(i) for i in smallCities])&
+                                        Q(parent__title=title) &Q(parent__id=parent_id)&
+                                        Q(location__in=locas_to_go)
+                                    ).filter(
+                                       Q(price__range=(int(least_price),int(max_price)))& 
+                                       Q(karkard_mashin__range=(int(minKarkard),int(maxKarkard)))
+                                    ).filter(
+                                        Q() if color == "همه" else (Q(color=color))
+                                    ).filter(
+                                        Q() if publisherForCar =="همه" else Q(publisherForCar=publisherForCar)
+                                    ).filter(
+                                        ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+                                    ).filter(
+                                        Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
+                                    ).distinct()
 
 
     elif title in tablet_and_mobile:
@@ -10009,7 +10795,7 @@ def handleFilterThirdLevel(request):
         'sanadEdari':sanadEdari,
         'parking':parking,
         'anbari':anbari,
-        'floor':int(floor),
+        'floor':int(floor) if floor else floor,
         'internalOrExternal':internalOrExternal,
         'dayRent':int(dayRent) if dayRent else dayRent
     }
@@ -10697,13 +11483,13 @@ class NewCommericalForm(Loginrequired,View):
                                     i.save()
                             new_com.save()
 
-                        elif com_self.title=="اجاره ای":
+                        elif com_self.title=="اجاره‌ای":
                             exchange=self.request.POST.get("exchange",False)
                             publisherForCar=self.request.POST.get("publisherForCar")
                             color=self.request.POST.get("color")
 
                             new_com=Commerical(
-                                    day_rent_paid=price_for_car,city=city,exchange=bool(exchange),
+                                    day_rent_paid=price_for_car,city=city,ready_to_exchange=bool(exchange),
                                     location=location,title=title,detail=detail,publisherForCar=publisherForCar,
                                     user=self.request.user,parent=com_self,color=color
                                 )
