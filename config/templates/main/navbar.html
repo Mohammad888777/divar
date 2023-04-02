@@ -49,21 +49,17 @@
             
 
             <li class="nav-item dropdown">
-                <form action="#" class="search">
+                <form action="{% url 'allSearch' %}" method="get" class="search">
                     <div class="input-group ">
-                        <input type="text" class="form-control" style="width:400px;margin-left:140px" placeholder="Search">
-                        
-                        
+                        <input type="text" name="q" class="form-control" style="width:400px;margin-left:140px" placeholder= " {% if cat_title %} جستجو در {{cat_title}} {% else %}  جتستجو در همه{% endif %}">
                     </div>
                 </form>
-                
             </li>
             
         </ul>
         <ul class="navbar-nav">
             <li><a href="#" class="nav-link" style="margin-top: 8px;"><i class="far fa-user"></i>  دیوار من  </a></li>
-
-            <li><a href="#" class="nav-link" style="margin-top: 8px;"><i class="far fa-comment"></i>  چت  </a></li>
+            <li><a href="{% url 'inbox' %}" class="nav-link" style="margin-top: 8px;"><i class="far fa-comment"></i>  چت  </a></li>
             <li><a href="#" class="nav-link" style="margin-top: 8px;">  پشتیبانی </a></li>
             <li><a href="{% url 'MakeCommerical' %}" class="nav-link"  >  <button class="btn btn-danger">ثبت آگهی</button> </a></li>
         </ul> <!-- list-inline //  -->

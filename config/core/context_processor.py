@@ -9,7 +9,15 @@ def categories(request):
     
     aaa=request.session.get("city_name2",1)
     ci=City.objects.get(id=int(aaa))
-    # print(ci)
+    
+    path=request.path
+    sp=path.split("/")
+    print(sp)
+    cat_title=None
+    match sp[1]:
+        case "eachCategory":
+            cat_title=Commerical.objects.get(id=sp[2]).title
+
 
     coms=Commerical.objects.filter(
         
@@ -36,7 +44,8 @@ def categories(request):
     # print(coms)
     return {
         'cats2':coms,
-       "flag":flag
+       "flag":flag,
+       'cat_title':cat_title
     }
 
 

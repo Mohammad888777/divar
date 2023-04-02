@@ -1,0 +1,329 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
+</head>
+<body>
+    <h1>Adium Concept</h1>
+<div class="window">
+  <aside class="conv-list-view">
+    <header class="conv-list-view__header">
+      <div class="cf">
+        <ul class="close-button-list">
+          <li></li><li></li><li></li>
+        </ul>
+        <ul class="function-list">
+          <li class="icon-lupe"></li>
+        </ul>
+      </div>
+    </header>
+    <ul class="conv-list">
+      {% for t in thread_i_started %}
+            <a href="{% url 'threadView' t.id  %}">
+                <li>
+                    <div class="status">
+                    <i class="status__indicator--unread-message"></i>    
+                    <figure class="status__avatar">
+                        <img src="http://1.gravatar.com/avatar/7ec0cac01b6d505b2bbb2951a722e202?size=80"/>
+                    </figure>
+                    <div class="meta">
+                        <div class="meta__name">{{t.receiver.phone_number}}</div>
+                        <div class="meta__sub--dark">{{t.message_set.all.last.text}}</div>
+                    </div>
+                    </div>
+                </li>      
+            </a>
+        {% endfor %}
+
+        {% for t in thread_he_started %}
+            <a href="{% url 'threadView' t.id  %}">
+                <li>
+                    <div class="status">
+                    <i class="status__indicator--unread-message"></i>    
+                    <figure class="status__avatar">
+                        <img src="http://1.gravatar.com/avatar/7ec0cac01b6d505b2bbb2951a722e202?size=80"/>
+                    </figure>
+                    <div class="meta">
+                        <div class="meta__name">{{t.sender.phone_number}}</div>
+                        <div class="meta__sub--dark">{{t.message_set.all.last.text}}</div>
+                    </div>
+                    </div>
+                </li>      
+            </a>
+        {% endfor %}
+    </ul>
+  </aside>
+  <section class="chat-view">
+    <header class="chat-view__header">
+      <div class="cf">
+        <div class="status">
+          <i class="status__indicator--online"></i>  
+          <div class="meta">
+            <div class="meta__name">
+              
+                {% if thread.sender == request.user %} 
+                  {{thread.receiver.phone_number}} 
+                {% elif thread.receiver == request.user  %}
+                  {{thread.sender.phone_number}}
+                {% endif %}
+              
+
+              <br>
+
+            </div>
+
+            <div class="meta__sub--light">
+              <a href="{% url 'CommericalDetail' thread.commerical.id %}">
+                <img src="{{thread.commerical.commericalimage_set.first.image.url}}" style="height:25px;width:25px" /> {{thread.commerical.title}}
+              </a>
+            </div>
+            <br>
+
+          </div>
+        </div>
+        <ul class="function-list">
+          <li class="icon-cloud"></li>
+          <li class="icon-clock"></li>
+          <li class="icon-dots"></li>
+        </ul>
+      </div>
+    </header>
+    <section class="message-view" style="overflow-y: scroll; height:400px;">
+      {% for m in messages %}
+        {% if request.user == m.receiver_user %}
+
+            <div class="message--send mm"  data-id="{{m.id}}" >
+              <p class="text-center">{{m.iranTimeCreated}}</p>
+            <div class="message__bubble--send">
+              {{m.text}}000
+            </div>
+            <!-- <figure class="message__avatar">
+              <img src="{{m.thread.commerical.commericalimage_set.first.image.url}}" />
+            </figure> -->
+
+
+
+
+            <!-- <ul class="list-group message_item-{{m.id}} "  style="display:none">
+              <li class="list-group-item">حذف پیام</li>
+              <li class="list-group-item">ویرایش پیام</li>
+    
+            </ul> -->
+
+
+            </div>
+            <div class="cf"></div>
+        {% elif request.user == m.sender_user %}
+
+          <div class="message mm"  data-id="{{m.id}}"  data-number="{{m.sender_user.phone_number}}">
+            <p class="text-center">{{m.iranTimeCreated}}</p>
+            <div class="message__bubble">
+              {{m.text}}
+            </div>
+
+            <ul class="list-group message_item-{{m.id}} "   style="display:none">
+              <li class="list-group-item each-message-delete">حذف پیام</li>
+              <li class="list-group-item">ویرایش پیام</li>
+    
+            </ul>
+            
+          </div>      <div class="cf"></div>
+          
+        {% endif %}
+
+        
+
+
+      {% endfor %}  
+   
+    </section>
+    <footer class="chat-view__input">
+      <div class="input"><input  id ="message_input"/><span class="input__emoticon"></span></div>
+      <div class="status">
+        <figure class="status__avatar--small">
+          <img src="http://1.gravatar.com/avatar/89b9501f0f9e3020aab173f9a5a47683?size=80" />
+        </figure>
+      </div>
+    </footer>
+  </section>
+</div>
+<footer class="credit">
+  <a href="http://elpassion.pl/adium-concept/adium.html">Adium Concept</a> by <a href="https://twitter.com/dliberadzki">Dawid Liberadzki</a> and <a href="https://twitter.com/oskar">Oskar Krawczyk</a>. <br />Pure HTML/CSS3 Version by <a href="https://twitter.com/FWeinb">Fabrice Weinberg</a>
+</footer>
+<!-- partial -->
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+<p id="other" style="display:none;" >
+
+  {% if thread.sender == request.user %} 
+    {{thread.receiver.phone_number}} 
+  {% elif thread.receiver == request.user  %}
+    {{thread.sender.phone_number}}
+  {% endif %}
+
+</p>
+
+
+
+<script type="text/javascript" >
+
+  $(document).ready(function(){
+    var parsed_message
+
+    var receiver=$("#other").html().trim()
+    var thread_id="{{thread.id}}"
+
+    var socket = new WebSocket(
+      'ws://' + window.location.host +
+      '/ws/chat/' + thread_id + '/');
+    
+
+      socket.onmessage=function(e){
+
+      
+        var parsed_message=JSON.parse(e.data)
+
+        console.log(e.data)
+        var main_section=$(".message-view");
+        var mySelf="{{request.user.phone_number}}"
+        console.log(mySelf,typeof mySelf)
+        console.log(parsed_message["sender"],typeof parsed_message["sender"])
+
+
+        if(mySelf===parsed_message["receiver"]){
+
+          main_section.append(`
+            <div class="message--send mm"   data-id="${parsed_message["id"]}">
+              <p class="text-center">${parsed_message["time"]}</p>
+              <div class="message__bubble--send">
+                ${parsed_message["text"]}
+              </div>
+              <figure class="message__avatar">
+                <img src="${parsed_message["image"]}" />
+              </figure>
+              </div>
+              <div class="cf"></div>
+          `)
+
+        }else{
+
+          var my_username="{{request.user.phone_number}}";
+
+          main_section.append(`
+              <div class="message mm" data-id="${parsed_message["id"]}" data-number="${my_username}">
+
+                <p class="text-center">${parsed_message["time"]}</p>
+                <div class="message__bubble">
+                  ${parsed_message["text"]}
+                </div>
+
+                <ul class="list-group message_item-${parsed_message["id"]} "   >
+                  <li class="list-group-item each-message-delete">حذف پیام</li>
+                  <li class="list-group-item">ویرایش پیام</li>
+                </ul>
+
+              </div>      
+              <div class="cf"></div>
+          `)
+        }
+
+
+      } 
+  
+      socket.onclose = function(e) {
+      console.error('Socket closed unexpectedly');
+    };
+  
+  
+    $("#message_input").focus();
+    $("#message_input").keyup(function(e){
+  
+        if (e.keyCode === 13) {  
+          
+          var message_value=$(this).val();
+          
+          var my_username="{{request.user.phone_number}}";
+  
+  
+  
+          const sender_username="{{request.user.phone_number}}"
+        
+        
+          socket.send(JSON.stringify({'thread_id': thread_id, 'receiver': receiver, 'text': message_value,'sender':sender_username}));
+          $(this).val("")
+        }
+  
+    })
+    
+
+    
+    $(".mm").contextmenu(function(e){
+      var id_value=$(this).attr("data-id")
+      e.preventDefault()
+      
+      var current_user_number="{{request.user.phone_number}}"
+      var message_phone_number=$(this).attr("data-number")
+
+      if(current_user_number===message_phone_number){
+
+        $(`.message_item-${id_value}`).slideToggle()
+
+
+      }else{
+
+        console.log("noe")
+      }
+
+
+
+    })
+
+
+    $(".each-message-delete").click(function(){
+
+      var thread_id="{{thread.id}}"
+      var parent_class=$(this).parent("ul").attr("class")
+
+      var splited=parent_class.split("-")
+      var message_id=splited[splited.length-1].trim()
+
+      $.ajax({
+        type:"POST",
+        url:`http://127.0.0.1:8000/delete_message/${thread_id}/${message_id}/`,
+        data:{
+          'csrfmiddlewaretoken':"{{csrf_token}}",
+        },
+        dataType:"json",
+        success:function(data){
+
+            if(data.delete){
+                var msg=$(`.mm[data-id=${message_id}]`)
+              msg.remove()
+                
+            }   
+        }
+      })
+
+
+
+
+    })
+
+
+
+  })
+
+
+</script>
+
+
+</body>
+</html>
+
+

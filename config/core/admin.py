@@ -10,7 +10,7 @@ class CommericalAdmin(admin.ModelAdmin):
 
     list_display=[
 
-        "title","parent","city","iranTimeCreated",
+        "title","user","parent","city","iranTimeCreated",
         "price",'com_status','location',
         'publisher','ready_to_exchange','phone_status',
         'publisherForCar',

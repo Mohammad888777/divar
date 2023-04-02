@@ -695,12 +695,32 @@
 
 
                                  <select name="" id="phoneStatus">
-                                     <option value="همه" selected="selected"></option>
-                                     <option value="همه" >همه</option>
-                                     <option value="نو">نو</option>
-                                     <option value="در حد نو">در حد نو</option>
-                                     <option value="کارکرده">کارکرده</option>
 
+                                    {% if phoneStatus == "همه" %}
+                                        <option value="همه" selected="selected">همه</option>
+                                    {% else %}
+                                        <option value="همه" >همه</option>
+                                    {% endif %}
+
+                                    {% if phoneStatus == "نو" %}
+                                        <option value="نو" selected="selected">نو</option>
+                                    {% else %}
+                                        <option value="نو" >نو</option>
+                                    {% endif %}
+
+                                    {% if phoneStatus == "در حد نو" %}
+                                        <option value="در حد نو" selected="selected">در حد نو</option>
+                                    {% else %}
+                                        <option value="در حد نو" >در حد نو</option>
+                                    {% endif %}
+
+                                    {% if phoneStatus == "کارکرده" %}
+                                        <option value="کارکرده" selected="selected">کارکرده</option>
+                                    {% else %}
+                                        <option value="کارکرده" >کارکرده</option>
+                                    {% endif %}
+
+                                    
                                  </select>
                                  <br>
                                  <br>
@@ -709,33 +729,99 @@
                                      <!--  اصالت موبایل -->
                                      <p>اصالت کالا</p>
                                      <select name="" id="esalat">
-                                         <option value="همه" selected="selected"></option>
-                                         <option value="همه">همه</option>
-                                         <option value="اصل">اصل</option>
-                                         <option value="تقلبی">تقلبی</option>
+
+                                        {% if esalat == "همه" %}
+                                            <option value="همه" selected="selected">همه</option>
+                                        {% else %}
+                                            <option value="همه">همه</option>
+                                         {% endif %}
+
+                                         {% if esalat == "اصل" %}
+                                            <option value="اصل" selected="selected">اصل</option>
+                                        {% else %}
+                                            <option value="اصل">اصل</option>
+                                         {% endif %}
+
+                                         {% if esalat == "تقلبی" %}
+                                            <option value="تقلبی" selected="selected">تقلبی</option>
+                                        {% else %}
+                                            <option value="تقلبی">تقلبی</option>
+                                         {% endif %}
+
                                      </select>
                                      <br><br><br>
                                      <!-- تعداد سیم کارت -->
                                      <p>تعداد سیم کارت</p>
                                      <select name="" id="simcartNums">
-                                         <option value="1" selected="selected"></option>
-                                         <option value="1">1</option>
-                                         <option value="2">2</option>
-                                         <option value="3">3</option>
+                                        
+                                        {% if simcartNums == 1 %}
+                                            <option value="1" selected="selected">1</option>
+                                        {% else %}
+                                            <option value="1">1</option>
+                                        {% endif %}
+
+                                        {% if simcartNums == 2 %}
+                                            <option value="2" selected="selected">2</option>
+                                        {% else %}
+                                            <option value="2">2</option>
+                                        {% endif %}
+
+                                        {% if simcartNums == 3 %}
+                                            <option value="3" selected="selected">3</option>
+                                        {% else %}
+                                            <option value="3">3</option>
+                                        {% endif %}
+
+                                      
                                      </select>
                                      <br><br><br>
 
                                      <p>سایز مموری</p>
                                      <!-- سایز مموری -->
                                      <select name="" id="memorySize">
-                                         <option value="4" selected="selected"></option>
-                                         <option value="4">4 گیگ</option>
-                                         <option value="8">8 گیگ</option>
-                                         <option value="16">16 گیگ</option>
-                                         <option value="32">32 گیگ</option>
-                                         <option value="64">64 گیگ</option>
-                                         <option value="128">128 گیگ</option>
-                                         <option value="256">256 گیگ</option>
+
+                                        {% if memorySize == 4 %}
+                                            <option value="4" selected="selected">4 گیگ</option>
+                                        {% else %}
+                                            <option value="4">4 گیگ</option>
+                                        {% endif %}
+
+                                        {% if memorySize == 8 %}
+                                            <option value="8" selected="selected">8 گیگ</option>
+                                        {% else %}
+                                            <option value="8">8 گیگ</option>
+                                        {% endif %}
+
+                                        {% if memorySize == 16 %}
+                                            <option value="16" selected="selected">16 گیگ</option>
+                                        {% else %}
+                                            <option value="16">16 گیگ</option>
+                                        {% endif %}
+
+                                        {% if memorySize == 32 %}
+                                            <option value="32" selected="selected">32 گیگ</option>
+                                        {% else %}
+                                            <option value="32">32 گیگ</option>
+                                        {% endif %}
+
+                                        {% if memorySize == 64 %}
+                                            <option value="64" selected="selected">64 گیگ</option>
+                                        {% else %}
+                                            <option value="64">64 گیگ</option>
+                                        {% endif %}
+
+                                        {% if memorySize == 128 %}
+                                            <option value="128" selected="selected">128 گیگ</option>
+                                        {% else %}
+                                            <option value="128">128 گیگ</option>
+                                        {% endif %}
+
+                                        {% if memorySize == 256 %}
+                                            <option value="256" selected="selected">256 گیگ</option>
+                                        {% else %}
+                                            <option value="256">256 گیگ</option>
+                                        {% endif %}
+
                                      </select>
                                      <br><br><br>
                                      
@@ -847,6 +933,8 @@
                              <br>
                              <br>
                              {% if catMain.title in cloths_accessory %}
+                                <p>نوع لباس</p>
+
                                  <select name="" id="clothsType">
                                     {% if clothsType == "همه" %}
                                         <option value="همه" selected="selected">همه</option>
@@ -3561,7 +3649,7 @@
         
                 <div class="row">
                     {% for c in coms_to_show %}
-
+                        <h1>{{c.img_length}}</h1>
                         <div class="col-md-4">
                             {% if c.com_status == "فوری" %}
                                 <span class="badge badge-danger" >فوری </span>

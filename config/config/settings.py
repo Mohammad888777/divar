@@ -16,7 +16,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'daphne',
     'accounts',
-    'chat',
+    # 'chat',
     'core',
     'jalali_date',
     'mathfilters',
@@ -39,6 +39,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.AjaxMiddleware'
 ]
 
 AUTH_USER_MODEL="accounts.User"

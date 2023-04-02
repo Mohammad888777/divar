@@ -1,0 +1,105 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+
+</head>
+<body>
+    <h1>Adium Concept</h1>
+<div class="window">
+  <aside class="conv-list-view">
+    <header class="conv-list-view__header">
+      <div class="cf">
+        <ul class="close-button-list">
+          <li></li><li></li><li></li>
+        </ul>
+        <ul class="function-list">
+          <li class="icon-lupe"></li>
+        </ul>
+      </div>
+    </header>
+    <ul class="conv-list">
+        {% for t in thread_i_started %}
+            <a href="{% url 'threadView' t.id  %}">
+                <li>
+                    <div class="status">
+                    <i class="status__indicator--unread-message"></i>    
+                    <figure class="status__avatar">
+                        <img src="http://1.gravatar.com/avatar/7ec0cac01b6d505b2bbb2951a722e202?size=80"/>
+                    </figure>
+                    <div class="meta">
+                        <div class="meta__name">{{t.receiver.phone_number}}</div>
+                        <div class="meta__sub--dark">{{t.message_set.all.last.text}}</div>
+                    </div>
+                    </div>
+                </li>      
+            </a>
+        {% endfor %}
+
+        {% for t in thread_he_started %}
+            <a href="{% url 'threadView' t.id  %}">
+                <li>
+                    <div class="status">
+                    <i class="status__indicator--unread-message"></i>    
+                    <figure class="status__avatar">
+                        <img src="http://1.gravatar.com/avatar/7ec0cac01b6d505b2bbb2951a722e202?size=80"/>
+                    </figure>
+                    <div class="meta">
+                        <div class="meta__name">{{t.sender.phone_number}}</div>
+                        <div class="meta__sub--dark">{{t.message_set.all.last.text}}</div>
+                    </div>
+                    </div>
+                </li>      
+            </a>
+        {% endfor %}
+    </ul>
+    
+  </aside>
+  <section class="chat-view">
+    <header class="chat-view__header">
+      <div class="cf">
+        <div class="status">
+          <i class="status__indicator--online"></i>  
+          <div class="meta">
+            <div class="meta__name">Tim Pietrusky</div>
+            <div class="meta__sub--light">Adium that ass!</div>
+          </div>
+        </div>
+        <ul class="function-list">
+          <li class="icon-cloud"></li>
+          <li class="icon-clock"></li>
+          <li class="icon-dots"></li>
+        </ul>
+      </div>
+    </header>
+    <section class="message-view">
+
+      
+    </section>
+    <footer class="chat-view__input">
+      <div class="input"><input /><span class="input__emoticon"></span></div>
+      <div class="status">
+        <figure class="status__avatar--small">
+          <img src="http://1.gravatar.com/avatar/89b9501f0f9e3020aab173f9a5a47683?size=80" />
+        </figure>
+      </div>
+    </footer>
+  </section>
+</div>
+<footer class="credit">
+  <a href="http://elpassion.pl/adium-concept/adium.html">Adium Concept</a> by <a href="https://twitter.com/dliberadzki">Dawid Liberadzki</a> and <a href="https://twitter.com/oskar">Oskar Krawczyk</a>. <br />Pure HTML/CSS3 Version by <a href="https://twitter.com/FWeinb">Fabrice Weinberg</a>
+</footer>
+<!-- partial -->
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+
+
+</body>
+</html>
+
+

@@ -137,7 +137,7 @@ class Commerical(models.Model):
     # کالاهای دیجیتال
     phone_status=models.CharField(max_length=100,null=True,blank=True,choices=PHONE_STATUS,default="همه")
     esalat=models.CharField(max_length=100,null=True,blank=True,choices=ORIGINAL_OR_NOT,default="همه")
-    sim_cart_number=models.IntegerField(null=True,blank=True)
+    sim_cart_number=models.IntegerField(null=True,blank=True,default=1)
     memory_size=models.IntegerField(null=True,blank=True,choices=MEMORYSIZE,default=4)
     ram_size=models.IntegerField(null=True,blank=True)
     window_size=models.CharField(max_length=100,null=True,blank=True)
@@ -289,7 +289,7 @@ class Thread(models.Model):
 
 class Message(models.Model):
 
-    thread=models.ForeignKey(Thread,on_delete=models.CASCADE,null=True,blank=True,related_name="+")
+    thread=models.ForeignKey(Thread,on_delete=models.CASCADE,null=True,blank=True,related_name="thread")
     sender_user=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True,related_name="sender_user")
     receiver_user=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True,related_name="receiver_user")
     text=models.TextField(null=True)

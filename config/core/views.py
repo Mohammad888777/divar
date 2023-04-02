@@ -29,7 +29,7 @@ from .utilty import    (findTimeDiffrence,title_not_to_be,
     themSelf,male_or_female,social,employment
                      )
 
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from django.core import serializers
@@ -40,7 +40,8 @@ from .utils2 import (
     cloths_accessory,justFloor,for_daily_rent,mosharekat
 
 )
-
+from accounts.models import User
+from .decorators import beMessageOwner
 
 def lcoationIdsssss():
     return [i.id for i in Location.objects.all()]
@@ -74,7 +75,6 @@ class CityView(View):
         ci=City.objects.filter(id__in=bigInJson)
 
         
-    
 
         filtred_coms=None
         if big and ls:
@@ -213,10 +213,7 @@ def allComsFilter(request):
                 ).filter(
                         Q(city__in=[int(i) for i in province]) | 
                         Q(smallCity__in=[int(i) for i in smallCities]) 
-                            
-
                     ).filter(
-                        # Q(parent__parent__parent__title="املاک") &
                         Q(location__in=locas_to_go)
                     ).filter(
                         Q(price__range=(int(least_price),int(max_price))) 
@@ -4318,7 +4315,7 @@ def handleAmlakFilterSecondLevel(request):
                             Q(smallCity__in=[int(i) for i in smallCities]) 
                         ).filter(
                             Q(location__in=locas_to_go)&
-                            Q(parent__title=title)
+                            Q(parent__parent__title=title)
                         ).filter(
                             Q(ready_to_exchange=True)&
                             Q(price__range=(int(least_price),int(max_price)))
@@ -4337,7 +4334,7 @@ def handleAmlakFilterSecondLevel(request):
                             Q(smallCity__in=[int(i) for i in smallCities]) 
                         ).filter(
                             Q(location__in=locas_to_go)&
-                            Q(parent__title=title)
+                            Q(parent__parent__title=title)
                         ).filter(
                             Q(price__range=(int(least_price),int(max_price)))
                         ).filter(
@@ -4355,7 +4352,7 @@ def handleAmlakFilterSecondLevel(request):
                         Q(city__in=[int(i) for i in province]) | 
                             Q(smallCity__in=[int(i) for i in smallCities]) 
                         ).filter(
-                        Q(parent__title=title) &
+                        Q(parent__parent__title=title)&
                         Q(location__in=locas_to_go)
                         ).filter(
                             Q(publisherForCar=publisherForCar)&
@@ -4372,7 +4369,7 @@ def handleAmlakFilterSecondLevel(request):
                                 Q(city__in=[int(i) for i in province]) | 
                                 Q(smallCity__in=[int(i) for i in smallCities]) 
                                 ).filter(
-                                Q(parent__title=title) &
+                               Q(parent__parent__title=title)&
                                 Q(location__in=locas_to_go)
                                 ).filter(
                                     Q(price__range=(int(least_price),int(max_price)))
@@ -4393,7 +4390,7 @@ def handleAmlakFilterSecondLevel(request):
                             img_length=Length("commericalimage")
                         ).filter(
                             Q(city__in=[int(i) for i in province]) &
-                            Q(parent__title=title) &
+                            Q(parent__parent__title=title)&
                             Q(location__in=locas_to_go)
                         ).filter(
                                 Q(ready_to_exchange=True)&
@@ -4411,7 +4408,7 @@ def handleAmlakFilterSecondLevel(request):
                             img_length=Length("commericalimage")
                         ).filter(
                             Q(city__in=[int(i) for i in province]) &
-                            Q(parent__title=title) &
+                            Q(parent__parent__title=title)&
                             Q(location__in=locas_to_go)
                         ).filter(
                                 Q(price__range=(int(least_price),int(max_price)))
@@ -4427,7 +4424,7 @@ def handleAmlakFilterSecondLevel(request):
 
                             coms_to_show=Commerical.objects.filter(
                                 Q(city__in=[int(i) for i in province]) &
-                                Q(parent__title=title) &
+                                Q(parent__parent__title=title)&
                                 Q(location__in=locas_to_go)
                             ).filter(
                                     Q(ready_to_exchange=True)&
@@ -4438,9 +4435,12 @@ def handleAmlakFilterSecondLevel(request):
                                     Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
                                 ).distinct()
                         else:
+                            print("LASLSLLSALASLASLTT")
+                            print("LASLSLLSALASLASLTT")
+                            print("LASLSLLSALASLASLTT")
                             coms_to_show=Commerical.objects.filter(
                                 Q(city__in=[int(i) for i in province]) &
-                                Q(parent__title=title) &
+                                Q(parent__parent__title=title)&
                                 Q(location__in=locas_to_go)
                             ).filter(
                                     Q(price__range=(int(least_price),int(max_price)))
@@ -4460,7 +4460,7 @@ def handleAmlakFilterSecondLevel(request):
                     img_length=Length("commericalimage")
                     ).filter(
                         Q(smallCity__in=[int(i) for i in smallCities])&
-                        Q(parent__title=title) &
+                       Q(parent__parent__title=title)&
                         Q(location__in=locas_to_go)
                     ).filter(
                             Q(ready_to_exchange=True)&
@@ -4478,7 +4478,7 @@ def handleAmlakFilterSecondLevel(request):
                     img_length=Length("commericalimage")
                     ).filter(
                         Q(smallCity__in=[int(i) for i in smallCities])&
-                        Q(parent__title=title) &
+                       Q(parent__parent__title=title)&
                         Q(location__in=locas_to_go)
                     ).filter(
                             Q(price__range=(int(least_price),int(max_price)))
@@ -4493,7 +4493,7 @@ def handleAmlakFilterSecondLevel(request):
                 if exchange:
                     coms_to_show=Commerical.objects.filter(
                         Q(smallCity__in=[int(i) for i in smallCities])&
-                        Q(parent__title=title) &
+                        Q(parent__parent__title=title)&
                         Q(location__in=locas_to_go)
                     ).filter(
                         Q(ready_to_exchange=True)&
@@ -4506,7 +4506,7 @@ def handleAmlakFilterSecondLevel(request):
                 else:
                         coms_to_show=Commerical.objects.filter(
                             Q(smallCity__in=[int(i) for i in smallCities])&
-                            Q(parent__title=title) &
+                          Q(parent__parent__title=title)&
                             Q(location__in=locas_to_go)
                         ).filter(
                             Q(price__range=(int(least_price),int(max_price)))
@@ -9488,13 +9488,17 @@ def handleFilterThirdLevel(request):
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(phone_status=phoneStatus)&
-                                            Q(esalat=esalat)&
                                             Q(sim_cart_number__gte=simcartNums)&
-                                            Q(color=color)&
                                             Q(memory_size__gte=memorySize)&
-                                            Q(cover_simcart=coverSimcart)&
                                             Q(ready_to_exchange=True)
+                                        ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
@@ -9514,12 +9518,16 @@ def handleFilterThirdLevel(request):
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(phone_status=phoneStatus)&
-                                            Q(esalat=esalat)&
                                             Q(sim_cart_number__gte=simcartNums)&
-                                            Q(color=color)&
-                                            Q(memory_size__gte=memorySize)&
-                                            Q(cover_simcart=coverSimcart)
+                                            Q(memory_size__gte=memorySize)
+                                        ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
@@ -9543,14 +9551,18 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(phone_status=phoneStatus)&
-                                        Q(esalat=esalat)&
                                         Q(sim_cart_number__gte=simcartNums)&
-                                        Q(color=color)&
                                         Q(memory_size__gte=memorySize)&
-                                        Q(cover_simcart=coverSimcart)&
                                         Q(ready_to_exchange=True)  
                                     ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
+                                        ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                         Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
@@ -9566,13 +9578,17 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(phone_status=phoneStatus)&
-                                        Q(esalat=esalat)&
                                         Q(sim_cart_number__gte=simcartNums)&
-                                        Q(color=color)&
-                                        Q(memory_size__gte=memorySize)&
-                                        Q(cover_simcart=coverSimcart)
+                                        Q(memory_size__gte=memorySize)
                                     ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
+                                        ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                         Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
@@ -9589,18 +9605,22 @@ def handleFilterThirdLevel(request):
                                         img_length=Length("commericalimage")
                                     ).filter(
                                         Q(city__in=[int(i) for i in province]) &
-                                        Q(parent__parent__title=title) &
+                                         Q(parent__title=title) &
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(phone_status=phoneStatus)&
-                                            Q(esalat=esalat)&
                                             Q(sim_cart_number__gte=simcartNums)&
-                                            Q(color=color)&
                                             Q(memory_size__gte=memorySize)&
-                                            Q(cover_simcart=coverSimcart)&
                                             Q(ready_to_exchange=True)  
                                     ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
+                                        ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                             img_length__gte=1
@@ -9614,17 +9634,21 @@ def handleFilterThirdLevel(request):
                                         img_length=Length("commericalimage")
                                     ).filter(
                                         Q(city__in=[int(i) for i in province]) &
-                                        Q(parent__parent__title=title) &
+                                         Q(parent__title=title) &
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(phone_status=phoneStatus)&
-                                            Q(esalat=esalat)&
                                             Q(sim_cart_number__gte=simcartNums)&
-                                            Q(color=color)&
-                                            Q(memory_size__gte=memorySize)&
-                                            Q(cover_simcart=coverSimcart)
+                                            Q(memory_size__gte=memorySize)
                                     ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
+                                        ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                             img_length__gte=1
@@ -9635,7 +9659,7 @@ def handleFilterThirdLevel(request):
                         # else for image
 
                         else:
-                            if exhange:
+                            if exchange:
 
                                 coms_to_show=Commerical.objects.filter(
                                         Q(city__in=[int(i) for i in province]) &
@@ -9643,13 +9667,17 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(phone_status=phoneStatus)&
-                                            Q(esalat=esalat)&
                                             Q(sim_cart_number__gte=simcartNums)&
-                                            Q(color=color)&
                                             Q(memory_size__gte=memorySize)&
-                                            Q(cover_simcart=coverSimcart)&
                                             Q(ready_to_exchange=True) 
+                                        ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
@@ -9664,12 +9692,16 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(phone_status=phoneStatus)&
-                                            Q(esalat=esalat)&
                                             Q(sim_cart_number__gte=simcartNums)&
-                                            Q(color=color)&
-                                            Q(memory_size__gte=memorySize)&
-                                            Q(cover_simcart=coverSimcart)
+                                            Q(memory_size__gte=memorySize)
+                                        ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
@@ -9689,13 +9721,17 @@ def handleFilterThirdLevel(request):
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                                 Q(price__range=(int(least_price),int(max_price)))&
-                                                Q(phone_status=phoneStatus)&
-                                                Q(esalat=esalat)&
                                                 Q(sim_cart_number__gte=simcartNums)&
-                                                Q(color=color)&
                                                 Q(memory_size__gte=memorySize)&
-                                                Q(cover_simcart=coverSimcart)&
                                                 Q(ready_to_exchange=True)   
+                                        ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
@@ -9713,12 +9749,16 @@ def handleFilterThirdLevel(request):
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                                 Q(price__range=(int(least_price),int(max_price)))&
-                                                Q(phone_status=phoneStatus)&
-                                                Q(esalat=esalat)&
                                                 Q(sim_cart_number__gte=simcartNums)&
-                                                Q(color=color)&
-                                                Q(memory_size__gte=memorySize)&
-                                                Q(cover_simcart=coverSimcart)  
+                                                Q(memory_size__gte=memorySize)
+                                        ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
@@ -9737,14 +9777,18 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(phone_status=phoneStatus)&
-                                        Q(esalat=esalat)&
                                         Q(sim_cart_number__gte=simcartNums)&
-                                        Q(color=color)&
                                         Q(memory_size__gte=memorySize)&
-                                        Q(cover_simcart=coverSimcart)&
                                         Q(ready_to_exchange=True)   
                                     ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
+                                        ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
                                         Q(com_status="فوری") if instatnceComs=="فوری" else  (Q(com_status= "عادی")| Q(com_status= "فوری"))
@@ -9758,12 +9802,16 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(phone_status=phoneStatus)&
-                                        Q(esalat=esalat)&
                                         Q(sim_cart_number__gte=simcartNums)&
-                                        Q(color=color)&
-                                        Q(memory_size__gte=memorySize)&
-                                        Q(cover_simcart=coverSimcart)
+                                        Q(memory_size__gte=memorySize)
+                                    ).filter(
+                                            Q() if coverSimcart=="ندارد" else Q(cover_simcart=coverSimcart)
+                                        ).filter(
+                                        Q() if esalat == "همه" else Q(esalat=esalat)
+                                    ).filter(
+                                        Q() if color == "همه" else  Q(color=color)
+                                    ).filter(
+                                        Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -9789,12 +9837,15 @@ def handleFilterThirdLevel(request):
                                             Q(location__in=locas_to_go)
                                         ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(phone_status=phoneStatus)&
-                                            Q(esalat=esalat)&
                                             Q(sim_cart_number__gte=simcartNums)&
-                                            Q(color=color)&
                                             Q(memory_size__gte=memorySize)&
                                             Q(ready_to_exchange=True)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
@@ -9816,10 +9867,13 @@ def handleFilterThirdLevel(request):
                                         ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
                                             Q(phone_status=phoneStatus)&
-                                            Q(esalat=esalat)&
-                                            Q(sim_cart_number__gte=simcartNums)&
-                                            Q(color=color)&
                                             Q(memory_size__gte=memorySize)
+                                        ).filter(
+                                            Q() if esalat == "همه" else Q(esalat=esalat)
+                                        ).filter(
+                                            Q() if color == "همه" else  Q(color=color)
+                                        ).filter(
+                                            Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                         ).filter(
                                             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                         ).filter(
@@ -9843,12 +9897,15 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(phone_status=phoneStatus)&
-                                        Q(esalat=esalat)&
                                         Q(sim_cart_number__gte=simcartNums)&
-                                        Q(color=color)&
                                         Q(memory_size__gte=memorySize)&
                                         Q(ready_to_exchange=True)  
+                                    ).filter(
+                                        Q() if esalat == "همه" else Q(esalat=esalat)
+                                    ).filter(
+                                        Q() if color == "همه" else  Q(color=color)
+                                    ).filter(
+                                        Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -9865,11 +9922,14 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(phone_status=phoneStatus)&
-                                        Q(esalat=esalat)&
                                         Q(sim_cart_number__gte=simcartNums)&
-                                        Q(color=color)&
                                         Q(memory_size__gte=memorySize)
+                                    ).filter(
+                                        Q() if esalat == "همه" else Q(esalat=esalat)
+                                    ).filter(
+                                        Q() if color == "همه" else  Q(color=color)
+                                    ).filter(
+                                        Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -9887,17 +9947,19 @@ def handleFilterThirdLevel(request):
                                     img_length=Length("commericalimage")
                                 ).filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__parent__title=title) &
+                                     Q(parent__title=title) &
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(phone_status=phoneStatus)&
-                                        Q(esalat=esalat)&
                                         Q(sim_cart_number__gte=simcartNums)&
-                                        Q(color=color)&
                                         Q(memory_size__gte=memorySize)&
-                                       
                                         Q(ready_to_exchange=True)  
+                                ).filter(
+                                    Q() if esalat == "همه" else Q(esalat=esalat)
+                                ).filter(
+                                    Q() if color == "همه" else  Q(color=color)
+                                ).filter(
+                                    Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -9908,19 +9970,25 @@ def handleFilterThirdLevel(request):
                     
                         # else for exhange
                         else:
+                            print("BOBOBOOBOOOBOBOMMMMM")
+                            print("BOBOBOOBOOOBOBOMMMMM")
+                            print("BOBOBOOBOOOBOBOMMMMM")
                             coms_to_show=Commerical.objects.annotate(
                                     img_length=Length("commericalimage")
                                 ).filter(
                                     Q(city__in=[int(i) for i in province]) &
-                                    Q(parent__parent__title=title) &
+                                     Q(parent__title=title) &
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(phone_status=phoneStatus)&
-                                        Q(esalat=esalat)&
                                         Q(sim_cart_number__gte=simcartNums)&
-                                        Q(color=color)&
                                         Q(memory_size__gte=memorySize)
+                                ).filter(
+                                    Q() if esalat == "همه" else Q(esalat=esalat)
+                                ).filter(
+                                    Q() if color == "همه" else  Q(color=color)
+                                ).filter(
+                                    Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -9932,7 +10000,7 @@ def handleFilterThirdLevel(request):
                     # else for image
 
                     else:
-                        if exhange:
+                        if exchange:
 
                             coms_to_show=Commerical.objects.filter(
                                     Q(city__in=[int(i) for i in province]) &
@@ -9940,13 +10008,15 @@ def handleFilterThirdLevel(request):
                                     Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(phone_status=phoneStatus)&
-                                        Q(esalat=esalat)&
                                         Q(sim_cart_number__gte=simcartNums)&
-                                        Q(color=color)&
                                         Q(memory_size__gte=memorySize)&
-                                        
                                         Q(ready_to_exchange=True) 
+                                    ).filter(
+                                        Q() if esalat == "همه" else Q(esalat=esalat)
+                                    ).filter(
+                                        Q() if color == "همه" else  Q(color=color)
+                                    ).filter(
+                                        Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -9961,11 +10031,14 @@ def handleFilterThirdLevel(request):
                                     Q(location__in=locas_to_go)
                                     ).filter(
                                         Q(price__range=(int(least_price),int(max_price)))&
-                                        Q(phone_status=phoneStatus)&
-                                        Q(esalat=esalat)&
                                         Q(sim_cart_number__gte=simcartNums)&
-                                        Q(color=color)&
                                         Q(memory_size__gte=memorySize)
+                                    ).filter(
+                                        Q() if esalat == "همه" else Q(esalat=esalat)
+                                    ).filter(
+                                        Q() if color == "همه" else  Q(color=color)
+                                    ).filter(
+                                        Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -9985,12 +10058,15 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(phone_status=phoneStatus)&
-                                            Q(esalat=esalat)&
                                             Q(sim_cart_number__gte=simcartNums)&
-                                            Q(color=color)&
                                             Q(memory_size__gte=memorySize)&
                                             Q(ready_to_exchange=True)   
+                                    ).filter(
+                                        Q() if esalat == "همه" else Q(esalat=esalat)
+                                    ).filter(
+                                        Q() if color == "همه" else  Q(color=color)
+                                    ).filter(
+                                        Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -10008,11 +10084,14 @@ def handleFilterThirdLevel(request):
                                         Q(location__in=locas_to_go)
                                     ).filter(
                                             Q(price__range=(int(least_price),int(max_price)))&
-                                            Q(phone_status=phoneStatus)&
-                                            Q(esalat=esalat)&
                                             Q(sim_cart_number__gte=simcartNums)&
-                                            Q(color=color)&
                                             Q(memory_size__gte=memorySize)
+                                    ).filter(
+                                        Q() if esalat == "همه" else Q(esalat=esalat)
+                                    ).filter(
+                                        Q() if color == "همه" else  Q(color=color)
+                                    ).filter(
+                                        Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                     ).filter(
                                         ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                     ).filter(
@@ -10031,12 +10110,15 @@ def handleFilterThirdLevel(request):
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                     Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(phone_status=phoneStatus)&
-                                    Q(esalat=esalat)&
                                     Q(sim_cart_number__gte=simcartNums)&
-                                    Q(color=color)&
                                     Q(memory_size__gte=memorySize)&
                                     Q(ready_to_exchange=True)   
+                                ).filter(
+                                    Q() if esalat == "همه" else Q(esalat=esalat)
+                                ).filter(
+                                    Q() if color == "همه" else  Q(color=color)
+                                ).filter(
+                                    Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -10051,11 +10133,14 @@ def handleFilterThirdLevel(request):
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                     Q(price__range=(int(least_price),int(max_price)))&
-                                    Q(phone_status=phoneStatus)&
-                                    Q(esalat=esalat)&
                                     Q(sim_cart_number__gte=simcartNums)&
-                                    Q(color=color)&
                                     Q(memory_size__gte=memorySize)
+                                ).filter(
+                                    Q() if esalat == "همه" else Q(esalat=esalat)
+                                ).filter(
+                                    Q() if color == "همه" else  Q(color=color)
+                                ).filter(
+                                    Q() if phoneStatus=="همه" else Q(phone_status=phoneStatus)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -10508,6 +10593,7 @@ def handleFilterThirdLevel(request):
 
 
     elif title in male_or_female:
+
         if province and smallCities:
           
                 if bool(justImg):
@@ -10522,8 +10608,9 @@ def handleFilterThirdLevel(request):
                                                 Q(location__in=locas_to_go)
                                             ).filter(
                                                 Q(price__range=(int(least_price),int(max_price))) &
-                                                Q(ready_to_exchange=True)&
-                                                Q(cloths_type=clothsType)
+                                                Q(ready_to_exchange=True)
+                                            ).filter(
+                                                Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                                             ).filter(
                                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                             ).filter(
@@ -10543,8 +10630,9 @@ def handleFilterThirdLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                Q(price__range=(int(least_price),int(max_price))) &
-                                Q(cloths_type=clothsType)
+                                Q(price__range=(int(least_price),int(max_price))) 
+                            ).filter(
+                                Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -10565,8 +10653,9 @@ def handleFilterThirdLevel(request):
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                    Q(price__range=(int(least_price),int(max_price))) &
-                                   Q(ready_to_exchange=True)&
-                                   Q(cloths_type=clothsType)
+                                   Q(ready_to_exchange=True)
+                                ).filter(
+                                    Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -10580,8 +10669,9 @@ def handleFilterThirdLevel(request):
                                     Q(parent__title=title) &
                                     Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(price__range=(int(least_price),int(max_price))) &       
-                                    Q(cloths_type=clothsType)
+                                    Q(price__range=(int(least_price),int(max_price)))       
+                                ).filter(
+                                    Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -10604,8 +10694,9 @@ def handleFilterThirdLevel(request):
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                         Q(price__range=(int(least_price),int(max_price))) &
-                                        Q(ready_to_exchange=True)&
-                                        Q(cloths_type=clothsType)  
+                                        Q(ready_to_exchange=True)
+                                ).filter(
+                                    Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -10622,8 +10713,9 @@ def handleFilterThirdLevel(request):
                                     Q(parent__title=title) &
                                     Q(location__in=locas_to_go)
                                 ).filter(
-                                        Q(price__range=(int(least_price),int(max_price))) &
-                                        Q(cloths_type=clothsType)
+                                        Q(price__range=(int(least_price),int(max_price))) 
+                                ).filter(
+                                    Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -10641,8 +10733,9 @@ def handleFilterThirdLevel(request):
                                 Q(location__in=locas_to_go)
                             ).filter(
                                     Q(price__range=(int(least_price),int(max_price))) &
-                                    Q(ready_to_exchange=True)&
-                                    Q(cloths_type=clothsType)   
+                                    Q(ready_to_exchange=True)
+                            ).filter(
+                                Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -10655,8 +10748,9 @@ def handleFilterThirdLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(price__range=(int(least_price),int(max_price))) &
-                                    Q(cloths_type=clothsType)
+                                    Q(price__range=(int(least_price),int(max_price))) 
+                            ).filter(
+                                Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -10677,8 +10771,9 @@ def handleFilterThirdLevel(request):
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                         Q(price__range=(int(least_price),int(max_price))) &
-                                        Q(ready_to_exchange=True)&
-                                        Q(cloths_type=clothsType)
+                                        Q(ready_to_exchange=True)
+                                ).filter(
+                                    Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -10694,9 +10789,10 @@ def handleFilterThirdLevel(request):
                                 Q(parent__title=title) &
                                 Q(location__in=locas_to_go)
                             ).filter(
-                                    Q(price__range=(int(least_price),int(max_price))) &
+                                    Q(price__range=(int(least_price),int(max_price))) 
                                     
-                                    Q(cloths_type=clothsType)
+                            ).filter(
+                                Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                             ).filter(
                                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                             ).filter(
@@ -10714,8 +10810,9 @@ def handleFilterThirdLevel(request):
                                     Q(location__in=locas_to_go)
                                 ).filter(
                                     Q(price__range=(int(least_price),int(max_price))) &
-                                    Q(ready_to_exchange=True)&
-                                    Q(cloths_type=clothsType)   
+                                    Q(ready_to_exchange=True)
+                                ).filter(
+                                    Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -10727,8 +10824,9 @@ def handleFilterThirdLevel(request):
                                     Q(parent__title=title) &
                                     Q(location__in=locas_to_go)
                                 ).filter(
-                                    Q(price__range=(int(least_price),int(max_price))) &
-                                    Q(cloths_type=clothsType)  
+                                    Q(price__range=(int(least_price),int(max_price))) 
+                                ).filter(
+                                    Q() if clothsType=="همه" else Q(cloths_type=clothsType)
                                 ).filter(
                                     ~Q(parent=None) & ~Q(title__in=title_not_to_be)
                                 ).filter(
@@ -10811,235 +10909,7 @@ class CommericalDetail(View):
 
         com=get_object_or_404(Commerical,id=comId)
 
-        # time_to_go=''
-
-        # to_irani_now=datetime2jalali(timezone.now())
-        # print("OKAYYYY")
-        # print("OKAYYYY")
-        # print("OKAYYYY")
-        # value=com.iranTimeCreated
-        # a=findTimeDiffrence(timezone.now(),value).total_seconds()
-        # print(a)
-       
-
-
-        # if  to_irani_now.year - value.year ==0:
-
-        #     if to_irani_now.month - value.month==0:
-        #         print("ONE MONTH")
-        #         print("ONE MONTH")
-                
-        #         if to_irani_now.day-value.day ==0:
-        #             if 0<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<1:
-        #                 if 0<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=5:
-        #                     time_to_go="لحظاتی پیش"
-        #                 elif 5<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=10:
-        #                     time_to_go="دقایقی پیش"
-
-        #                 elif 10<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=15:
-        #                     time_to_go="یک ربع پیش"
-                        
-        #                 elif 15<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=59:
-        #                     time_to_go="نیم ساعت پیش"
-                            
-        #             if 1<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<2:
-        #                 time_to_go="یک ساعت پیش"
-
-        #             elif 2<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<3:
-        #                 time_to_go="دو ساعت پیش"
-                    
-        #             elif 3<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<4:
-        #                 time_to_go="سه ساعت پیش"
-
-        #             elif 4<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<5:
-        #                 time_to_go="چهار ساعت پیش"
-        #             elif 5<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<6:
-        #                 time_to_go="پنج ساعت پیش"
-                    
-        #             elif 6<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<7:
-        #                 time_to_go="شش ساعت پیش"
-                    
-        #             elif 7<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<8:
-        #                 time_to_go="هفت ساعت پیش"
-                    
-        #             elif 8<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<9:
-        #                 time_to_go="هشت ساعت پیش"
-
-        #             elif 9<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<10:
-        #                 time_to_go="نه ساعت پیش"
-        #             elif 10<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<11:
-        #                 time_to_go="ده ساعت پیش"
-        #             elif 11<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<12:
-        #                 time_to_go="یازده ساعت پیش"
-        #             elif 12<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<13:
-        #                 time_to_go="دوازده ساعت پیش"
-        #             elif 13<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<14:
-        #                 time_to_go="سیزده ساعت پیش"
-                    
-        #             elif 14<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<15:
-        #                 time_to_go="چهارده ساعت پیش"
-                    
-        #             elif 15<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<16:
-        #                 time_to_go="پانزده ساعت پیش"
-                    
-        #             elif 16<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<17:
-        #                 time_to_go="شانزده ساعت پیش"
-                    
-        #             elif 17<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<18:
-        #                 time_to_go="هفده ساعت پیش"
-
-        #             elif 18<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<19:
-        #                 time_to_go="هجده ساعت پیش"
-        #             elif 19<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<20:
-        #                 time_to_go="نوزده ساعت پیش"
-        #             elif 20<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<21:
-        #                 time_to_go="بیست ساعت پیش"
-        #             elif 21<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<22:
-        #                 time_to_go="بیست و یک ساعت پیش"
-        #             elif 22<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<23:
-        #                 time_to_go="بیست و دو ساعت پیش"
-                    
-        #             elif 23<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<24:
-        #                 time_to_go="بیست و سه ساعت پیش"
-        #         elif to_irani_now.day-value.day==1:
-        #             time_to_go ="دیروز"
-
-        #         elif to_irani_now.day-value.day==2:
-        #             time_to_go ="پریروز"
-                
-        #         elif to_irani_now.day-value.day==3:
-        #             time_to_go ="سه روز پیش"
-        #         elif to_irani_now.day-value.day==4:
-        #             time_to_go ="چهار روز پیش"
-                
-        #         elif to_irani_now.day-value.day==5:
-        #             time_to_go ="پنج روز پیش"
-        #         elif to_irani_now.day-value.day==6:
-        #             time_to_go ="شش روز پیش"
-        #         elif 6<to_irani_now.day-value.day<14:
-        #             time_to_go =" یک هفته پیش"
-        #         elif 14<=to_irani_now.day-value.day<20:
-        #             time_to_go =" دو هفته پیش"
-                
-        #         elif 20<=to_irani_now.day-value.day<28:
-        #             time_to_go =" سه هفته پیش"
-                
-        #         elif 28<=to_irani_now.day-value.day<=31:
-        #             time_to_go =" چهار هفته پیش"
-        #     elif to_irani_now.month -value.month ==1:
-        #         time_to_go="یک ماه پیش"
-        # else:
-
-        #     if to_irani_now.month - value.month==0:
-        #         print("ONE MONTH")
-        #         print("ONE MONTH")
-                
-        #         if to_irani_now.day-value.day ==0:
-        #             if 0<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<1:
-        #                 if 0<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=5:
-        #                     time_to_go="لحظاتی پیش"
-        #                 elif 5<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=10:
-        #                     time_to_go="دقایقی پیش"
-
-        #                 elif 10<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=15:
-        #                     time_to_go="یک ربع پیش"
-                        
-        #                 elif 15<=findTimeDiffrence(timezone.now(),value).total_seconds()/60 <=59:
-        #                     time_to_go="نیم ساعت پیش"
-                            
-        #             if 1<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<2:
-        #                 time_to_go="یک ساعت پیش"
-
-        #             elif 2<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<3:
-        #                 time_to_go="دو ساعت پیش"
-                    
-        #             elif 3<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<4:
-        #                 time_to_go="سه ساعت پیش"
-
-        #             elif 4<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<5:
-        #                 time_to_go="چهار ساعت پیش"
-        #             elif 5<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<6:
-        #                 time_to_go="پنج ساعت پیش"
-                    
-        #             elif 6<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<7:
-        #                 time_to_go="شش ساعت پیش"
-                    
-        #             elif 7<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<8:
-        #                 time_to_go="هفت ساعت پیش"
-                    
-        #             elif 8<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<9:
-        #                 time_to_go="هشت ساعت پیش"
-
-        #             elif 9<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<10:
-        #                 time_to_go="نه ساعت پیش"
-        #             elif 10<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<11:
-        #                 time_to_go="ده ساعت پیش"
-        #             elif 11<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<12:
-        #                 time_to_go="یازده ساعت پیش"
-        #             elif 12<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<13:
-        #                 time_to_go="دوازده ساعت پیش"
-        #             elif 13<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<14:
-        #                 time_to_go="سیزده ساعت پیش"
-                    
-        #             elif 14<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<15:
-        #                 time_to_go="چهارده ساعت پیش"
-                    
-        #             elif 15<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<16:
-        #                 time_to_go="پانزده ساعت پیش"
-                    
-        #             elif 16<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<17:
-        #                 time_to_go="شانزده ساعت پیش"
-                    
-        #             elif 17<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<18:
-        #                 time_to_go="هفده ساعت پیش"
-
-        #             elif 18<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<19:
-        #                 time_to_go="هجده ساعت پیش"
-        #             elif 19<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<20:
-        #                 time_to_go="نوزده ساعت پیش"
-        #             elif 20<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<21:
-        #                 time_to_go="بیست ساعت پیش"
-        #             elif 21<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<22:
-        #                 time_to_go="بیست و یک ساعت پیش"
-        #             elif 22<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<23:
-        #                 time_to_go="بیست و دو ساعت پیش"
-                    
-        #             elif 23<=findTimeDiffrence(timezone.now(),value).total_seconds()/3600<24:
-        #                 time_to_go="بیست و سه ساعت پیش"
-        #         elif to_irani_now.day-value.day==1:
-        #             time_to_go ="دیروز"
-
-        #         elif to_irani_now.day-value.day==2:
-        #             time_to_go ="پریروز"
-                
-        #         elif to_irani_now.day-value.day==3:
-        #             time_to_go ="سه روز پیش"
-        #         elif to_irani_now.day-value.day==4:
-        #             time_to_go ="چهار روز پیش"
-                
-        #         elif to_irani_now.day-value.day==5:
-        #             time_to_go ="پنج روز پیش"
-        #         elif to_irani_now.day-value.day==6:
-        #             time_to_go ="شش روز پیش"
-        #         elif 6<to_irani_now.day-value.day<14:
-        #             time_to_go =" یک هفته پیش"
-        #         elif 14<=to_irani_now.day-value.day<20:
-        #             time_to_go =" دو هفته پیش"
-                
-        #         elif 20<=to_irani_now.day-value.day<28:
-        #             time_to_go =" سه هفته پیش"
-                
-        #         elif 28<=to_irani_now.day-value.day<=31:
-        #             time_to_go =" چهار هفته پیش"
-        #     elif to_irani_now.month -value.month ==1 or to_irani_now.month -value.month==-11:
-        #         print("CCCLLAEDD")
-        #         time_to_go="یک ماه پیش"
-
-
-
-
-        # print(time_to_go)  
-
+ 
         contex={
             'c':com
         }
@@ -11070,19 +10940,57 @@ def threadView(request,threadId):
 
     t=get_object_or_404(Thread,id=threadId)
 
+    sender_thread=request.user.sender.all()
+    receiver_thread=request.user.receiver.all()
+
     messages=Message.objects.filter(
         thread=t
-    ).order_by("-created")
+    ).order_by("created")
+
+  
+    
 
     contex={
         'messages':messages,
-        'thread':t
+        'thread':t,
+        'thread_i_started':sender_thread,
+        'thread_he_started':receiver_thread,
+        # 'last_message':last_message
     }
-    return render(request,"core/threaView.html",contex)
+    
+    return render(request,"thread/threaView.html",contex)
 
 
 
+def inbox(request):
 
+    
+    sender_thread=request.user.sender.all()
+    receiver_thread=request.user.receiver.all()
+
+
+    contex={
+        'thread_i_started':sender_thread,
+        'thread_he_started':receiver_thread,
+        }
+
+    return render(request,"thread/inbox.html",contex)
+
+
+
+# @beMessageOwner
+def deleteMessage(request,threadId,messageId):
+
+    if request.method=="POST":
+        thread=get_object_or_404(Thread,id=threadId)
+        message=get_object_or_404(Message,id=messageId)
+        message.delete()
+        if request.is_ajax():
+
+            return JsonResponse({
+                "delete":True
+            })
+            
 
     
 def load_more(request): 
@@ -11944,7 +11852,101 @@ class NewCommericalForm(Loginrequired,View):
         })
 
 
+def search_handle_all(request):
 
+    province=request.session.get("bb")
+    smallCities=request.session.get("min")
+    coms_to_show=None
+    q=request.GET.get("q")
+
+    if province and smallCities:
+
+        coms_to_show=Commerical.objects.filter(
+            Q(city__in=[int(i) for i in province])|
+            Q(smallCity__in=[int(i) for i in smallCities ])
+        ).filter(
+            Q(title__icontains=q)|Q(detail__contains=q)
+        ).filter(
+             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+        )
+
+    elif province and not smallCities:
+
+        coms_to_show=Commerical.objects.filter(
+            Q(city__in=[int(i) for i in province])
+        ).filter(
+            Q(title__icontains=q)|Q(detail__contains=q)
+        ).filter(
+             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+        )
+        
+    elif not province and smallCities:
+        coms_to_show=Commerical.objects.filter(
+            Q(smallCity__in=[int(i) for i in smallCities])
+        ).filter(
+            Q(title__icontains=q)|Q(detail__contains=q)
+        ).filter(
+             ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+        )
+
+
+
+    bigInJson=[int(i) for i in province]
+    ci=City.objects.filter(id__in=bigInJson)
+    cits=City.objects.filter(
+            id__in=[int(i) for i in province]
+        )
+    all_cats=Commerical.objects.filter(
+            parent=None
+        )
+    contex={
+        'cities':ci,
+        'coms':coms_to_show,
+        'all_cats':all_cats,
+        'cits':cits
+    }
+    return render(request,"core/after_search_city.html",contex)
+
+
+
+def search_each_category(request):
+
+
+    province=request.session.get("bb")
+    smallCities=request.session.get("min")
+    coms_to_show=None
+    q=request.GET.get("q")
+
+
+    path=request.path
+    sp=path.split("/")
+    print(sp)
+    cat_title=None
+    coms_to_show=None
+
+    match sp[1]:
+
+        case "eachCategory":
+
+            cat_title=Commerical.objects.get(id=sp[2])
+
+            coms_to_show=Commerical.objects.filter(
+                Q(parent__parent__parent__id=cat_title.id)|Q(parent__parent__id=cat_title.id)
+            ).filter(
+                Q(title__icotnains=q)
+            ).filter(
+                 ~Q(parent=None) & ~Q(title__in=title_not_to_be)
+            )
+
+
+
+
+
+
+
+
+
+    return HttpResponse("okay")
 
 
 
